@@ -1,0 +1,172 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, Bell, Menu, X } from 'lucide-react';
+// import Group2 from '/images/Group 2.png';
+// import Group1 from '/images/Group 1.png';
+
+const Header = ({
+  sidebarOpen,
+  setSidebarOpen,
+  userData = {
+    name: 'Akash Kumar',
+    email: 'akash@gmail.com',
+    // profileImage: Group2,
+  },
+}) => {
+  const [searchValue, setSearchValue] = useState('');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: 1, text: 'New message received', unread: true },
+    { id: 2, text: 'Your profile was updated', unread: false },
+  ]);
+
+  const searchRef = useRef(null);
+  const notificationRef = useRef(null);
+
+  // Handle click outside to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Handle search
+  const handleSearch = (e) => {
+    e.preventDefault();
+    console.log('Searching for:', searchValue);
+    // Implement your search logic here
+  };
+
+  // Mark notification as read
+  const handleNotificationClick = (notificationId) => {
+    setNotifications(
+      notifications.map((notification) =>
+        notification.id === notificationId
+          ? { ...notification, unread: false }
+          : notification,
+      ),
+    );
+  };
+
+  const unreadCount = notifications.filter((n) => n.unread).length;
+
+  return (
+    <header className="sticky top-0 z-20 bg-white shadow transition-all duration-300">
+      <div className="flex items-center justify-between p-4">
+        {/* Menu Toggle Button - Only visible on mobile */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+        >
+          {sidebarOpen ? (
+            <X className="w-6 h-6" />
+          ) : (
+            <Menu className="w-6 h-6" />
+          )}
+        </button>
+
+        {/* User Profile Section */}
+        <div className="hidden md:flex items-center transition-all duration-300">
+          <div className="w-12 h-12 rounded-full overflow-hidden">
+            <img
+              src={userData.profileImage}
+              alt="User Profile"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="ml-2">
+            <h2 className="font-satoshi text-black text-lg md:text-[20px] font-medium truncate">
+              {userData.name}
+            </h2>
+            <p className="text-sm md:text-[16px] font-satoshi font-medium text-gray-500 truncate">
+              {userData.email}
+            </p>
+          </div>
+        </div>
+
+        {/* Right Section - Search and Notifications */}
+        <div className="flex items-center justify-end space-x-2 md:space-x-4 flex-1 md:w-1/2 ml-4">
+          {/* Search Bar */}
+          <form
+            onSubmit={handleSearch}
+            className="relative flex-1 max-w-xs md:max-w-md"
+          >
+            <input
+              ref={searchRef}
+              type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              placeholder="Search"
+              className="w-full py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:border-black placeholder:text-gray-300 text-sm md:text-base"
+            />
+            <button
+              type="submit"
+              className="absolute left-3 top-1/2 transform -translate-y-1/2"
+            >
+              <Search className="h-5 w-5 text-gray-400" />
+            </button>
+          </form>
+
+          {/* Notifications */}
+          <div className="relative" ref={notificationRef}>
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="p-2 rounded-full text-gray-600 hover:bg-gray-100 relative"
+            >
+              <img
+                // src={Group1}
+                alt="Notification Bell"
+                className="w-6 h-6 md:w-8 md:h-8"
+              />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 bg-black text-white rounded-full w-2.5 h-2.5" />
+              )}
+            </button>
+
+            {/* Notifications Dropdown */}
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                <div className="px-4 py-2 border-b border-gray-200">
+                  <h3 className="font-semibold">Notifications</h3>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  {notifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      onClick={() => handleNotificationClick(notification.id)}
+                      className={`px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center ${
+                        notification.unread ? 'bg-blue-50' : ''
+                      }`}
+                    >
+                      <div className="flex-1">
+                        <p
+                          className={`text-sm ${
+                            notification.unread ? 'font-semibold' : ''
+                          }`}
+                        >
+                          {notification.text}
+                        </p>
+                      </div>
+                      {notification.unread && (
+                        <span className="w-2 h-2 bg-blue-600 rounded-full" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;

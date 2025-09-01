@@ -1,0 +1,111 @@
+body,
+html {
+  /* height: 100%; */
+  /* user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none; */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* For Webkit browsers (Chrome, Safari, etc.) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+/* For Edge and IE */
+*::-ms-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-ms-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 5px;
+}
+
+*::-ms-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+*::-ms-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.react-datepicker-popper {
+  z-index: 30 !important;
+}
+
+.scroll-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+/* Add this to your CSS file */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #a0aec0; /* Change this to your preferred color */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #edf2f7;
+}
+
+/* Hide the default Google Translate widget if desired */
+.goog-te-banner-frame {
+  display: none;
+}
+
+/* Style the language dropdown */
+.goog-te-combo {
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* utility classes for sticky positioning */
+.sticky-header-offset {
+  top: var(--header-height);
+  position: sticky;
+}
+
+.react-tooltip {
+  z-index: 9999 !important;
+}
