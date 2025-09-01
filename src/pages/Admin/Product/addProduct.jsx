@@ -54,6 +54,7 @@ const AddEditProduct = () => {
     useState(null);
   const [selectedInnerSubCategoryDetails, setSelectedInnerSubCategoryDetails] =
     useState(null);
+  const [deletedMediaIds, setDeletedMediaIds] = useState([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -334,7 +335,6 @@ const AddEditProduct = () => {
           }
         }
 
-        // Parse specifications if they exist
         let parsedSpecifications = [];
         if (productData.specifications) {
           try {
@@ -347,20 +347,23 @@ const AddEditProduct = () => {
           }
         }
 
-        // Set category_id first to trigger subcategory filter
         setFormData((prev) => ({
           ...prev,
           category_id: productData.category_id,
         }));
 
-        // Use setTimeout to ensure category effect runs
         setTimeout(() => {
           setFormData((prev) => ({
             ...prev,
             ...productData,
             tags: parsedTags,
             specifications: parsedSpecifications,
-            productFiles: productData.media || [],
+            productFiles: productData.media.map((media) => ({
+              id: media.id, // Include media ID
+              url: media.url,
+              type: media.type,
+              preview: media.url,
+            })),
           }));
           setSpecifications(
             parsedSpecifications.length > 0
@@ -372,22 +375,18 @@ const AddEditProduct = () => {
             const updatedVariations = productData.variations.map(
               (variation) => ({
                 ...variation,
-                media: variation.media || [],
+                media: variation.media.map((media) => ({
+                  id: media.id, // Include media ID
+                  url: media.url,
+                  type: media.type,
+                  preview: media.url,
+                })),
                 sizes: variation.sizes || [],
               })
             );
             setVariations(updatedVariations);
           }
         }, 0);
-
-        if (productData.variations) {
-          const updatedVariations = productData.variations.map((variation) => ({
-            ...variation,
-            media: variation.media || [],
-            sizes: variation.sizes || [],
-          }));
-          setVariations(updatedVariations);
-        }
       }
     } catch (error) {
       console.error("Error fetching product:", error);
@@ -675,7 +674,11 @@ const AddEditProduct = () => {
       setVariations((prev) => {
         const newVariations = [...prev];
         const media = newVariations[variationIndex].media;
-        URL.revokeObjectURL(media[index]?.preview);
+        const mediaItem = media[index];
+        if (mediaItem.id) {
+          setDeletedMediaIds((prev) => [...prev, mediaItem.id]);
+        }
+        URL.revokeObjectURL(mediaItem?.preview);
         newVariations[variationIndex].media = media.filter(
           (_, i) => i !== index
         );
@@ -684,6 +687,10 @@ const AddEditProduct = () => {
     } else {
       setFormData((prev) => {
         const files = [...prev.productFiles];
+        const mediaItem = files[index];
+        if (mediaItem.id) {
+          setDeletedMediaIds((prev) => [...prev, mediaItem.id]);
+        }
         URL.revokeObjectURL(files[index].preview);
         const updatedFiles = files.filter((_, i) => i !== index);
         return { ...prev, productFiles: updatedFiles };
@@ -771,7 +778,7 @@ const AddEditProduct = () => {
           key !== "specifications"
         ) {
           if (key === "fabric_id" && !formData[key]) {
-            // Do not append fabric_id if it is empty, making it optional
+            // Do not append fabric_id if it is empty
           } else {
             formDataToSend.append(
               key,
@@ -785,6 +792,11 @@ const AddEditProduct = () => {
 
       // Append specifications separately
       formDataToSend.append("specifications", JSON.stringify(specifications));
+
+      // Append deleted media IDs
+      if (deletedMediaIds.length > 0) {
+        formDataToSend.append("delete_media", JSON.stringify(deletedMediaIds));
+      }
 
       if (formData.is_variation) {
         const variationsForSubmit = variations.flatMap((variation) =>
@@ -803,36 +815,62 @@ const AddEditProduct = () => {
           JSON.stringify(variationsForSubmit)
         );
 
-        const variation_media = variations
+        // Track all media files and their indices
+        const allMediaFiles = [];
+        const variationMedia = variations
           .filter((v) => v.media.length > 0)
-          .map((variation) => ({
-            color_id: variation.color_id,
-            file_indices: variation.media.map((_, index) => {
-              const globalIndex =
-                variations
-                  .slice(0, variations.indexOf(variation))
-                  .reduce((sum, v) => sum + v.media.length, 0) + index;
-              return globalIndex;
-            }),
-          }));
+          .map((variation) => {
+            const fileIndices = [];
+            variation.media.forEach((media) => {
+              if (media.file instanceof File) {
+                // New file
+                const globalIndex = allMediaFiles.length;
+                allMediaFiles.push(media.file);
+                fileIndices.push(globalIndex);
+              } else if (media.id) {
+                // Existing media
+                fileIndices.push(media.id);
+              }
+            });
+            return {
+              color_id: variation.color_id,
+              file_indices: fileIndices,
+            };
+          });
+
         formDataToSend.append(
           "variation_media",
-          JSON.stringify(variation_media)
+          JSON.stringify(variationMedia)
         );
 
-        variations.forEach((variation) => {
-          variation.media.forEach((media) => {
-            if (media.file instanceof File) {
-              formDataToSend.append("files", media.file);
-            }
-          });
+        // Append new files
+        allMediaFiles.forEach((file) => {
+          formDataToSend.append("files", file);
         });
       } else {
-        formData.productFiles.forEach((fileObj) => {
-          if (fileObj.file instanceof File) {
+        const allMediaFiles = formData.productFiles
+          .map((fileObj, index) => ({
+            file: fileObj.file instanceof File ? fileObj.file : null,
+            id: fileObj.id || null,
+            index,
+          }))
+          .filter((fileObj) => fileObj.file || fileObj.id);
+
+        const mediaIndices = allMediaFiles.map((fileObj, index) =>
+          fileObj.file ? index : fileObj.id
+        );
+
+        // Append new files
+        allMediaFiles
+          .filter((fileObj) => fileObj.file)
+          .forEach((fileObj) => {
             formDataToSend.append("files", fileObj.file);
-          }
-        });
+          });
+
+        // For non-variation products, include media indices if needed
+        if (mediaIndices.length > 0) {
+          formDataToSend.append("media_indices", JSON.stringify(mediaIndices));
+        }
       }
 
       const response = isEditMode
@@ -844,6 +882,7 @@ const AddEditProduct = () => {
       }
     } catch (error) {
       console.error("Error submitting product:", error);
+      notifyOnFail("Error submitting product");
     }
   };
 
