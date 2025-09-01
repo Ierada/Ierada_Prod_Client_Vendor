@@ -26,3 +26,8 @@ fonts/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# custom project files
+default.conf
+Dockerfile
+frontend.sh
