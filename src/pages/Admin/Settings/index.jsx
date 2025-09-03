@@ -423,8 +423,7 @@ const AdminSetting = () => {
                 </div>
               </div>
 
-              {/* Currency and Shipping Settings */}
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Shipping Charge
@@ -435,6 +434,20 @@ const AdminSetting = () => {
                     {...register("shipping_charge")}
                     className="block w-full rounded-md border border-gray-300 p-3 bg-gray-50 focus:ring-2 focus:ring-[#F47954] focus:border-transparent transition-all duration-200"
                     placeholder="Enter shipping charge"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Platform Fee (in %)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    minLength={0}
+                    maxLength={100}
+                    {...register("platform_fee")}
+                    className="block w-full rounded-md border border-gray-300 p-3 bg-gray-50 focus:ring-2 focus:ring-[#F47954] focus:border-transparent transition-all duration-200"
+                    placeholder="Enter platform fee in %"
                   />
                 </div>
               </div>

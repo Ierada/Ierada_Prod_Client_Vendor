@@ -16,6 +16,7 @@ import { useEffect } from "react";
 
 export default function AboutUs() {
   const [settingsData, setSettingsData] = useState({});
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   const fetchSettings = async () => {
     try {
@@ -32,6 +33,11 @@ export default function AboutUs() {
   useEffect(() => {
     fetchSettings();
   }, []);
+
+  // Handle image load
+  const handleImageLoad = () => {
+    setIsImageLoaded(true);
+  };
 
   const Product = [
     {
@@ -62,12 +68,21 @@ export default function AboutUs() {
   return (
     <main className="bg-white font-Lato space-y-24">
       <section className="relative w-full h-[200px] sm:h-[300px] md:h-[500px] lg:h-[700px]">
+        {!isImageLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+            <div className="w-16 h-16 border-4 border-t-4 border-gray-400 border-solid rounded-full animate-spin border-t-[#000000]"></div>
+          </div>
+        )}
         <img
-          src={settingsData?.about_us_banner || AboutUsBg}
+          src={settingsData?.about_us_banner}
           alt="Background"
-          className="w-full h-full"
+          className={`w-full h-full ${
+            isImageLoaded ? "opacity-100" : "opacity-0"
+          }`}
+          onLoad={handleImageLoad}
+          onError={() => setIsImageLoaded(true)}
         />
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0000004D] px-4 md:px-80">
+        {/* <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0000004D] px-4 md:px-80">
           <h1
             className="text-white text-lg sm:text-xl md:text-2xl lg:text-4xl font-normal text-center md:px-4 md:mb-10"
             style={{
@@ -85,7 +100,7 @@ export default function AboutUs() {
             artisans across India, reflecting the beauty and tradition of our
             culture.
           </p>
-        </div>
+        </div> */}
       </section>
       {/* 2nd section */}
       <section className="px-4 md:px-20">

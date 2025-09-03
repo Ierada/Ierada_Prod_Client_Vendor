@@ -716,12 +716,9 @@ const AuthModal = ({ onClose, isOpen, mode }) => {
       <div className="bg-white w-full max-w-4xl flex rounded-lg relative h-[90%]">
         <div className="hidden md:flex w-1/2 relative">
           <img
-            src={
-              settingsData?.customer_login_banner ||
-              `/assets/banners/signinnew.png`
-            }
+            src={settingsData?.customer_login_banner}
             alt="Promotional"
-            className="w-full h-full object-cover rounded-l-lg"
+            className="w-full h-full rounded-l-lg"
           />
         </div>
         <div className="w-full md:w-1/2 p-8 md:p-12">

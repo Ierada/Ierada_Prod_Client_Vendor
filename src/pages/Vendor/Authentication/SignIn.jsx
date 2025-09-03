@@ -341,6 +341,7 @@ const SignIn = ({ role }) => {
   const [twoFactorType, setTwoFactorType] = useState("");
   const { setUser } = useAppContext();
   const [settingsData, setSettingsData] = useState({});
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -364,6 +365,11 @@ const SignIn = ({ role }) => {
   useEffect(() => {
     fetchSettings();
   }, []);
+
+  // Handle image load
+  const handleImageLoad = () => {
+    setIsImageLoaded(true);
+  };
 
   const handleSignIn = useCallback(
     async (e) => {
@@ -414,19 +420,19 @@ const SignIn = ({ role }) => {
           <div className="flex flex-col lg:flex-row lg:justify-center border">
             {role === "vendor" && (
               <div className="relative hidden w-full lg:block lg:w-1/2">
-                <div className="absolute px-18 mt-30 top-10 left-10 z-10 text-white">
-                  <h1 className="text-4xl font-bold text-wrap mb-4">
-                    Grow your business with us
-                  </h1>
-                  <p>Reach your business goals in record time.</p>
-                </div>
+                {!isImageLoaded && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                    <div className="w-16 h-16 border-4 border-t-4 border-gray-400 border-solid rounded-full animate-spin border-t-[#000000]"></div>
+                  </div>
+                )}
                 <img
-                  src={
-                    settingsData?.vendor_login_banner ||
-                    "/assets/signin_page/Signin_Img.png"
-                  }
+                  src={settingsData?.vendor_login_banner}
                   alt="Vendor Login Banner"
-                  className="h-full w-full object-cover"
+                  className={`w-full h-full ${
+                    isImageLoaded ? "opacity-100" : "opacity-0"
+                  }`}
+                  onLoad={handleImageLoad}
+                  onError={() => setIsImageLoaded(true)}
                 />
               </div>
             )}

@@ -135,8 +135,8 @@ const OrderModal = ({ isOpen, onClose, order, onOrderUpdate }) => {
             </div>
           </Section>
 
-          {/* Customer Information */}
-          <Section title="Customer Information">
+          {/* Shipping Address */}
+          <Section title="Shipping Address">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <DetailItem
                 label="Customer Name"
@@ -147,12 +147,6 @@ const OrderModal = ({ isOpen, onClose, order, onOrderUpdate }) => {
                 value={formatPhone(order?.Address?.phone)}
               />
               <DetailItem label="Email" value={order?.Address?.email} />
-            </div>
-          </Section>
-
-          {/* Shipping Address */}
-          <Section title="Shipping Address">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <DetailItem
                 label="Address"
                 value={order?.Address?.street_address || "N/A"}
@@ -165,6 +159,39 @@ const OrderModal = ({ isOpen, onClose, order, onOrderUpdate }) => {
               />
             </div>
           </Section>
+
+          {/* Billing Address */}
+          {order?.BillingAddress ? (
+            <Section title="Billing Address">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <DetailItem
+                  label="Customer Name"
+                  value={`${order?.BillingAddress?.first_name} ${order?.BillingAddress?.last_name}`}
+                />
+                <DetailItem
+                  label="Phone"
+                  value={formatPhone(order?.BillingAddress?.phone)}
+                />
+                <DetailItem
+                  label="Email"
+                  value={order?.BillingAddress?.email}
+                />
+                <DetailItem
+                  label="Address"
+                  value={order?.BillingAddress?.street_address || "N/A"}
+                />
+                <DetailItem label="City" value={order?.BillingAddress?.city} />
+                <DetailItem
+                  label="State"
+                  value={order?.BillingAddress?.state}
+                />
+                <DetailItem
+                  label="ZIP Code"
+                  value={order?.BillingAddress?.zip || "N/A"}
+                />
+              </div>
+            </Section>
+          ) : null}
 
           {/* Product Details */}
           <Section title="Product Details">

@@ -547,7 +547,7 @@ const Header = () => {
   useEffect(() => {
     const fetchHeaderCartWishlistNotificationCount = async () => {
       const userId = getUserIdentifier("customer");
-      if (!userId || userId.startsWith("guest_")) return;
+      if (!userId || typeof userId === "string") return;
       const res = await getHeaderCartWishlistNotificationCount(userId);
       if (res) {
         setHeaderCounts({

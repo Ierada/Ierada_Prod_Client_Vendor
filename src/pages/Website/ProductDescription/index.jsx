@@ -436,9 +436,9 @@ export default function ProductPage() {
 
   const handleWhatsAppShare = () => {
     const shareText = `${productData?.name} - Check out this product!`;
-    const shareUrl = `https://ierada.com/product/${slug}`;
+    const currentUrl = window.location.href;
     const whatsappLink = `https://wa.me/?text=${encodeURIComponent(
-      shareText + " " + shareUrl
+      shareText + " " + currentUrl
     )}`;
     window.open(whatsappLink, "_blank");
   };

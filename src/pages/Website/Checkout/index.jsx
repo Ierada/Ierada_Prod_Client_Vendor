@@ -59,6 +59,7 @@ const CheckoutPage = () => {
   const [showShippingAddress, setShowShippingAddress] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [shipmentAddress, setShipmentAddress] = useState({ id: null });
+  const [billingAddress, setBillingAddress] = useState({ id: null });
   const [showGst, setShowGst] = useState(
     orderSummary.gst_number && orderSummary.gst_number !== null ? true : false
   );
@@ -275,7 +276,7 @@ const CheckoutPage = () => {
   ]);
 
   useEffect(() => {
-    if (user?.id && shipmentAddress?.id) {
+    if (user?.id && shipmentAddress?.id && billingAddress?.id) {
       setOrderSummary({
         ...orderSummary,
         user_id: user.id,
@@ -284,10 +285,17 @@ const CheckoutPage = () => {
         payment_type: selectedPayment === "cash" ? "cod" : "paid",
         order_status: "placed",
         shipping_address_id: shipmentAddress.id,
+        billing_address_id: billingAddress.id,
         gst_number: showGst ? gstNumber : null,
       });
     }
-  }, [selectedPayment, shipmentAddress?.id, gstNumber, user?.id]);
+  }, [
+    selectedPayment,
+    shipmentAddress?.id,
+    billingAddress?.id,
+    gstNumber,
+    user?.id,
+  ]);
 
   const handleWalletAmountChange = (event) => {
     const inputValue = event.target.value;
@@ -374,6 +382,8 @@ const CheckoutPage = () => {
     if (!validateGST(gstNumber)) return;
     if (!shipmentAddress?.id)
       return notifyOnFail("Please select a shipping address.");
+    if (!billingAddress?.id)
+      return notifyOnFail("Please select a billing address.");
 
     setLoading(true);
 
@@ -694,7 +704,10 @@ const CheckoutPage = () => {
         </div>
         <div className="bg-white px-4 md:px-5 lg:px-20 flex flex-col md:flex-row gap-10">
           <div className="w-full md:w-1/3 lg:w-2/3">
-            <CheckOutAddress setShipmentAddress={setShipmentAddress} />
+            <CheckOutAddress
+              setShipmentAddress={setShipmentAddress}
+              setBillingAddress={setBillingAddress}
+            />
 
             <div className="mt-4">
               <label className="flex items-center gap-2 text-[black] text-base font-normal checked:">
