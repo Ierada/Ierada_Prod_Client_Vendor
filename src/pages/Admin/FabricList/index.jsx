@@ -28,6 +28,7 @@ import {
   notifyOnFail,
 } from "../../../utils/notification/toast";
 import config from "../../../config/config";
+import { CiImport } from "react-icons/ci";
 
 const FabricList = () => {
   const [fabrics, setFabric] = useState([]);
@@ -252,6 +253,49 @@ const FabricList = () => {
     }
   };
 
+  const exportToCSV = () => {
+    if (!fabrics || fabrics.length === 0) return;
+
+    // Define CSV header
+    const headers = [
+      "ID",
+      "Type",
+      "Name",
+      "Category",
+      "Image",
+      "Slug",
+      "Status",
+    ];
+
+    // Format data rows
+    const rows = fabrics.map((fabric) => [
+      fabric.id,
+      fabric.type,
+      fabric.name,
+      fabric.category?.title || "N/A",
+      fabric.image || "",
+      fabric.slug || "",
+      fabric.status ? "Active" : "Inactive",
+    ]);
+
+    // Combine headers and rows
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n");
+
+    // Create and download CSV file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `fabrics_${new Date().toISOString()}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -265,8 +309,8 @@ const FabricList = () => {
           + Add Fabric
         </button>
       </div>
-      <div className="p-4 rounded-lg mb-6">
-        <div className="relative">
+      <div className="flex flex-wrap items-center justify-between mb-6 gap-4 p-4 rounded-lg">
+        <div className="relative w-full sm:w-auto">
           <input
             type="text"
             placeholder="Search by type, name, category..."
@@ -276,6 +320,13 @@ const FabricList = () => {
           />
           <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
         </div>
+        <button
+          onClick={exportToCSV}
+          className="w-full sm:w-auto px-4 py-2 bg-[#F47954] text-white rounded-md flex items-center justify-center"
+        >
+          <CiImport className="mr-2" size={20} />
+          Export Data
+        </button>
       </div>
 
       <div className="bg-white rounded-lg overflow-x-auto shadow-sm border border-gray-200">

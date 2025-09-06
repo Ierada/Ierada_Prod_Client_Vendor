@@ -8,6 +8,7 @@ import {
   getAllReviews,
   updateReviewStatus,
 } from "../../../services/api.review";
+import { CiImport } from "react-icons/ci";
 
 // Star Rating Component
 const StarRating = ({ rating, maxStars = 5 }) => {
@@ -398,6 +399,55 @@ export default function ReviewAdminPage() {
     setStatus("");
   };
 
+  const exportToCSV = () => {
+    if (!reviews || reviews.length === 0) return;
+
+    // Define CSV header
+    const headers = [
+      "Review ID",
+      "Product",
+      "Category",
+      "Customer Name",
+      "Rating",
+      "Comment",
+      "Status",
+      "Created At",
+      "Media",
+    ];
+
+    // Format data rows
+    const rows = reviews.map((review) => [
+      review.id,
+      review.product_name || "N/A",
+      review.category_name || "N/A",
+      review.customer_name || "N/A",
+      review.review || "0",
+      review.comment || "",
+      review.status || "N/A",
+      formatDate(review.created_at),
+      review.review_media
+        ? review.review_media.map((m) => m.media).join("; ")
+        : "",
+    ]);
+
+    // Combine headers and rows
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n");
+
+    // Create and download CSV file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `reviews_${new Date().toISOString()}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const categoryOptions = [
     { value: "", label: "All Categories" },
     ...categories.map((cat) => ({ value: cat.id, label: cat.title })),
@@ -438,6 +488,13 @@ export default function ReviewAdminPage() {
                 Clear All Filters
               </button>
             )}
+            <button
+              onClick={exportToCSV}
+              className="px-4 py-2 bg-[#F47954] text-white rounded-md flex items-center justify-center text-sm"
+            >
+              <CiImport className="mr-2" size={20} />
+              Export
+            </button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <DateInput

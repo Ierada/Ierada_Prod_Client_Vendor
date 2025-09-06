@@ -225,9 +225,17 @@ const AddEditProduct = () => {
   useEffect(() => {
     if (formData.category_id) {
       const getAllFabrics = async () => {
-        const query = formData.category_id
-          ? { categoryId: formData.category_id }
-          : {};
+        const query = {};
+        if (formData.category_id) {
+          query.categoryId = formData.category_id;
+        }
+        if (formData.sub_category_id) {
+          query.subCatId = formData.sub_category_id;
+        }
+        if (formData.inner_sub_category_id) {
+          query.innerSubCatId = formData.inner_sub_category_id;
+        }
+
         const res = await getAllFabricsByStatus(query);
         const formattedFabrics = res?.map((data) => ({
           id: data.id,
@@ -238,7 +246,11 @@ const AddEditProduct = () => {
 
       getAllFabrics();
     }
-  }, [formData.category_id]);
+  }, [
+    formData.category_id,
+    formData.sub_category_id,
+    formData.inner_sub_category_id,
+  ]);
 
   useEffect(() => {
     if (isEditMode) {

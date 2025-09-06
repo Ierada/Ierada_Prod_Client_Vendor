@@ -240,43 +240,64 @@ export default function Order() {
   }, []);
 
   const exportToExcel = () => {
-    // Prepare data for export
-    const exportData = displayedData.map((order) => ({
-      "Order ID": order.id,
-      "Order Number": order.order_number,
-      "Order Date": formatDate(order.created_at),
-      "Order Time": formatTime(order.created_at),
-      "Customer Name": `${order.Address?.first_name || ""} ${
+    if (!displayedData || displayedData.length === 0) return;
+
+    // Define CSV header
+    const headers = [
+      "Order ID",
+      "Order Number",
+      "Order Date",
+      "Order Time",
+      "Customer Name",
+      "Product Name",
+      "Phone Number",
+      "Email",
+      "Address",
+      "Quantity",
+      "Price",
+      "Order Total",
+      "Order Status",
+      "Payment Type",
+    ];
+
+    // Format data rows
+    const rows = displayedData.map((order) => [
+      order.id,
+      order.order_number,
+      formatDate(order.created_at),
+      formatTime(order.created_at),
+      `${order.Address?.first_name || ""} ${
         order.Address?.last_name || ""
       }`.trim(),
-      "Product Name": order.Product?.name || "N/A",
-      "Product Size": order.Product?.Variations?.size || "N/A",
-      "Product Color": order.Product?.Variations?.color_name || "N/A",
-      "Phone Number": order.Address?.phone || "N/A",
-      Email: order.Address?.email || "N/A",
-      Address: `${order.Address?.street_address || ""}, ${
-        order.Address?.city || ""
-      }, ${order.Address?.state || ""} ${order.Address?.zip || ""}`.trim(),
-      Quantity: order.qty || "N/A",
-      Price: order.price || "N/A",
-      "Order Total": order.order_total || "N/A",
-      "Order Status": order.order_status || "N/A",
-      "Payment Type": order.payment_type || "N/A",
-      "Shipping Charges": order.shipping_charges || "N/A",
-    }));
+      order.Product?.name || "N/A",
+      order.Address?.phone || "N/A",
+      order.Address?.email || "N/A",
+      `${order.Address?.street_address || ""}, ${order.Address?.city || ""}, ${
+        order.Address?.state || ""
+      } ${order.Address?.zip || ""}`.trim(),
+      order.qty || "N/A",
+      order.price || "N/A",
+      order.order_total || "N/A",
+      order.order_status || "N/A",
+      order.payment_type || "N/A",
+    ]);
 
-    // Create worksheet
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    // Combine headers and rows
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n");
 
-    // Create workbook and add worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
-
-    // Export to Excel file
-    XLSX.writeFile(
-      workbook,
-      `orders_export_${new Date().toISOString().split("T")[0]}.xlsx`
-    );
+    // Create and download CSV file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `orders_${new Date().toISOString()}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const downloadInvoicePDF = (order) => {

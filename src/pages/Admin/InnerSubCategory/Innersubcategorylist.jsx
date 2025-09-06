@@ -33,6 +33,7 @@ import DeleteConfirmationModal from "../../../components/Vendor/Models/DeleteCon
 import InnerSubCategoryModal from "../../../components/Admin/modals/InnerSubCategoryModal";
 import { useNavigate } from "react-router-dom";
 import config from "../../../config/config";
+import { CiImport } from "react-icons/ci";
 
 const InnerSubCategoryList = () => {
   const navigate = useNavigate();
@@ -112,6 +113,43 @@ const InnerSubCategoryList = () => {
       setIsDeletingSubCategory(false);
       setIsDeleteModalOpen(false);
     }
+  };
+
+  const exportToCSV = () => {
+    if (!innerSubCategories || innerSubCategories.length === 0) return;
+
+    // Define CSV header
+    const headers = ["ID", "Title", "Subtitle", "SubCategory", "Slug", "Image"];
+
+    // Format data rows
+    const rows = innerSubCategories.map((innerSub) => [
+      innerSub.id,
+      innerSub.title,
+      innerSub.subtitle || "",
+      subCategories.find((s) => s.id === innerSub.sub_cat_id)?.title || "N/A",
+      innerSub.slug || "",
+      innerSub.image || "",
+    ]);
+
+    // Combine headers and rows
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n");
+
+    // Create and download CSV file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `innersubcategories_${new Date().toISOString()}.csv`
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const columns = [
@@ -227,15 +265,24 @@ const InnerSubCategoryList = () => {
           </button>
         </div>
 
-        <div className="relative mb-6">
-          <input
-            type="text"
-            placeholder="Search category..."
-            value={globalFilter}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            className="w-full px-12 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F47954]"
-          />
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
+          <div className="relative w-full sm:w-auto">
+            <input
+              type="text"
+              placeholder="Search category..."
+              value={globalFilter}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              className="w-full px-12 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F47954]"
+            />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </div>
+          <button
+            onClick={exportToCSV}
+            className="w-full sm:w-auto px-4 py-2 bg-[#F47954] text-white rounded-md flex items-center justify-center"
+          >
+            <CiImport className="mr-2" size={20} />
+            Export Data
+          </button>
         </div>
 
         <div className="bg-white rounded-lg shadow-md">

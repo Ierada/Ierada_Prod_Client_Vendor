@@ -13,6 +13,12 @@ import {
   FaRegHeart,
   FaRegPlayCircle,
   FaStar,
+  FaFacebook,
+  FaTelegram,
+  FaLinkedin,
+  FaInstagram,
+  FaShareAlt,
+  FaWhatsapp,
 } from "react-icons/fa";
 import { MdStar, MdStarBorder, MdStarHalf } from "react-icons/md";
 import {
@@ -86,7 +92,8 @@ export default function ProductPage() {
   const [zoomVisible, setZoomVisible] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const zoomRef = useRef(null);
-  const [zoomLevel, setZoomLevel] = useState(2); // Adjust this for more/less zoom
+  const [zoomLevel, setZoomLevel] = useState(2);
+  const [isShareDropdownOpen, setIsShareDropdownOpen] = useState(false);
 
   const handleMouseMove = (e) => {
     if (!zoomRef.current) return;
@@ -434,13 +441,66 @@ export default function ProductPage() {
     return <div className="flex items-center text-xl">{stars}</div>;
   };
 
-  const handleWhatsAppShare = () => {
+  const handleShare = (platform) => {
     const shareText = `${productData?.name} - Check out this product!`;
     const currentUrl = window.location.href;
-    const whatsappLink = `https://wa.me/?text=${encodeURIComponent(
-      shareText + " " + currentUrl
-    )}`;
-    window.open(whatsappLink, "_blank");
+    const imageUrl =
+      mediaList?.[0]?.url || "https://via.placeholder.com/1200x630";
+    let shareLink = "";
+
+    switch (platform) {
+      case "whatsapp":
+        shareLink = `https://wa.me/?text=${encodeURIComponent(
+          shareText + " " + currentUrl
+        )}`;
+        break;
+      case "facebook":
+        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+          currentUrl
+        )}&picture=${encodeURIComponent(
+          imageUrl
+        )}&description=${encodeURIComponent(shareText)}`;
+        break;
+      case "telegram":
+        shareLink = `https://t.me/share/url?url=${encodeURIComponent(
+          currentUrl
+        )}&text=${encodeURIComponent(shareText)}`;
+        break;
+      case "linkedin":
+        shareLink = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(
+          currentUrl
+        )}&title=${encodeURIComponent(
+          productData?.name
+        )}&summary=${encodeURIComponent(shareText)}&source=${encodeURIComponent(
+          config.BRAND_NAME || "Ierada"
+        )}`;
+        break;
+      case "instagram":
+        // Instagram doesn't support direct sharing via URL, so copy the link
+        navigator.clipboard.writeText(currentUrl);
+        notifyOnSuccess("Link copied! Paste it in Instagram to share.");
+        setIsShareDropdownOpen(false);
+        return;
+      case "native":
+        if (navigator.share) {
+          navigator
+            .share({
+              title: productData?.name,
+              text: shareText,
+              url: currentUrl,
+            })
+            .catch((error) => console.error("Error sharing:", error));
+        } else {
+          notifyOnWarning("Web Share API not supported on this device.");
+        }
+        setIsShareDropdownOpen(false);
+        return;
+      default:
+        return;
+    }
+
+    window.open(shareLink, "_blank");
+    setIsShareDropdownOpen(false);
   };
 
   const tabs = ["General info", "Product Details", "Warranty Information"];
@@ -790,13 +850,65 @@ export default function ProductPage() {
                       )}
                     </div>
                   </div>
-                  <button
-                    onClick={handleWhatsAppShare}
-                    className="text-gray-600 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100"
-                    aria-label="Share product on WhatsApp"
-                  >
-                    <IoShareSocialOutline size={20} />
-                  </button>
+                  <div className="relative">
+                    <button
+                      onClick={() =>
+                        setIsShareDropdownOpen(!isShareDropdownOpen)
+                      }
+                      className="text-gray-600 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100"
+                      aria-label="Share product"
+                    >
+                      <FaShareAlt size={20} />
+                    </button>
+                    {isShareDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                        <button
+                          onClick={() => handleShare("whatsapp")}
+                          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <FaWhatsapp size={20} className="text-green-500" />
+                          WhatsApp
+                        </button>
+                        <button
+                          onClick={() => handleShare("facebook")}
+                          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <FaFacebook size={20} className="text-blue-600" />
+                          Facebook
+                        </button>
+                        <button
+                          onClick={() => handleShare("telegram")}
+                          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <FaTelegram size={20} className="text-blue-400" />
+                          Telegram
+                        </button>
+                        <button
+                          onClick={() => handleShare("linkedin")}
+                          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <FaLinkedin size={20} className="text-blue-700" />
+                          LinkedIn
+                        </button>
+                        <button
+                          onClick={() => handleShare("instagram")}
+                          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <FaInstagram size={20} className="text-pink-500" />
+                          Instagram (Copy Link)
+                        </button>
+                        {navigator.share && (
+                          <button
+                            onClick={() => handleShare("native")}
+                            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            <FaShareAlt size={20} className="text-gray-600" />
+                            More
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-1">

@@ -223,10 +223,10 @@ const AddEditProduct = () => {
         query.categoryId = formData.category_id;
       }
       if (formData.sub_category_id) {
-        query.subCategoryId = formData.sub_category_id;
+        query.subCatId = formData.sub_category_id;
       }
       if (formData.inner_sub_category_id) {
-        query.innerSubCategoryId = formData.inner_sub_category_id;
+        query.innerSubCatId = formData.inner_sub_category_id;
       }
 
       const res = await getAllFabricsByStatus(query);

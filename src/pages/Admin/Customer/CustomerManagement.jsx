@@ -390,7 +390,6 @@ const exportToCSV = (customers) => {
     "Name",
     "Email",
     "Phone",
-    "Otp",
     "Status",
     "Birthday",
     "Total Orders",
@@ -409,7 +408,6 @@ const exportToCSV = (customers) => {
         `"${customer.name}"`,
         `"${customer.email}"`,
         customer.phone,
-        customer.otp,
         customer.is_active ? "Active" : "Blocked",
         customer.birthday
           ? new Date(customer.birthday).toLocaleDateString()

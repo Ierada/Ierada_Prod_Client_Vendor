@@ -7,6 +7,8 @@ import { FaDownload, FaToolbox } from "react-icons/fa6";
 import { MdLocationPin } from "react-icons/md";
 import { MdEmail } from "react-icons/md";
 import { getAllTickets, addReply } from "../../../services/api.ticket";
+import { CiImport } from "react-icons/ci";
+import { notifyOnFail } from "../../../utils/notification/toast";
 
 const TicketCard = ({ ticket, setSelectedVendor }) => (
   <div className="p-4 bg-white border rounded-lg shadow-md">
@@ -568,6 +570,61 @@ const VendorSupport = () => {
     }
   };
 
+  const exportToCSV = () => {
+    if (!filteredTicket || filteredTicket.length === 0) {
+      notifyOnFail("No data available to export");
+      return;
+    }
+
+    // Define CSV header
+    const headers = [
+      "Ticket ID",
+      "Status",
+      "Subject",
+      "Description",
+      "Created At",
+      "Vendor Name",
+      "Email",
+      "Phone",
+      "Attachment",
+    ];
+
+    // Format data rows
+    const rows = filteredTicket.map((ticket) => [
+      ticket.id,
+      ticket.status,
+      ticket.subject || "",
+      ticket.description || "",
+      new Date(ticket.created_at).toLocaleString(),
+      `${ticket.user?.vendorDetails?.first_name || ""} ${
+        ticket.user?.vendorDetails?.last_name || ""
+      }`.trim(),
+      ticket.user?.email || "N/A",
+      ticket.user?.phone || "N/A",
+      ticket.attachment || "",
+    ]);
+
+    // Combine headers and rows
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n");
+
+    // Create and download CSV file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `vendor_tickets_${new Date().toISOString()}.csv`
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-4xl mx-auto">
@@ -658,6 +715,13 @@ const VendorSupport = () => {
                 className=" py-1 md:px-6 md:py-3 bg-[#F47954] text-sm font-medium text-white rounded-2xl w-full md:w-auto"
               >
                 Show Data
+              </button>
+              <button
+                onClick={exportToCSV}
+                className="py-1 md:px-6 md:py-3 bg-[#F47954] text-sm font-medium text-white rounded-2xl w-full md:w-auto flex items-center justify-center"
+              >
+                <CiImport className="mr-2" size={20} />
+                Export
               </button>
             </div>
           </div>

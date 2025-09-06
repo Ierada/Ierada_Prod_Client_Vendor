@@ -759,21 +759,32 @@ const CollectionsPage = () => {
   }, []);
 
   const renderProducts = useCallback(() => {
+    // if (isInitialLoading) {
+    //   return (
+    //     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+    //       {[...Array(12)].map((_, index) => (
+    //         <div
+    //           key={index}
+    //           className="border rounded-md overflow-hidden bg-gray-100 animate-pulse"
+    //         >
+    //           <div className="aspect-[512/682] w-full bg-gray-200" />
+    //           <div className="p-4 space-y-2">
+    //             <div className="h-4 bg-gray-200 rounded w-3/4" />
+    //             <div className="h-4 bg-gray-200 rounded w-1/2" />
+    //           </div>
+    //         </div>
+    //       ))}
+    //     </div>
+    //   );
+    // }
+
     if (isInitialLoading) {
       return (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-          {[...Array(12)].map((_, index) => (
-            <div
-              key={index}
-              className="border rounded-md overflow-hidden bg-gray-100 animate-pulse"
-            >
-              <div className="aspect-[512/682] w-full bg-gray-200" />
-              <div className="p-4 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4" />
-                <div className="h-4 bg-gray-200 rounded w-1/2" />
-              </div>
-            </div>
-          ))}
+        <div className="fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50">
+          <div className="flex flex-col items-center">
+            <Loader2 className="w-12 h-12 animate-spin text-gray-500" />
+            <p className="mt-4 text-gray-600 text-lg">Loading products...</p>
+          </div>
         </div>
       );
     }
