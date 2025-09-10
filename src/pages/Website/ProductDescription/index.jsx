@@ -895,7 +895,7 @@ export default function ProductPage() {
                           className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           <FaInstagram size={20} className="text-pink-500" />
-                          Instagram (Copy Link)
+                          Instagram
                         </button>
                         {navigator.share && (
                           <button

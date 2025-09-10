@@ -69,6 +69,7 @@ const AddEditProduct = () => {
     low_stock_threshold: "",
     platform_fee: 0,
     package_weight: 0,
+    volumetric_weight: 0,
     package_length: 0,
     package_width: 0,
     package_height: 0,
@@ -403,9 +404,12 @@ const AddEditProduct = () => {
     if (name === "name") {
       const newSlug = generateSlug(value);
       const newMetaTitle = `${value} | IERADA`;
+      const capitalizedValue = value.replace(/\b\w/g, (char) =>
+        char.toUpperCase()
+      );
       setFormData((prev) => ({
         ...prev,
-        [name]: value,
+        [name]: capitalizedValue,
         slug: newSlug,
         meta_title: newMetaTitle,
       }));
@@ -1007,7 +1011,7 @@ const AddEditProduct = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                className="mt-1 capitalize block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
               />
             </div>
 
@@ -1692,12 +1696,24 @@ const AddEditProduct = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Weight (g)
+                  Dead Weight (g)
                 </label>
                 <input
                   type="number"
                   name="package_weight"
                   value={formData.package_weight}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Volumetric Weight (g)
+                </label>
+                <input
+                  type="number"
+                  name="volumetric_weight"
+                  value={formData.volumetric_weight}
                   onChange={handleInputChange}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
                 />

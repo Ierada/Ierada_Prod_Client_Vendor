@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -39,6 +39,7 @@ import {
 } from "../../../utils/notification/toast";
 import { CSVLink } from "react-csv";
 import BulkActionModal from "../../../components/Admin/modals/BulkActionModal";
+import { debounce } from "../../../utils/debounce";
 
 const FilterSelect = ({ label, options, value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,7 +51,7 @@ const FilterSelect = ({ label, options, value, onChange }) => {
         className="w-full p-2 border rounded-md bg-white flex justify-between items-center cursor-pointer border-gray-500"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {value || label}
+        {options.find((opt) => opt.value === value)?.label || label}
         <svg
           className={`w-5 h-5 transition-transform ${
             isOpen ? "rotate-180" : ""
@@ -71,16 +72,16 @@ const FilterSelect = ({ label, options, value, onChange }) => {
 
       {isOpen && (
         <div className="absolute w-full mt-1 bg-white border rounded-md shadow-md z-10 max-h-32 overflow-y-auto">
-          {options?.map((option, index) => (
+          {options?.map((option) => (
             <div
-              key={index}
+              key={option.value}
               className="px-2 py-1 hover:bg-gray-100 cursor-pointer"
               onClick={() => {
-                onChange({ target: { value: option } });
+                onChange({ target: { value: option.value } });
                 setIsOpen(false);
               }}
             >
-              {option}
+              {option.label}
             </div>
           ))}
         </div>
@@ -125,25 +126,24 @@ const Product = () => {
     category_name: "",
     stock: "",
     visibility: "",
+    vendor_id: "",
   });
   const [categoryOptions, setCategoryOptions] = useState([]);
+  const [vendorOptions, setVendorOptions] = useState([]);
   const [visibilityOptions, setVisibilityOptions] = useState([
     "All",
     "Published",
     "Hidden",
   ]);
   const [isLoading, setIsLoading] = useState(false);
-
-  // New state for row selection
   const [rowSelection, setRowSelection] = useState({});
   const [isBulkActionModalOpen, setIsBulkActionModalOpen] = useState(false);
   const [isProcessingBulkAction, setIsProcessingBulkAction] = useState(false);
-  const [csvData, setCsvData] = useState([]);
+  const [csvData, setCsvData] = useState({ headers: [], data: [] });
   const csvLinkRef = React.useRef();
-
-  // Added for pagination limit options
+  const [csvDataAll, setCsvDataAll] = useState({ headers: [], data: [] });
+  const csvLinkAllRef = React.useRef();
   const limitOptions = [5, 10, 25, 50, 100];
-
   const navigate = useNavigate();
 
   const fetchProducts = async (
@@ -161,6 +161,7 @@ const Product = () => {
         category: filters.category_name || "",
         stock: filters.stock || "",
         visibility: filters.visibility || "",
+        vendor_id: filters.vendor_id || "",
       });
 
       const response = await getAllProducts(queryParams.toString());
@@ -174,27 +175,44 @@ const Product = () => {
         totalPages: response.pagination.totalPages,
       });
 
-      // Prepare CSV data when products are loaded
-      prepareCSVData(response?.data || []);
+      // Prepare CSV data for current page
+      prepareCsvData(response?.data || [], false);
 
-      // Store category options for dropdown
+      // Set category options
       if (response.filters && response.filters.categories) {
         setCategoryOptions(response.filters.categories);
+      }
+
+      // Format and set vendor options
+      if (response.filters && response.filters.vendors) {
+        const formattedVendors = response.filters.vendors.map((vendor) => ({
+          value: vendor.id,
+          label: vendor.name || "N/A",
+        }));
+        setVendorOptions(formattedVendors);
       }
     } catch (error) {
       console.error("Error fetching products:", error);
       setProducts([]);
       setDisplayedData([]);
+      notifyOnFail("Failed to fetch products");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Improved CSV data preparation with all major fields
-  const prepareCSVData = (productsData) => {
+  // Debounced fetchProducts for search
+  const debouncedFetchProducts = useCallback(
+    debounce((page, filters, searchTerm, limit) => {
+      fetchProducts(page, filters, searchTerm, limit);
+    }, 500),
+    []
+  );
+
+  // Prepare CSV data (unchanged)
+  const prepareCsvData = (productsData, isAll = false) => {
     if (!productsData || productsData.length === 0) return;
 
-    // Define CSV headers based on the API response
     const headers = [
       { label: "ID", key: "id" },
       { label: "Product Name", key: "name" },
@@ -213,7 +231,8 @@ const Product = () => {
       { label: "HSN Code", key: "hsn_code" },
       { label: "Barcode", key: "barcode" },
       { label: "GST (%)", key: "gst" },
-      { label: "Package Weight", key: "package_weight" },
+      { label: "Dead Weight", key: "package_weight" },
+      { label: "Volumetric Weight", key: "volumetric_weight" },
       { label: "Package Height", key: "package_height" },
       { label: "Package Length", key: "package_length" },
       { label: "Package Width", key: "package_width" },
@@ -222,7 +241,6 @@ const Product = () => {
       { label: "Created At", key: "created_at" },
     ];
 
-    // Format data for CSV
     const formattedData = productsData.map((product) => ({
       id: product.id,
       name: product.name,
@@ -242,6 +260,7 @@ const Product = () => {
       barcode: product.barcode || "",
       gst: product.gst || 0,
       package_weight: product.package_weight || 0,
+      volumetric_weight: product.volumetric_weight || 0,
       package_height: product.package_height || 0,
       package_length: product.package_length || 0,
       package_width: product.package_width || 0,
@@ -250,17 +269,24 @@ const Product = () => {
       created_at: new Date(product.created_at).toLocaleString(),
     }));
 
-    setCsvData({
-      headers: headers,
-      data: formattedData,
-    });
+    if (isAll) {
+      setCsvDataAll({ headers, data: formattedData });
+    } else {
+      setCsvData({ headers, data: formattedData });
+    }
   };
 
+  // Initial fetch
   useEffect(() => {
     fetchProducts(pagination.page, filters, searchTerm);
   }, []);
 
-  // Handle bulk action for visibility update
+  // Handle search input change
+  useEffect(() => {
+    debouncedFetchProducts(1, filters, searchTerm, pagination.limit);
+  }, [searchTerm, filters, pagination.limit, debouncedFetchProducts]);
+
+  // Handle bulk visibility update (unchanged)
   const handleBulkVisibilityUpdate = async (newVisibility) => {
     setIsProcessingBulkAction(true);
     try {
@@ -281,7 +307,6 @@ const Product = () => {
           `Successfully updated ${response.updatedCount} product(s) visibility to ${newVisibility}`
         );
 
-        // Update local state to reflect changes
         setDisplayedData((prevData) =>
           prevData.map((product) =>
             selectedIds.includes(product.id)
@@ -290,7 +315,6 @@ const Product = () => {
           )
         );
 
-        // Clear selection after successful update
         setRowSelection({});
       } else {
         notifyOnFail(response.message || "Failed to update products");
@@ -304,12 +328,10 @@ const Product = () => {
     }
   };
 
-  // Get count of selected rows
   const selectedRowCount = Object.keys(rowSelection).length;
 
   const columns = useMemo(
     () => [
-      // Add checkbox column for row selection
       {
         id: "select",
         header: ({ table }) => (
@@ -364,6 +386,11 @@ const Product = () => {
         header: "Product Name",
         accessorKey: "name",
         cell: ({ row }) => <p>{row.original.name}</p>,
+      },
+      {
+        header: "Vendor",
+        accessorKey: "vendor_name",
+        cell: ({ row }) => <p>{row.original.vendor_name || "N/A"}</p>,
       },
       {
         header: "Category",
@@ -512,7 +539,6 @@ const Product = () => {
     }
   };
 
-  // Export to CSV handler
   const handleExportCSV = () => {
     if (csvLinkRef.current && csvData.data && csvData.data.length > 0) {
       csvLinkRef.current.link.click();
@@ -521,7 +547,35 @@ const Product = () => {
     }
   };
 
-  // Keep other existing functions (openModal, closeModal, handleDelete, etc.)
+  const handleExportAllCSV = async () => {
+    setIsLoading(true);
+    try {
+      const queryParams = new URLSearchParams({
+        page: 1,
+        limit: pagination.total,
+        search: searchTerm,
+        category: filters.category_name || "",
+        stock: filters.stock || "",
+        visibility: filters.visibility || "",
+        vendor_id: filters.vendor_id || "",
+      });
+
+      const response = await getAllProducts(queryParams.toString());
+      prepareCsvData(response?.data || [], true);
+
+      setTimeout(() => {
+        if (csvLinkAllRef.current) {
+          csvLinkAllRef.current.link.click();
+        }
+      }, 100);
+    } catch (error) {
+      console.error("Error fetching all products for export:", error);
+      notifyOnFail("Failed to export all products");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const openModal = (product) => {
     setModalMode(product);
     setShowModal(true);
@@ -546,7 +600,7 @@ const Product = () => {
 
       if (response.status === 1) {
         setIsDeleteModalOpen(false);
-        await fetchProducts();
+        await fetchProducts(pagination.page, filters, searchTerm);
       }
     } catch (error) {
       console.error("Error deleting product:", error);
@@ -565,17 +619,12 @@ const Product = () => {
       category_name: "",
       stock: "",
       visibility: "",
+      vendor_id: "",
     });
     setSearchTerm("");
-    fetchProducts(1, {}, ""); // Reset to first page with no filters
+    fetchProducts(1, {}, "");
   };
 
-  // Apply filters
-  const handleShowData = () => {
-    fetchProducts(1, filters, searchTerm); // Reset to first page with new filters
-  };
-
-  // Updated pagination handlers
   const handlePageChange = (newPage) => {
     fetchProducts(newPage, filters, searchTerm, pagination.limit);
   };
@@ -597,7 +646,6 @@ const Product = () => {
     setSearchTerm(e.target.value);
   };
 
-  // Open bulk action modal
   const openBulkActionModal = () => {
     if (selectedRowCount === 0) {
       notifyOnFail("Please select at least one product");
@@ -606,9 +654,8 @@ const Product = () => {
     setIsBulkActionModalOpen(true);
   };
 
-  // Get visible page numbers for pagination
   const getVisiblePageNumbers = () => {
-    const maxButtons = 5; // Maximum number of page buttons to show
+    const maxButtons = 5;
     const { page, totalPages } = pagination;
 
     if (totalPages <= maxButtons) {
@@ -670,24 +717,49 @@ const Product = () => {
             className="w-full sm:w-auto px-4 py-2 bg-[#F47954] text-white rounded-md flex items-center justify-center"
           >
             <Download className="mr-2" size={20} />
-            Export CSV
+            Export Current
           </button>
 
-          {/* Hidden CSVLink component */}
+          <button
+            onClick={handleExportAllCSV}
+            className="w-full sm:w-auto px-4 py-2 bg-[#F47954] text-white rounded-md flex items-center justify-center"
+          >
+            <Download className="mr-2" size={20} />
+            Export All
+          </button>
+
           {csvData.data && csvData.headers && (
             <CSVLink
               data={csvData.data}
               headers={csvData.headers}
-              filename={`Products_${new Date().toLocaleDateString()}.csv`}
+              filename={`Products_Page_${
+                pagination.page
+              }_${new Date().toLocaleDateString()}.csv`}
               className="hidden"
               ref={csvLinkRef}
+            />
+          )}
+
+          {csvDataAll.data && csvDataAll.headers && (
+            <CSVLink
+              data={csvDataAll.data}
+              headers={csvDataAll.headers}
+              filename={`All_Products_${new Date().toLocaleDateString()}.csv`}
+              className="hidden"
+              ref={csvLinkAllRef}
             />
           )}
         </div>
       </div>
 
       <div className="bg-white rounded-md px-3 py-4 mb-5">
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
+          <FilterSelect
+            label="Vendor"
+            options={vendorOptions}
+            value={filters.vendor_id}
+            onChange={(e) => handleFilterChange("vendor_id", e.target.value)}
+          />
           <FilterSelect
             label="Category"
             options={categoryOptions}
@@ -709,18 +781,12 @@ const Product = () => {
           />
         </div>
 
-        <div className="flex gap-3 col-span-2 mt-3 md:justify-end md:-mt-11">
+        <div className="flex gap-3 mt-3 md:justify-end">
           <button
             className="px-6 py-2 bg-gray-300 text-[#4C4C1F] text-sm font-medium rounded-2xl"
             onClick={clearFilters}
           >
             Clear
-          </button>
-          <button
-            className="px-6 py-3 bg-[#F47954] text-sm font-medium text-white rounded-2xl"
-            onClick={handleShowData}
-          >
-            Show Data
           </button>
         </div>
       </div>
@@ -772,7 +838,6 @@ const Product = () => {
                 {displayedData.length > 0 ? (
                   displayedData.map((product, index) => (
                     <tr key={product.id} className="border-b hover:bg-gray-50">
-                      {/* Checkbox column */}
                       <td className="px-6 py-4 text-[#1C2A53] text-sm">
                         <div className="px-1">
                           <input
@@ -788,18 +853,12 @@ const Product = () => {
                           />
                         </div>
                       </td>
-
-                      {/* Serial number */}
                       <td className="px-6 py-4 text-[#1C2A53] text-sm">
                         {(pagination.page - 1) * pagination.limit + index + 1}
                       </td>
-
-                      {/* Product ID */}
                       <td className="px-6 py-4 text-[#1C2A53] text-sm">
                         {product?.custom_id}
                       </td>
-
-                      {/* Product Photo */}
                       <td className="px-6 py-4 text-[#1C2A53] text-sm">
                         {product.image ? (
                           <img
@@ -813,38 +872,27 @@ const Product = () => {
                           </div>
                         )}
                       </td>
-
-                      {/* Product Name */}
                       <td className="px-6 py-4 text-[#1C2A53] text-sm">
                         {product.name}
                       </td>
-
-                      {/* Category */}
+                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
+                        {product.vendor_name}
+                      </td>
                       <td className="px-6 py-4 text-[#1C2A53] text-sm">
                         {product.category || "N/A"}
                       </td>
-
-                      {/* Sub Category */}
                       <td className="px-6 py-4 text-[#1C2A53] text-sm">
                         {product.sub_category || "N/A"}
                       </td>
-
-                      {/* MRP */}
                       <td className="px-6 py-4 text-[#1C2A53] text-sm">
                         ₹{product.original_price?.toLocaleString("en-IN")}
                       </td>
-
-                      {/* Shipping Charges */}
                       <td className="px-6 py-4 text-[#1C2A53] text-sm">
                         {product.shipping_charge}
                       </td>
-
-                      {/* Discount Price */}
                       <td className="px-6 py-4 text-[#1C2A53] text-sm">
                         {product.discount_price}
                       </td>
-
-                      {/* Status */}
                       <td className="px-6 py-4 text-[#1C2A53] text-sm">
                         <button
                           onClick={() => handleStatusToggle(product.id)}
@@ -857,18 +905,12 @@ const Product = () => {
                           {product.visibility}
                         </button>
                       </td>
-
-                      {/* Stock */}
                       <td className="px-6 py-4 text-[#1C2A53] text-sm">
                         {product.stock}
                       </td>
-
-                      {/* Created At */}
                       <td className="px-6 py-4 text-[#1C2A53] text-sm">
                         {new Date(product.created_at).toLocaleString()}
                       </td>
-
-                      {/* Actions */}
                       <td className="px-6 py-4 text-[#1C2A53] text-sm">
                         <div className="flex space-x-2">
                           <button
@@ -913,7 +955,6 @@ const Product = () => {
         )}
       </div>
 
-      {/* Enhanced pagination section */}
       <div className="bg-white px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-t">
         <div className="flex items-center mb-4 sm:mb-0">
           <span className="text-sm text-gray-700">
@@ -998,7 +1039,6 @@ const Product = () => {
         </div>
       </div>
 
-      {/* Product Modals */}
       {showModal && (
         <ProductModal
           isOpen={showModal}
@@ -1007,7 +1047,6 @@ const Product = () => {
         />
       )}
 
-      {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
@@ -1017,7 +1056,6 @@ const Product = () => {
         isDeleting={isDeletingProduct}
       />
 
-      {/* Bulk Action Modal */}
       <BulkActionModal
         isOpen={isBulkActionModalOpen}
         onClose={() => setIsBulkActionModalOpen(false)}

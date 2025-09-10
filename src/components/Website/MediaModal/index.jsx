@@ -30,45 +30,48 @@ const MediaModal = ({ isOpen, onClose, media, activeIndex }) => {
   }, [isOpen, activeIndex, resetZoom]); // Depend on resetZoom
 
   // Clamp translation values to keep image within bounds
-  const clampTranslate = useCallback((newTranslateX, newTranslateY, currentScale) => {
-    if (!imageRef.current || !containerRef.current || currentScale === 1) {
-      return { x: 0, y: 0 };
-    }
+  const clampTranslate = useCallback(
+    (newTranslateX, newTranslateY, currentScale) => {
+      if (!imageRef.current || !containerRef.current || currentScale === 1) {
+        return { x: 0, y: 0 };
+      }
 
-    const imageRect = imageRef.current.getBoundingClientRect();
-    const containerRect = containerRef.current.getBoundingClientRect();
+      const imageRect = imageRef.current.getBoundingClientRect();
+      const containerRect = containerRef.current.getBoundingClientRect();
 
-    // Calculate effective scaled dimensions of the image within the container
-    // accounting for object-contain.
-    const naturalAspectRatio = imageRef.current.naturalWidth / imageRef.current.naturalHeight;
-    const containerAspectRatio = containerRect.width / containerRect.height;
+      // Calculate effective scaled dimensions of the image within the container
+      // accounting for object-contain.
+      const naturalAspectRatio =
+        imageRef.current.naturalWidth / imageRef.current.naturalHeight;
+      const containerAspectRatio = containerRect.width / containerRect.height;
 
-    let displayWidth, displayHeight;
+      let displayWidth, displayHeight;
 
-    if (naturalAspectRatio > containerAspectRatio) {
-      // Image is wider than container, height is constrained
-      displayWidth = containerRect.width;
-      displayHeight = containerRect.width / naturalAspectRatio;
-    } else {
-      // Image is taller than container, width is constrained
-      displayHeight = containerRect.height;
-      displayWidth = containerRect.height * naturalAspectRatio;
-    }
+      if (naturalAspectRatio > containerAspectRatio) {
+        // Image is wider than container, height is constrained
+        displayWidth = containerRect.width;
+        displayHeight = containerRect.width / naturalAspectRatio;
+      } else {
+        // Image is taller than container, width is constrained
+        displayHeight = containerRect.height;
+        displayWidth = containerRect.height * naturalAspectRatio;
+      }
 
-    const scaledWidth = displayWidth * currentScale;
-    const scaledHeight = displayHeight * currentScale;
+      const scaledWidth = displayWidth * currentScale;
+      const scaledHeight = displayHeight * currentScale;
 
-    // Calculate the maximum allowed translation based on the difference
-    // between scaled size and container size, centered.
-    const maxX = Math.max(0, (scaledWidth - containerRect.width) / 2);
-    const maxY = Math.max(0, (scaledHeight - containerRect.height) / 2);
+      // Calculate the maximum allowed translation based on the difference
+      // between scaled size and container size, centered.
+      const maxX = Math.max(0, (scaledWidth - containerRect.width) / 2);
+      const maxY = Math.max(0, (scaledHeight - containerRect.height) / 2);
 
-    const clampedX = Math.max(-maxX, Math.min(maxX, newTranslateX));
-    const clampedY = Math.max(-maxY, Math.min(maxY, newTranslateY));
+      const clampedX = Math.max(-maxX, Math.min(maxX, newTranslateX));
+      const clampedY = Math.max(-maxY, Math.min(maxY, newTranslateY));
 
-    return { x: clampedX, y: clampedY };
-  }, []);
-
+      return { x: clampedX, y: clampedY };
+    },
+    []
+  );
 
   const handleWheel = useCallback(
     (e) => {
@@ -96,11 +99,15 @@ const MediaModal = ({ isOpen, onClose, media, activeIndex }) => {
       const originalFocalY = mouseY / scale;
 
       // Calculate new translation to keep the focal point under the cursor
-      let newTranslateX = translate.x + (originalFocalX * (scale - newScale));
-      let newTranslateY = translate.y + (originalFocalY * (scale - newScale));
+      let newTranslateX = translate.x + originalFocalX * (scale - newScale);
+      let newTranslateY = translate.y + originalFocalY * (scale - newScale);
 
       // Apply clamping immediately after calculating new translation
-      const clampedTranslate = clampTranslate(newTranslateX, newTranslateY, newScale);
+      const clampedTranslate = clampTranslate(
+        newTranslateX,
+        newTranslateY,
+        newScale
+      );
 
       setScale(newScale);
       setTranslate(clampedTranslate);
@@ -124,8 +131,12 @@ const MediaModal = ({ isOpen, onClose, media, activeIndex }) => {
       if (scale === 1) return; // Only allow drag when zoomed
       setIsDragging(true);
 
-      const clientX = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
-      const clientY = e.type.includes("touch") ? e.touches[0].clientY : e.clientY;
+      const clientX = e.type.includes("touch")
+        ? e.touches[0].clientX
+        : e.clientX;
+      const clientY = e.type.includes("touch")
+        ? e.touches[0].clientY
+        : e.clientY;
 
       setOriginOffset({
         x: clientX - translate.x,
@@ -141,14 +152,22 @@ const MediaModal = ({ isOpen, onClose, media, activeIndex }) => {
     (e) => {
       if (!isDragging || scale === 1) return;
 
-      const clientX = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
-      const clientY = e.type.includes("touch") ? e.touches[0].clientY : e.clientY;
+      const clientX = e.type.includes("touch")
+        ? e.touches[0].clientX
+        : e.clientX;
+      const clientY = e.type.includes("touch")
+        ? e.touches[0].clientY
+        : e.clientY;
 
       let newTranslateX = clientX - originOffset.x;
       let newTranslateY = clientY - originOffset.y;
 
       // Clamp translation during drag
-      const clampedTranslate = clampTranslate(newTranslateX, newTranslateY, scale);
+      const clampedTranslate = clampTranslate(
+        newTranslateX,
+        newTranslateY,
+        scale
+      );
 
       setTranslate(clampedTranslate);
     },
@@ -227,14 +246,12 @@ const MediaModal = ({ isOpen, onClose, media, activeIndex }) => {
                 ref={imageRef}
                 src={mediaItem.url}
                 alt="Zoomable media"
-                className="rounded-lg shadow-lg select-none pointer-events-none" // pointer-events-none ensures events go to parent
+                className="rounded-lg shadow-lg max-h-[80vh] object-contain select-none pointer-events-none"
                 style={{
                   transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
-                  cursor: scale > 1 ? (isDragging ? "grabbing" : "grab") : "zoom-in",
-                  transition: isDragging ? 'none' : 'transform 0.15s ease-out', // Slightly slower ease for zoom
-                  objectFit: "contain", // Ensures initial fit
-                  maxWidth: '100%', // Important for initial image sizing
-                  maxHeight: '100%', // Important for initial image sizing
+                  cursor:
+                    scale > 1 ? (isDragging ? "grabbing" : "grab") : "zoom-in",
+                  transition: isDragging ? "none" : "transform 0.15s ease-out", // Slightly slower ease for zoom
                 }}
                 draggable={false}
                 // Stop propagation only for events that would interfere with modal

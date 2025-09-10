@@ -128,9 +128,17 @@ const ProductModal = ({ isOpen, onClose, product }) => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Package Weight
+                      Dead Weight
                     </label>
-                    <p className="text-gray-900">{product.package_weight} kg</p>
+                    <p className="text-gray-900">{product.package_weight} g</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Volumetric Weight
+                    </label>
+                    <p className="text-gray-900">
+                      {product.volumetric_weight} g
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
