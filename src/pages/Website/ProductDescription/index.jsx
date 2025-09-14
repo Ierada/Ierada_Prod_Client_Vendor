@@ -309,8 +309,8 @@ export default function ProductPage() {
 
   const currentPrice = selectedSize
     ? {
-        original: selectedSize.original_price,
-        discounted: selectedSize.discounted_price,
+        original: Math.round(selectedSize.original_price),
+        discounted: Math.round(selectedSize.discounted_price),
         discount: Math.round(
           ((selectedSize.original_price - selectedSize.discounted_price) /
             selectedSize.original_price) *
@@ -318,8 +318,8 @@ export default function ProductPage() {
         ),
       }
     : {
-        original: productData?.original_price,
-        discounted: productData?.discounted_price,
+        original: Math.round(productData?.original_price),
+        discounted: Math.round(productData?.discounted_price),
         discount: Math.round(
           ((productData?.original_price - productData?.discounted_price) /
             productData?.original_price) *

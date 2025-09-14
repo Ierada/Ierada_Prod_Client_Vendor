@@ -990,8 +990,8 @@ const AddEditProduct = () => {
   );
 
   return (
-    <div className="flex flex-col sm:flex-row h-screen">
-      <div className="container px-4 py-2 space-y-6 max-w-[80%] max-h-[100%] flex-1 overflow-y-scroll scrollbar-hide">
+    <div className="h-screen">
+      <div className="container px-4 py-2 space-y-6 max-h-[100%]">
         <h1 className="text-3xl font-bold mb-8 text-gray-800">
           {isEditMode ? "Edit Product" : "Create a New Product"}
         </h1>

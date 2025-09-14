@@ -9,6 +9,7 @@ import {
   User,
   MapPin,
   Bell,
+  Mic,
 } from "lucide-react";
 import logoWhite from "/assets/logo/logo_white.svg";
 import config from "../../config/config";
@@ -318,6 +319,9 @@ const Header = () => {
   const [headerCounts, setHeaderCounts] = useState({});
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+
   const searchRef = useRef(null);
   const categoryTimeoutRef = useRef(null);
   const searchResultsRef = useRef(null);
@@ -358,6 +362,54 @@ const Header = () => {
     setHoveredInnerSubcategory(null);
     setIsMobileMenuOpen(false);
   }, [location]);
+
+  // initialization for speech recognition
+  useEffect(() => {
+    if (
+      !("SpeechRecognition" in window) &&
+      !("webkitSpeechRecognition" in window)
+    ) {
+      console.warn("Web Speech API not supported");
+      return;
+    }
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.continuous = false; // Stop after one phrase
+    recognitionRef.current.interimResults = true; // Show live preview
+    recognitionRef.current.lang = "en-US"; // Default; can detect/auto-set for multilingual
+
+    recognitionRef.current.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result[0].transcript)
+        .join("");
+      setSearchQuery(transcript); // Update your search input
+    };
+
+    recognitionRef.current.onend = () => setIsListening(false);
+    recognitionRef.current.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+      setIsListening(false);
+    };
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
+
+  // Function to toggle listening
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
 
   const handleNavigation = (to) => {
     setHoveredCategory(null);
@@ -656,6 +708,15 @@ const Header = () => {
                 onChange={handleSearchChange}
                 className="bg-white text-black placeholder-black flex-grow outline-none border-none ring-0 focus:ring-0"
               />
+              <button
+                type="button"
+                onClick={toggleListening}
+                className="text-black"
+              >
+                <Mic
+                  className={`h-5 w-5 ${isListening ? "text-red-500" : ""}`}
+                />
+              </button>
             </form>
 
             {showSearchResults && (

@@ -780,7 +780,7 @@ const CollectionsPage = () => {
 
     if (isInitialLoading) {
       return (
-        <div className="fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
           <div className="flex flex-col items-center">
             <Loader2 className="w-12 h-12 animate-spin text-gray-500" />
             <p className="mt-4 text-gray-600 text-lg">Loading products...</p>
