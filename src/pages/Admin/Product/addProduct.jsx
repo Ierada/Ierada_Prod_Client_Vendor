@@ -774,6 +774,11 @@ const AddEditProduct = () => {
         return;
       }
 
+      if (!formData.hsn.trim()) {
+        notifyOnFail("HSN is required for the product.");
+        return;
+      }
+
       // Validate SKU for variations
       if (formData.is_variation) {
         for (const variation of variations) {
