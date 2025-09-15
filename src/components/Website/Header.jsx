@@ -65,7 +65,7 @@ const CategoryDropdown = ({
                       to={`${baseUrl}/collection/subcategory/${
                         sub.slug || sub.name
                       }`}
-                      className="font-semibold text-sm font-Lato hover:text-olive-600 block mb-1 transition-colors duration-200" // Reduced mb
+                      className="font-semibold text-sm font-Lato hover:text-olive-600 block mb-1 transition-colors duration-200"
                     >
                       {sub.name || sub.title}
                     </Link>
@@ -73,8 +73,6 @@ const CategoryDropdown = ({
                     {/* Inner Subcategories */}
                     {innerSubcategories.length > 0 && (
                       <ul className="space-y-0.5">
-                        {" "}
-                        {/* Reduced space-y */}
                         {innerToShow.map((innerSub, innerIndex) => (
                           <li
                             key={`inner-${innerIndex}`}
@@ -95,7 +93,6 @@ const CategoryDropdown = ({
                             </Link>
                           </li>
                         ))}
-                        {/* "See More" for inner subcategories */}
                         {hasMoreInner && (
                           <li>
                             <Link
@@ -173,10 +170,9 @@ const ProfileDropdown = ({
   const handleMouseLeave = () => {
     timeoutId = setTimeout(() => {
       setIsOpen(false);
-    }, 300); // 300ms delay before closing
+    }, 300);
   };
 
-  // Clean up timeouts when component unmounts
   useEffect(() => {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -256,7 +252,6 @@ const ProfileDropdown = ({
                 className="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 rounded-md transition-colors duration-200 flex items-center gap-2"
                 onClick={() => setIsOpen(false)}
               >
-                {/* <User className="h-4 w-4" /> */}
                 Logout
               </Link>
             </div>
@@ -273,14 +268,14 @@ const SearchResults = ({ results, onSelect, searchResultsRef }) => {
 
   return (
     <div
-      ref={searchResultsRef} // Attach the ref
-      className="absolute top-full left-0 right-0 bg-white shadow-lg rounded-md mt-1 max-h-64 overflow-y-auto z-[100]" // Increased z-index
+      ref={searchResultsRef}
+      className="absolute top-full left-0 right-0 bg-white shadow-lg rounded-md mt-1 max-h-64 overflow-y-auto z-[100]"
     >
       {results.map((product) => (
         <div
           key={product.id}
           onClick={(e) => {
-            e.stopPropagation(); // Prevent click from bubbling
+            e.stopPropagation();
             onSelect(product);
           }}
           className="flex items-center p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100"
@@ -302,6 +297,53 @@ const SearchResults = ({ results, onSelect, searchResultsRef }) => {
   );
 };
 
+// Voice Search Popup Component
+const VoiceSearchPopup = ({ isListening, toggleListening, searchQuery }) => {
+  return (
+    <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200] transition-opacity duration-300 ${isListening ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl transform transition-all duration-300">
+        <div className="flex flex-col items-center gap-4">
+          {/* Animated Microphone Icon */}
+          <div className={`relative p-4 rounded-full ${isListening ? 'bg-red-100 animate-pulse' : 'bg-gray-100'}`}>
+            <Mic className={`h-8 w-8 ${isListening ? 'text-red-500' : 'text-gray-500'}`} />
+            {isListening && (
+              <div className="absolute inset-0 border-2 border-red-500 rounded-full animate-ping"></div>
+            )}
+          </div>
+          
+          {/* Status Text */}
+          <p className="text-lg font-medium text-gray-800">
+            {isListening ? 'Listening...' : 'Voice Search Stopped'}
+          </p>
+          
+          {/* Live Transcript */}
+          <div className="w-full bg-gray-100 rounded-lg p-3 min-h-[60px] flex items-center justify-center">
+            <p className="text-gray-600 text-center">
+              {searchQuery || 'Say something to search...'}
+            </p>
+          </div>
+          
+          {/* Buttons */}
+          <div className="flex gap-4">
+            <button
+              onClick={toggleListening}
+              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+            >
+              {isListening ? 'Stop' : 'Restart'}
+            </button>
+            <button
+              onClick={toggleListening}
+              className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Main Header Component
 const Header = () => {
   const location = useLocation();
@@ -318,10 +360,8 @@ const Header = () => {
   const [hoveredInnerSubcategory, setHoveredInnerSubcategory] = useState(null);
   const [headerCounts, setHeaderCounts] = useState({});
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
-
   const searchRef = useRef(null);
   const categoryTimeoutRef = useRef(null);
   const searchResultsRef = useRef(null);
@@ -363,42 +403,66 @@ const Header = () => {
     setIsMobileMenuOpen(false);
   }, [location]);
 
-  // initialization for speech recognition
-  useEffect(() => {
-    if (
-      !("SpeechRecognition" in window) &&
-      !("webkitSpeechRecognition" in window)
-    ) {
-      console.warn("Web Speech API not supported");
-      return;
+  const handleSearchChange = async (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (query.length > 1) {
+      const results = await searchProducts(query);
+      setSearchResults(results);
+      setShowSearchResults(true);
+    } else {
+      setSearchResults([]);
+      setShowSearchResults(false);
     }
+  };
 
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.continuous = false; // Stop after one phrase
-    recognitionRef.current.interimResults = true; // Show live preview
-    recognitionRef.current.lang = "en-US"; // Default; can detect/auto-set for multilingual
+  // Initialization for speech recognition
+  useEffect(() => {
+  if (
+    !("SpeechRecognition" in window) &&
+    !("webkitSpeechRecognition" in window)
+  ) {
+    console.warn("Web Speech API not supported");
+    return;
+  }
 
-    recognitionRef.current.onresult = (event) => {
-      const transcript = Array.from(event.results)
-        .map((result) => result[0].transcript)
-        .join("");
-      setSearchQuery(transcript); // Update your search input
-    };
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognitionRef.current = new SpeechRecognition();
+  recognitionRef.current.continuous = false;
+  recognitionRef.current.interimResults = true;
+  recognitionRef.current.lang = "en-US";
 
-    recognitionRef.current.onend = () => setIsListening(false);
-    recognitionRef.current.onerror = (event) => {
-      console.error("Speech recognition error:", event.error);
-      setIsListening(false);
-    };
+  recognitionRef.current.onresult = (event) => {
+    const transcript = Array.from(event.results)
+      .map((result) => result[0].transcript)
+      .join("");
+    setSearchQuery(transcript);
+  };
 
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
-  }, []);
+  recognitionRef.current.onend = () => {
+    setIsListening(false);
+    if (searchQuery.trim()) {
+      // Create a synthetic event to mimic input change
+      const syntheticEvent = {
+        target: { value: searchQuery },
+      };
+      handleSearchChange(syntheticEvent);
+    }
+  };
+
+  recognitionRef.current.onerror = (event) => {
+    console.error("Speech recognition error:", event.error);
+    setIsListening(false);
+  };
+
+  return () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  };
+}, [searchQuery, handleSearchChange]);
 
   // Function to toggle listening
   const toggleListening = () => {
@@ -420,18 +484,14 @@ const Header = () => {
     navigate(to);
   };
 
-  // location model functionality
-  const [currentLocation, setCurrentLocation] = useState(
-    "Select your location"
-  );
+  // Location model functionality
+  const [currentLocation, setCurrentLocation] = useState("Select your location");
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
-  // Fetch location on component mount
   useEffect(() => {
     getCurrentLocation();
   }, []);
 
-  // Function to fetch the current location
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
       setCurrentLocation("Geolocation not supported");
@@ -466,15 +526,12 @@ const Header = () => {
                 data.results[0]?.formatted_address.split(",");
 
               if (locationStrings.length >= 3) {
-                // get first word of the street/area
                 const firstWord =
                   locationStrings[locationStrings.length - 4]?.trim();
-                // city is usually the 3rd segment
                 const city =
                   locationStrings[locationStrings.length - 3]?.trim();
                 setCurrentLocation(`${firstWord}, ${city}`);
               } else {
-                // fallback to full address if unexpected format
                 setCurrentLocation(data.results[0]?.formatted_address);
               }
             }
@@ -498,12 +555,10 @@ const Header = () => {
     );
   };
 
-  // Open the Location Modal
   const openLocationModal = () => {
     setIsLocationModalOpen(true);
   };
 
-  // Close the Location Modal
   const closeLocationModal = () => {
     setIsLocationModalOpen(false);
   };
@@ -537,7 +592,6 @@ const Header = () => {
     }, 100);
   };
 
-  // Handle profile dropdown mouse events
   const handleProfileMouseEnter = () => {
     setShowProfileDropdown(true);
   };
@@ -546,7 +600,6 @@ const Header = () => {
     setShowProfileDropdown(false);
   };
 
-  // Handle click outside profile dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -566,7 +619,6 @@ const Header = () => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  // Fetch categories on mount
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -579,7 +631,6 @@ const Header = () => {
     loadCategories();
   }, []);
 
-  // Handle click outside search results
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -592,7 +643,7 @@ const Header = () => {
       }
     };
 
-    document.addEventListener("click", handleClickOutside); // Changed from mousedown to click
+    document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
@@ -610,7 +661,6 @@ const Header = () => {
       }
     };
 
-    // Checking if the current route starts with "/designer" or "/admin"
     const isDesignerOrAdminRoute =
       location.pathname.startsWith("/vendor") ||
       location.pathname.startsWith("/admin");
@@ -619,21 +669,6 @@ const Header = () => {
       fetchHeaderCartWishlistNotificationCount();
     }
   }, [location.pathname, user, triggerHeaderCounts]);
-
-  // Debounced search handler
-  const handleSearchChange = async (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-
-    if (query.length > 1) {
-      const results = await searchProducts(query);
-      setSearchResults(results);
-      setShowSearchResults(true);
-    } else {
-      setSearchResults([]);
-      setShowSearchResults(false);
-    }
-  };
 
   const handleSearchSelect = (product) => {
     navigate(`${baseUrl}/product/${product.slug}`);
@@ -672,7 +707,6 @@ const Header = () => {
               <img src={logoWhite} alt="Logo" className="h-6 w-auto" />
             </Link>
             <>
-              {/* Button UI */}
               <button
                 className="text-white flex gap-1 items-center px-3 py-2 rounded-lg"
                 onClick={openLocationModal}
@@ -681,7 +715,6 @@ const Header = () => {
                 <span className="hidden md:inline">{currentLocation}</span>
               </button>
 
-              {/* Location Modal */}
               {isLocationModalOpen && (
                 <LocationModal
                   onClose={closeLocationModal}
@@ -751,7 +784,6 @@ const Header = () => {
                 ) : null}
               </button>
             ))}
-            {/* Profile Dropdown */}
             <ProfileDropdown
               user={user}
               baseUrl={baseUrl}
@@ -775,7 +807,6 @@ const Header = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden fixed top-20 left-0 right-0 bottom-0 bg-white shadow-lg z-50 overflow-hidden">
             <div className="flex flex-col h-full">
-              {/* Search bar at top - fixed height */}
               <div className="p-4 border-b bg-white">
                 <div className="relative">
                   <form
@@ -801,7 +832,6 @@ const Header = () => {
                 </div>
               </div>
 
-              {/* Scrollable categories area - FIXED SCROLLING */}
               <div
                 className="flex-1 overflow-y-auto py-2 px-4"
                 style={{ height: "calc(100vh - 180px)" }}
@@ -836,7 +866,6 @@ const Header = () => {
                 ))}
               </div>
 
-              {/* Fixed bottom navigation */}
               <div className="border-t border-gray-200 bg-white py-3">
                 <div className="flex justify-around">
                   {[
@@ -863,19 +892,9 @@ const Header = () => {
         )}
       </nav>
 
-      {/* Bottom Navigation Bar (Categories) - Using HeaderCopy positioning */}
       <div className="bg-white hidden md:block shadow-sm relative">
         <div className="container mx-auto px-4">
-          {/* Center horizontally and add vertical padding for height */}
           <div className="flex items-center md:justify-start xl:justify-center md:space-x-0 md:gap-2 xl:space-x-8 xl:py-3">
-            {/* <div className="relative group">
-        <Link
-          to={`${baseUrl}/collection/all`}
-          className="text-black hover:text-olive-600 font-medium text-sm uppercase tracking-wide"
-        >
-          Shop
-        </Link>
-      </div> */}
             <div className="overflow-x-auto whitespace-nowrap px-4">
               <div className="flex items-center gap-6 py-3">
                 <Link
@@ -902,7 +921,6 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Category Dropdown */}
         {hoveredCategory && (
           <div
             onMouseEnter={handleDropdownMouseEnter}
@@ -920,7 +938,6 @@ const Header = () => {
         )}
       </div>
 
-      {/* Location Modal Placeholder */}
       {isLocationModalOpen && (
         <LocationModal
           onClose={() => setIsLocationModalOpen(false)}
@@ -928,7 +945,6 @@ const Header = () => {
         />
       )}
 
-      {/* Login Modal Placeholder */}
       {(showLoginModal || showSignupModal) && (
         <SignInModal
           isOpen={showLoginModal || showSignupModal}
@@ -940,21 +956,12 @@ const Header = () => {
         />
       )}
 
-      <style jsx>{`
-        .scrollbar-thin {
-          scrollbar-width: thin;
-        }
-        .scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
-          background-color: #d1d5db;
-          border-radius: 0.25rem;
-        }
-        .scrollbar-track-gray-100::-webkit-scrollbar-track {
-          background-color: #f3f4f6;
-        }
-        .scrollbar-thin::-webkit-scrollbar {
-          width: 6px;
-        }
-      `}</style>
+      {/* Voice Search Popup */}
+      <VoiceSearchPopup
+        isListening={isListening}
+        toggleListening={toggleListening}
+        searchQuery={searchQuery}
+      />
     </header>
   );
 };

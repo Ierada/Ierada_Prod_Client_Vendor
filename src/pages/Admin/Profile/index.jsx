@@ -822,7 +822,7 @@ const AdminProfile = () => {
                     {userData.is_2fa_enabled ? "Enabled" : "Disabled"}
                   </span>
                 </p>
-                {/* <button
+                <button
                   onClick={handleToggle2FA}
                   className={`px-4 py-2 text-white rounded-md ${
                     userData.is_2fa_enabled
@@ -836,7 +836,7 @@ const AdminProfile = () => {
                     : userData.is_2fa_enabled
                     ? "Disable 2FA"
                     : "Enable 2FA"}
-                </button> */}
+                </button>
               </div>
             </section>
 
