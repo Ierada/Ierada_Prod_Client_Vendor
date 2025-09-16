@@ -21,8 +21,6 @@ import {
 } from "../../../services/api.order";
 import { getUserFromToken } from "../../../utils/auth";
 import {
-  deductMoneyFromWalletOrCoins,
-  redeemCoinsToWallet,
   getBalance,
 } from "../../../services/api.walletAndCoins";
 
@@ -282,7 +280,7 @@ const CheckoutPage = () => {
         user_id: user.id,
         shipping_method_id: selectedShipping.id,
         shipping_cost: selectedShipping.price || 0,
-        payment_type: selectedPayment === "cash" ? "cod" : "paid",
+        payment_type: selectedPayment === "cash" ? "cod" : "online",
         order_status: "placed",
         shipping_address_id: shipmentAddress.id,
         billing_address_id: billingAddress.id,
@@ -422,10 +420,12 @@ const CheckoutPage = () => {
         wallet_deduction: walletAmount,
         coins_deduction: coinsAmount,
         grandTotal,
-        payment_type: remainingAmount > 0 ? "paid" : "cod",
+        payment_type: remainingAmount > 0 ? "online" : "cod",
+        razorpay_amount: remainingAmount > 0 ? remainingAmount : 0,
+        cod_amount: remainingAmount > 0 ? 0 : remainingAmount,
       };
 
-      if (orderSummary.payment_type === "paid") {
+      if (orderSummary.payment_type === "online") {
         const res = await handleRazorpayPayment(updatedOrderSummary);
         if (res) {
           // // Wallet deduction
@@ -444,7 +444,7 @@ const CheckoutPage = () => {
           // }
         }
       } else {
-        const res = await createOrder(orderSummary);
+        const res = await createOrder(updatedOrderSummary);
         if (res.status === 1) {
           setIsModalOpen(true);
           setWalletBalance((prev) => prev - walletAmount);
@@ -485,7 +485,8 @@ const CheckoutPage = () => {
 
       // Razorpay options
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_TEST_KEY_ID,
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        // key: import.meta.env.VITE_RAZORPAY_TEST_KEY_ID,
         amount: paymentResponse.data.amount * 100, // Convert to paise
         currency: "INR",
         name: config.BRAND_NAME,
@@ -501,9 +502,12 @@ const CheckoutPage = () => {
                 ...orderData,
                 payment_id: response.razorpay_payment_id,
                 payment_order_id: response.razorpay_order_id,
+                payment_signature: response.razorpay_signature,
                 grandTotal: grandTotal,
                 wallet_deduction: walletAmount,
                 coins_deduction: coinsAmount,
+                razorpay_amount: remainingAmount,
+                cod_amount: 0,
               });
 
               if (orderResponse.status === 1) {
