@@ -82,13 +82,14 @@ const CheckoutPage = () => {
     },
     { id: "cash", label: "Cash on Delivery", is_default: false },
   ];
-  const [selectedPayment, setSelectedPayment] = useState(
-    orderSummary.payment_type
-      ? orderSummary.payment_type === "cod"
-        ? "cash"
-        : "upi"
-      : paymentOptions.find((option) => option.is_default)?.id
-  );
+  // const [selectedPayment, setSelectedPayment] = useState(
+  //   orderSummary.payment_type
+  //     ? orderSummary.payment_type === "cod"
+  //       ? "cash"
+  //       : "upi"
+  //     : paymentOptions.find((option) => option.is_default)?.id
+  // );
+  const [selectedPayment, setSelectedPayment] = useState("upi");
 
   const [walletAmount, setWalletAmount] = useState(0);
   const [coinsAmount, setCoinsAmount] = useState(0);
@@ -107,6 +108,7 @@ const CheckoutPage = () => {
   const [initialCoinsBalance, setInitialCoinsBalance] = useState(0);
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [gstError, setGstError] = useState("");
 
   const fetchWalletAndCoinsBalance = async () => {
     try {
@@ -303,6 +305,12 @@ const CheckoutPage = () => {
     const maxAllowed = Math.min(initialWalletBalance, grandTotal);
     value = Math.min(value, maxAllowed); // Cap the value
 
+    // Check if current wallet balance is 0
+    if (walletBalance === 0) {
+      setErrorMessage("Insufficient wallet balance");
+      return;
+    }
+
     // Check if input exceeds allowed and show error
     if (Number(inputValue) > maxAllowed) {
       setErrorMessage(`Maximum allowed: ₹${maxAllowed.toFixed(2)}`);
@@ -359,16 +367,16 @@ const CheckoutPage = () => {
   };
 
   const validateGST = (gstNumber) => {
-    const gstRegex =
-      /^[0-3][0-9][A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
-    if (showGst && !gstNumber) {
-      setErrorMessage("Please enter GST number");
+    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+    if (!gstNumber && showGst) {
+      setGstError("GST number is required when GSTIN is checked.");
       return false;
     }
-    if (showGst && !gstRegex.test(gstNumber)) {
-      setErrorMessage("Please enter a valid GST number");
+    if (gstNumber && !gstRegex.test(gstNumber)) {
+      setGstError("Please enter a valid GST number (e.g., 22AAAAA0000A1Z5).");
       return false;
     }
+    setGstError("");
     return true;
   };
 
@@ -679,8 +687,13 @@ const CheckoutPage = () => {
   };
 
   const handleGstInput = (e) => {
-    const value = e.target.value;
+    const value = e.target.value.toUpperCase();
     setGstNumber(value);
+    validateGST(value);
+  };
+
+  const handleGstBlur = () => {
+    validateGST(gstNumber);
   };
 
   if (error) {
@@ -732,13 +745,20 @@ const CheckoutPage = () => {
                   <input
                     type="text"
                     name="gstNumber"
-                    value={gstNumber}
-                    onChange={(event) => setGstNumber(event.target.value)}
-                    className="peer block w-70 px-2.5 pt-4 pb-2 text-sm text-gray-900 border border-gray-300 bg-transparent focus:ring-0 focus:border-black"
+                    value={gstNumber || ""} 
+                    onChange={handleGstInput} 
+                    onBlur={handleGstBlur}
+                    className={`peer block w-70 px-2.5 pt-4 pb-2 text-sm text-gray-900 border border-gray-300 bg-transparent focus:ring-0 focus:border-black ${
+                      gstError ? "border-red-500" : ""
+                    }`} 
+                    placeholder="Enter GST Number"
                   />
                   <label className="absolute text-black text-sm scale-75 -translate-y-4 top-2 left-2.5 bg-white px-1 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:top-2">
                     Add your GST Number
                   </label>
+                  {gstError && (
+                    <p className="text-red-500 text-sm mt-1">{gstError}</p> 
+                  )}
                 </div>
               )}
             </div>
