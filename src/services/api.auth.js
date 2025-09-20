@@ -101,6 +101,48 @@ export const verifyOtp = async (data) => {
   }
 };
 
+export const verifyGoogle = async (data) => {
+  try {
+    const response = await apiClient.post(`/auth/google/verify`, data);
+    if (response.data.status === 1) {
+      notifyOnSuccess(response.data.message);
+      return response.data;
+    } else {
+      notifyOnFail(response.data.message);
+    }
+  } catch (error) {
+    notifyOnFail("Error reaching the server");
+  }
+}
+
+export const verifyFacebook = async (data) => {
+  try {
+    const response = await apiClient.post(`/auth/facebook/verify`, data);
+    if (response.data.status === 1) {
+      notifyOnSuccess(response.data.message);
+      return response.data;
+    } else {
+      notifyOnFail(response.data.message);
+    }
+  } catch (error) {
+    notifyOnFail("Error reaching the server");
+  }
+}
+
+export const verifyInstagram = async (data) => {
+  try {
+    const response = await apiClient.post(`/auth/instagram/verify`, data);
+    if (response.data.status === 1) {
+      notifyOnSuccess(response.data.message);
+      return response.data;
+    } else {
+      notifyOnFail(response.data.message);
+    }
+  } catch (error) {
+    notifyOnFail("Error reaching the server");
+  }
+}
+
 export const verifyMobile = async (data) => {
   try {
     const response = await apiClient.post(`/auth/customer/verify-mobile`, data);

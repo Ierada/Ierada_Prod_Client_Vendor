@@ -17,6 +17,8 @@ const config = {
   BRAND_NAME: import.meta.env.VITE_BRAND_NAME,
   VITE_OTPLESS_appId: import.meta.env.VITE_OTPLESS_appId,
   VITE_EMAIL_PROJECT_ID: import.meta.env.VITE_EMAIL_PROJECT_ID,
+  VITE_GOOGLE_CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+  VITE_FACEBOOK_APP_ID: import.meta.env.VITE_FACEBOOK_APP_ID,
 };
 
 export default config;
