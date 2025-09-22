@@ -35,6 +35,11 @@ import BulkProductImport from "../../../components/Admin/BulkProductImport";
 import { FiPackage } from "react-icons/fi";
 import { useAppContext } from "../../../context/AppContext";
 
+const chunkArray = (array, size) =>
+  Array.from({ length: Math.ceil(array.length / size) }, (_, index) =>
+    array.slice(index * size, (index + 1) * size)
+  );
+
 const ProductFilesManager = () => {
   const { user } = useAppContext();
   const vendorId = user?.role === "vendor" ? user?.id : null;
@@ -55,6 +60,8 @@ const ProductFilesManager = () => {
   });
   const [selectedRows, setSelectedRows] = useState([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -317,61 +324,73 @@ const ProductFilesManager = () => {
     }
 
     setIsUploading(true);
-    const formData = new FormData();
-    selectedFiles.forEach((file) => formData.append("files", file));
-
-    if (filters.vendor_id) {
-      formData.append("vendor_id", filters.vendor_id);
-    }
-
-    if (filters.product_id) {
-      formData.append("product_id", filters.product_id);
-    }
-
-    if (filters.variation_id) {
-      formData.append("variation_id", filters.variation_id);
-    }
+    setShowUploadModal(true);
+    setUploadProgress(0);
+    const chunkSize = 100;
+    const fileChunks = chunkArray(selectedFiles, chunkSize);
+    let uploadedCount = 0;
+    let failedCount = 0;
+    let allDuplicateFiles = [];
 
     try {
-      const response = await uploadBulkFiles(formData);
+      for (let i = 0; i < fileChunks.length; i++) {
+        const chunk = fileChunks[i];
+        const formData = new FormData();
+        chunk.forEach((file) => formData.append("files", file));
 
-      if (response.status === 1) {
-        const uploadedCount = response.data.uploadedFiles?.length || 0;
-        const failedCount = response.data.failedFiles?.length || 0;
-
-        if (response.data.failedFiles && response.data.failedFiles.length > 0) {
-          setDuplicateFiles(
-            response.data.failedFiles.filter((f) =>
-              f.error?.includes("Duplicate file")
-            )
-          );
-
-          if (
-            response.data.failedFiles.some((f) =>
-              f.error?.includes("Duplicate file")
-            )
-          ) {
-            setShowDuplicates(true);
-          }
+        if (filters.vendor_id) {
+          formData.append("vendor_id", filters.vendor_id);
+        }
+        if (filters.product_id) {
+          formData.append("product_id", filters.product_id);
+        }
+        if (filters.variation_id) {
+          formData.append("variation_id", filters.variation_id);
         }
 
-        notifyOnSuccess(
-          `Uploaded ${uploadedCount} files${
-            failedCount > 0 ? ` (${failedCount} failed)` : ""
-          }`
-        );
+        const response = await uploadBulkFiles(formData);
 
-        setSelectedFiles([]);
-        loadFiles(1);
-        gotoPage(0);
-      } else {
-        notifyOnFail(response.message || "Error uploading files");
+        if (response.status === 1) {
+          uploadedCount += response.data.uploadedFiles?.length || 0;
+          failedCount += response.data.failedFiles?.length || 0;
+          if (response.data.failedFiles?.length > 0) {
+            const duplicates = response.data.failedFiles.filter((f) =>
+              f.error?.includes("Duplicate file")
+            );
+            allDuplicateFiles = [...allDuplicateFiles, ...duplicates];
+          }
+        } else {
+          notifyOnFail(response.message || "Error uploading files in batch");
+          setShowUploadModal(false);
+          setIsUploading(false);
+          return;
+        }
+
+        // Update progress after each chunk
+        setUploadProgress(((i + 1) / fileChunks.length) * 100);
       }
+
+      if (allDuplicateFiles.length > 0) {
+        setDuplicateFiles(allDuplicateFiles);
+        setShowDuplicates(true);
+      }
+
+      notifyOnSuccess(
+        `Uploaded ${uploadedCount} files${
+          failedCount > 0 ? ` (${failedCount} failed)` : ""
+        }`
+      );
+
+      setSelectedFiles([]);
+      loadFiles(1);
+      gotoPage(0);
     } catch (error) {
-      console.error("Error during upload:", error);
+      console.error("Error during batch upload:", error);
       notifyOnFail("Failed to upload files. Please try again.");
     } finally {
       setIsUploading(false);
+      setShowUploadModal(false);
+      setUploadProgress(0);
     }
   };
 
@@ -824,6 +843,52 @@ const ProductFilesManager = () => {
             </div>
           </div>
         </>
+      )}
+
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Uploading Files
+            </h3>
+            <div className="relative w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="absolute top-0 left-0 h-full bg-blue-600 transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+            <p className="text-sm text-gray-500 mt-2">
+              {Math.round(uploadProgress)}% completed (
+              {Math.min(
+                Math.floor((uploadProgress / 100) * selectedFiles.length),
+                selectedFiles.length
+              )}{" "}
+              of {selectedFiles.length} files)
+            </p>
+            <div className="flex justify-center mt-4">
+              <svg
+                className="animate-spin h-6 w-6 text-blue-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
