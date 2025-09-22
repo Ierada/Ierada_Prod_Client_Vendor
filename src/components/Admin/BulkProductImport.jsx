@@ -88,16 +88,16 @@ const BulkProductImport = ({ vendorId, user }) => {
           );
         }
       } else {
-        if (response.errors) {
+        if (response.errors && response.errors.length > 0) {
           setErrors(response.errors);
+          notifyOnFail(
+            response.errors[0]?.error ||
+              "Check the file properly and try again."
+          );
         }
-        if (response.duplicates) {
+        if (response.duplicates && response.duplicates.length > 0) {
           setDuplicates(response.duplicates);
           notifyOnFail("Duplicate products or variations found");
-        } else {
-          notifyOnFail(
-            response.message || "Check the file properly and try again."
-          );
         }
       }
     } catch (error) {
