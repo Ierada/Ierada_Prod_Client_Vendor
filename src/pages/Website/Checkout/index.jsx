@@ -20,9 +20,7 @@ import {
   verifyPayment,
 } from "../../../services/api.order";
 import { getUserFromToken } from "../../../utils/auth";
-import {
-  getBalance,
-} from "../../../services/api.walletAndCoins";
+import { getBalance } from "../../../services/api.walletAndCoins";
 
 import { notifyOnFail } from "../../../utils/notification/toast";
 
@@ -367,7 +365,8 @@ const CheckoutPage = () => {
   };
 
   const validateGST = (gstNumber) => {
-    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+    const gstRegex =
+      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
     if (!gstNumber && showGst) {
       setGstError("GST number is required when GSTIN is checked.");
       return false;
@@ -538,11 +537,12 @@ const CheckoutPage = () => {
             setCoinsBalance(initialCoinsBalance);
           }
         },
-        theme: { color: "#6B1F40" },
+        theme: { color: "#F57953" },
         prefill: {
-          name: user.name,
-          email: user.email,
-          contact: user.phone || "",
+          name:
+            billingAddress?.first_name + " " + billingAddress?.last_name || "",
+          email: billingAddress?.email || "",
+          contact: billingAddress?.phone || "",
         },
       };
 
@@ -745,19 +745,19 @@ const CheckoutPage = () => {
                   <input
                     type="text"
                     name="gstNumber"
-                    value={gstNumber || ""} 
-                    onChange={handleGstInput} 
+                    value={gstNumber || ""}
+                    onChange={handleGstInput}
                     onBlur={handleGstBlur}
                     className={`peer block w-70 px-2.5 pt-4 pb-2 text-sm text-gray-900 border border-gray-300 bg-transparent focus:ring-0 focus:border-black ${
                       gstError ? "border-red-500" : ""
-                    }`} 
+                    }`}
                     placeholder="Enter GST Number"
                   />
                   <label className="absolute text-black text-sm scale-75 -translate-y-4 top-2 left-2.5 bg-white px-1 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:top-2">
                     Add your GST Number
                   </label>
                   {gstError && (
-                    <p className="text-red-500 text-sm mt-1">{gstError}</p> 
+                    <p className="text-red-500 text-sm mt-1">{gstError}</p>
                   )}
                 </div>
               )}
