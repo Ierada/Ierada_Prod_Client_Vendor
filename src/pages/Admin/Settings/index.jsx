@@ -14,7 +14,14 @@ const AdminSetting = () => {
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm({ defaultValues: { show_all_products_section: false } });
+  } = useForm({
+    defaultValues: {
+      show_all_products_section: false,
+      header_text: "",
+      link_text: "",
+      link_url: "",
+    },
+  });
 
   // Settings form states
   const [settings, setSettings] = useState(null);
@@ -48,8 +55,20 @@ const AdminSetting = () => {
 
       // Set form values
       Object.keys(response.data).forEach((key) => {
-        setValue(key, response.data[key]);
+        if (key !== "header_floating_offer") {
+          setValue(key, response.data[key]);
+        }
       });
+
+      // Set header floating offer values
+      if (response.data.header_floating_offer) {
+        const headerFloatingOffer = response.data.header_floating_offer
+          ? JSON.parse(response.data.header_floating_offer)
+          : {};
+        setValue("header_text", headerFloatingOffer.header_text || "");
+        setValue("link_text", headerFloatingOffer.link_text || "");
+        setValue("link_url", headerFloatingOffer.link_url || "");
+      }
 
       // Set image previews
       if (response.data.logo) setLogoPreview(response.data.logo);
@@ -164,9 +183,24 @@ const AdminSetting = () => {
     try {
       const formData = new FormData();
 
-      // Append all form data, ensuring boolean is converted to string
+      // Handle header floating offer as JSON
+      const headerFloatingOffer = {
+        header_text: data.header_text || "",
+        link_text: data.link_text || "",
+        link_url: data.link_url || "",
+      };
+      formData.append(
+        "header_floating_offer",
+        JSON.stringify(headerFloatingOffer)
+      );
+
+      // Append other form data, skipping header fields, ensuring boolean is converted to string
       Object.keys(data).forEach((key) => {
-        if (data[key] !== undefined && data[key] !== null) {
+        if (
+          !["header_text", "link_text", "link_url"].includes(key) &&
+          data[key] !== undefined &&
+          data[key] !== null
+        ) {
           formData.append(key, data[key].toString());
         }
       });
@@ -398,6 +432,48 @@ const AdminSetting = () => {
                       </button>
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Header Floating Offer Section */}
+              <div className="border-t pt-6">
+                <h2 className="text-xl font-semibold mb-4">
+                  Header Floating Offer
+                </h2>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Header Text
+                    </label>
+                    <input
+                      type="text"
+                      {...register("header_text")}
+                      className="block w-full rounded-md border border-gray-300 p-3 bg-gray-50 focus:ring-2 focus:ring-[#F47954] focus:border-transparent transition-all duration-200"
+                      placeholder="Enter header text"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Link Text
+                    </label>
+                    <input
+                      type="text"
+                      {...register("link_text")}
+                      className="block w-full rounded-md border border-gray-300 p-3 bg-gray-50 focus:ring-2 focus:ring-[#F47954] focus:border-transparent transition-all duration-200"
+                      placeholder="Enter link text"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Link URL
+                    </label>
+                    <input
+                      type="url"
+                      {...register("link_url")}
+                      className="block w-full rounded-md border border-gray-300 p-3 bg-gray-50 focus:ring-2 focus:ring-[#F47954] focus:border-transparent transition-all duration-200"
+                      placeholder="Enter link URL"
+                    />
+                  </div>
                 </div>
               </div>
 

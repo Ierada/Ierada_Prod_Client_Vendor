@@ -1,0 +1,84 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import config from "../../../config/config";
+
+const DealOfTheDay = ({ data }) => {
+  const navigate = useNavigate();
+  const item = data?.items?.[0];
+
+  if (!item) return null;
+
+  const [timeLeft, setTimeLeft] = useState("00:00:00");
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const difference = new Date(item.endDate) - new Date();
+      if (difference > 0) {
+        const hours = Math.floor(difference / (1000 * 60 * 60))
+          .toString()
+          .padStart(2, "0");
+        const minutes = Math.floor((difference / (1000 * 60)) % 60)
+          .toString()
+          .padStart(2, "0");
+        const seconds = Math.floor((difference / 1000) % 60)
+          .toString()
+          .padStart(2, "0");
+        setTimeLeft(`${hours}:${minutes}:${seconds}`);
+      } else {
+        setTimeLeft("00:00:00");
+      }
+    };
+
+    calculateTimeLeft();
+    const timerInterval = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(timerInterval);
+  }, [item.endDate]);
+
+  return (
+    <section className="py-6 md:py-10 bg-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center space-y-2 mb-6 md:mb-8">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary-100">
+            {data?.title}
+          </h2>
+          <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-600">
+            {data?.subtitle}
+          </h3>
+          <p className="text-sm sm:text-base text-gray-500 max-w-2xl mx-auto">
+            {data?.description}
+          </p>
+        </div>
+
+        <div className="relative w-full h-[200px] sm:h-[300px] md:h-[400px] overflow-hidden">
+          <img
+            src={item.image}
+            alt={item.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-20 flex flex-col justify-center items-center text-white px-4">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-wide">
+              Ends in{" "}
+              <span className="not-italic font-bold text-primary-100">
+                {timeLeft}
+              </span>
+            </h1>
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-semibold mt-1 md:mt-2">
+              Deal of the Day
+            </h2>
+            <button
+              onClick={() =>
+                navigate(`${config.VITE_BASE_WEBSITE_URL}/offer/${item.slug}`)
+              }
+              className="mt-4 md:mt-10 bg-button-gradient text-white px-8 sm:px-14 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-medium hover:from-primary-100 hover:to-orange-600 transition-colors"
+            >
+              Explore More
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default DealOfTheDay;

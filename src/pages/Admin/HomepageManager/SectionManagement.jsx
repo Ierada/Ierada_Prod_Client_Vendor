@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2, ArrowLeft, Plus, X, ExternalLink } from "lucide-react";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 import { getAllSliders } from "../../../services/api.slider";
 import { getAllProducts } from "../../../services/api.product";
@@ -225,6 +227,53 @@ const sectionTypeConfigs = {
       ),
     }),
   },
+  category_grid: {
+    title: "Category Grid",
+    description: "Select multiple categories to display",
+    multiSelect: true,
+    singleSelect: false,
+    fetchApi: getCategories,
+    renderOption: (item) => ({
+      title: item.title,
+      media: (
+        <img
+          src={item.image || defaultImg}
+          className="w-20 h-20 object-cover rounded"
+          alt={item.title}
+        />
+      ),
+    }),
+  },
+  recently_viewed: {
+    title: "Recently Viewed",
+    description:
+      "Automatically displays recently viewed products based on user",
+    multiSelect: false,
+    singleSelect: false,
+  },
+  deal_of_the_day: {
+    title: "Deal of the Day",
+    description: "Select a offer to display",
+    multiSelect: false,
+    singleSelect: true,
+    fetchApi: getActiveOffer,
+    renderOption: (item) => ({
+      title: item.title,
+      media: (
+        <img
+          src={item.image || defaultImg}
+          className="w-20 h-20 object-cover rounded"
+          alt={item.title}
+        />
+      ),
+    }),
+  },
+  personalized_products: {
+    title: "Personalized Products",
+    description: "Automatically displays personalized products based on user",
+    multiSelect: false,
+    singleSelect: false,
+  },
   dynamicbanner: {
     title: "Dynamic Banner Section",
     description:
@@ -243,6 +292,13 @@ const sectionTypeConfigs = {
       ),
     }),
   },
+  seo_content: {
+    title: "SEO Content",
+    description: "Add rich text content for SEO purposes",
+    multiSelect: false,
+    singleSelect: false,
+    customContent: true,
+  },
 };
 
 const SectionManagement = () => {
@@ -254,6 +310,8 @@ const SectionManagement = () => {
   const [options, setOptions] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
+    subtitle: "",
+    description: "",
     type: "slider",
     is_active: true,
     content: [],
@@ -280,13 +338,25 @@ const SectionManagement = () => {
       setLoading(true);
       const response = await getSectionById(id);
       if (response.status === 1) {
-        const { title, type, is_active, content } = response.data;
+        const { title, subtitle, description, type, is_active, content } =
+          response.data;
+        const parsedContent =
+          typeof content === "string" ? JSON.parse(content) : content;
+        let contentValue;
+        if (type === "seo_content") {
+          contentValue = parsedContent?.html || "";
+        } else if (type === "download_app") {
+          contentValue = parsedContent || {};
+        } else {
+          contentValue = Array.isArray(parsedContent) ? parsedContent : [];
+        }
         setFormData({
           title,
+          subtitle,
+          description,
           type,
           is_active,
-          content:
-            typeof content === "string" ? JSON.parse(content) : content || [],
+          content: contentValue,
         });
       } else {
         setError("Failed to load section");
@@ -309,7 +379,7 @@ const SectionManagement = () => {
         if (type === "product_collection") {
           response = await config.fetchApi(`page=${page}&limit=9`);
           if (response?.status === 1) {
-            setOptions(response.data);
+            setOptions(response.data || []);
             setPagination(
               response.pagination || {
                 page: 1,
@@ -322,7 +392,7 @@ const SectionManagement = () => {
         } else {
           response = await config.fetchApi();
           if (response?.status === 1) {
-            setOptions(response.data);
+            setOptions(response.data || []);
           }
         }
 
@@ -353,7 +423,7 @@ const SectionManagement = () => {
         }
       });
 
-      // Handle brand_logos image uploads
+      // Handle special cases
       if (formData.type === "brand_logos") {
         formData.content.forEach((item) => {
           if (item instanceof File) {
@@ -362,8 +432,13 @@ const SectionManagement = () => {
             submissionData.append("existing_images[]", item); // Append existing image filenames
           }
         });
+      } else if (formData.type === "seo_content") {
+        submissionData.append(
+          "content",
+          JSON.stringify({ html: formData.content })
+        );
       } else {
-        // If not brand_logos, just send the content as JSON string
+        // If not brand_logos or seo_content, just send the content as JSON string
         submissionData.append("content", JSON.stringify(formData.content));
       }
 
@@ -463,6 +538,22 @@ const SectionManagement = () => {
 
   const renderContentSelector = () => {
     const config = sectionTypeConfigs[formData.type];
+
+    if (formData.type === "seo_content") {
+      return (
+        <div className="p-4 bg-white rounded-lg shadow-sm border">
+          <label className="block text-sm font-medium mb-2">SEO Content</label>
+          <CKEditor
+            editor={ClassicEditor}
+            data={formData.content}
+            onChange={(event, editor) => {
+              const data = editor.getData();
+              setFormData({ ...formData, content: data });
+            }}
+          />
+        </div>
+      );
+    }
 
     if (formData.type === "brand_logos") {
       return (
@@ -761,6 +852,40 @@ const SectionManagement = () => {
               />
             </div>
 
+            {formData.type !== "seo_content" && (
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Section Subtitle
+                </label>
+                <input
+                  type="text"
+                  value={formData.subtitle}
+                  onChange={(e) =>
+                    setFormData({ ...formData, subtitle: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border rounded-md"
+                  required
+                />
+              </div>
+            )}
+
+            {formData.type !== "seo_content" && (
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Section Description
+                </label>
+                <input
+                  type="text"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border rounded-md"
+                  required
+                />
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium mb-1">
                 Section Type
@@ -769,14 +894,20 @@ const SectionManagement = () => {
                 value={formData.type}
                 onChange={(e) => {
                   const newType = e.target.value;
+                  let newContent;
+                  if (sectionTypeConfigs[newType].customContent) {
+                    newContent = sectionTypeConfigs[newType].multiContent
+                      ? []
+                      : newType === "seo_content"
+                      ? ""
+                      : {};
+                  } else {
+                    newContent = [];
+                  }
                   setFormData({
                     ...formData,
                     type: newType,
-                    content: sectionTypeConfigs[newType].customContent
-                      ? sectionTypeConfigs[newType].multiContent
-                        ? []
-                        : {}
-                      : [],
+                    content: newContent,
                   });
                   setPagination({
                     page: 1,

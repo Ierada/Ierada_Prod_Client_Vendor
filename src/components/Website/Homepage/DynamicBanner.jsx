@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Slider from "react-slick";
-import ExploreButton from "../ExploreButton";
 import config from "../../../config/config";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -124,6 +123,18 @@ const DynamicBanner = ({ data }) => {
 
   return (
     <section className="relative w-full overflow-hidden">
+      <div className="text-center pb-4">
+        <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
+          {data?.title}
+        </h2>
+        <h3 className="text-base sm:text-lg md:text-xl font-semibold text-black-100 mt-2">
+          {data?.subtitle}
+        </h3>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">
+          {data?.description}
+        </p>
+      </div>
+
       {isSlider ? (
         // Slider Layout with react-slick
         <div className="w-full" style={{ height: "400px" }}>
@@ -131,8 +142,9 @@ const DynamicBanner = ({ data }) => {
             {data.items.map((banner) => (
               <div key={banner.id} className="px-2">
                 <div
-                  className="relative w-full h-full"
+                  className="relative w-full h-full cursor-pointer"
                   style={{ height: "400px" }}
+                  onClick={() => handleNavigation(banner)}
                 >
                   {banner.file_type === "image" ? (
                     <picture>
@@ -163,7 +175,6 @@ const DynamicBanner = ({ data }) => {
                       <p className="text-xs sm:text-sm md:text-base lg:text-lg font-light">
                         {banner.subtitle}
                       </p>
-                      <ExploreButton onClick={() => handleNavigation(banner)} />
                     </div>
                   </div>
                 </div>
@@ -180,7 +191,11 @@ const DynamicBanner = ({ data }) => {
             )} gap-4 w-full h-full`}
           >
             {data.items.map((banner) => (
-              <div key={banner.id} className="relative w-full h-full">
+              <div
+                key={banner.id}
+                className="relative w-full h-full cursor-pointer"
+                onClick={() => handleNavigation(banner)}
+              >
                 {banner.file_type === "image" ? (
                   <picture>
                     <source
@@ -210,7 +225,6 @@ const DynamicBanner = ({ data }) => {
                     <p className="text-xs sm:text-sm md:text-base lg:text-lg font-light">
                       {banner.subtitle}
                     </p>
-                    <ExploreButton onClick={() => handleNavigation(banner)} />
                   </div>
                 </div>
               </div>

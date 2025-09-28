@@ -21,6 +21,10 @@ import BrandLogos from "../../../components/Website/Homepage/BrandLogos";
 import AllProductsSection from "../../../components/Website/Homepage/AllProductsSection";
 import SubCategoryCollection from "../../../components/Website/Homepage/SubCategoryCollection";
 import DynamicBanner from "../../../components/Website/Homepage/DynamicBanner";
+import CategoryGrid from "../../../components/Website/Homepage/CategoriesGridSection";
+import RecentlyViewed from "../../../components/Website/Homepage/RecentlyViewedSection";
+import DealOfTheDay from "../../../components/Website/Homepage/DealOfTheDay";
+import SeoContent from "../../../components/Website/Homepage/SEOContent";
 
 const Home = () => {
   const [sections, setSections] = useState([]);
@@ -75,6 +79,16 @@ const Home = () => {
         return <AllProductsSection key={section.id} />;
       case "dynamicbanner":
         return <DynamicBanner key={section.id} data={section} />;
+      case "recently_viewed":
+        return <RecentlyViewed key={section.id} data={section} />;
+      case "category_grid":
+        return <CategoryGrid key={section.id} data={section} />;
+      case "deal_of_the_day":
+        return <DealOfTheDay key={section.id} data={section} />;
+      case "personalized_products":
+        return <PopularProductsSlider key={section.id} data={section} />;
+      case "seo_content":
+        return <SeoContent key={section.id} data={section} />;
       default:
         return null;
     }

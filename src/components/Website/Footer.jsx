@@ -11,102 +11,22 @@ import { FaCcMastercard, FaCcVisa, FaCcAmex } from "react-icons/fa";
 import logoWhite from "/assets/logo/logo_white.svg";
 import android_store from "/assets/download_app/android_store_footer.svg";
 import apple_store from "/assets/download_app/apple_store_footer.svg";
-import upi_icon from "/assets/icons/upi_icon.svg";
-import rupay_icon from "/assets/icons/rupay_icon.svg";
+import MasterCard from "/assets/icons/master_card.svg";
+import VisaCard from "/assets/icons/visa_card.svg";
+import AmericanExpress from "/assets/icons/american_express.svg";
+import RupayCard from "/assets/icons/rupay_card.svg";
+import UPI from "/assets/icons/upi.svg";
+import Instagram from "/assets/icons/instagram.svg";
+import Facebook from "/assets/icons/facebook.svg";
+import Youtube from "/assets/icons/youtube.svg";
+import Pinterest from "/assets/icons/pinterest.svg";
+import Twitter from "/assets/icons/twitter.svg";
 import Cookies from "js-cookie";
 import config from "../../config/config";
 import SignInModal from "./SigninModal";
 import { useAppContext } from "../../context/AppContext";
 
 const baseUrl = config.VITE_BASE_WEBSITE_URL;
-
-export const popular_search = [
-  {
-    id: 1,
-    name: "Jeans",
-    slug: "Jeans",
-  },
-  {
-    id: 2,
-    name: "Tops",
-    slug: "TOps",
-  },
-  {
-    id: 3,
-    name: "Sweat Shirts",
-    slug: "Sweat Shirts",
-  },
-  {
-    id: 4,
-    name: "Jacket",
-    slug: "Jacket",
-  },
-  {
-    id: 5,
-    name: "Salwar Suit",
-    slug: "Salwar Suit",
-  },
-  {
-    id: 6,
-    name: "Sherwani",
-    slug: "Sherwani",
-  },
-  {
-    id: 7,
-    name: "Nehru Jackets",
-    slug: "Nehru Jackets",
-  },
-  {
-    id: 8,
-    name: "Saree",
-    slug: "Saree",
-  },
-  {
-    id: 9,
-    name: "Lehanga",
-    slug: "Lehanga",
-  },
-  {
-    id: 10,
-    name: "Crop Top",
-    slug: "Crop Top",
-  },
-  {
-    id: 11,
-    name: "Cotton Shirt",
-    slug: "Cotton Shirt",
-  },
-  {
-    id: 12,
-    name: "Nehru Jacket",
-    slug: "Nehru Jacket",
-  },
-  {
-    id: 13,
-    name: "Jeans",
-    slug: "Jeans",
-  },
-  {
-    id: 14,
-    name: "Tops",
-    slug: "TOps",
-  },
-  {
-    id: 15,
-    name: "Sweat Shirts",
-    slug: "Sweat Shirts",
-  },
-  {
-    id: 16,
-    name: "Jacket",
-    slug: "Jacket",
-  },
-  {
-    id: 17,
-    name: "Salwar Suit",
-    slug: "Salwar Suit",
-  },
-];
 
 const Footer = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -119,7 +39,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="relative bg-black text-white py-8 md:py-12 font-poppins">
+    <footer className="relative bg-[#333333] text-white py-8 md:py-12 font-poppins">
       <div className="container mx-auto px-4">
         {/* Main grid - responsive columns */}
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-8">
@@ -129,47 +49,26 @@ const Footer = () => {
               <img
                 src={logoWhite}
                 alt="Brand Logo"
-                className="bg-white p-2 rounded-lg w-40 md:w-auto"
+                className="bg-white p-2 rounded-lg w-40 md:w-auto border-b-2 border-primary-100"
               />
             </div>
 
-            <div className="flex flex-wrap gap-4 text-2xl sm:text-3xl">
+            <div className="flex flex-wrap gap-2 text-2xl sm:text-3xl">
               <a href="#" aria-label="Instagram">
-                <FaInstagram />
+                <img src={Instagram} alt="Instagram" className="h-8 w-auto" />
               </a>
               <a href="#" aria-label="Facebook">
-                <FaFacebook />
+                <img src={Facebook} alt="Facebook" className="h-8 w-auto" />
               </a>
               <a href="#" aria-label="YouTube">
-                <FaYoutube />
+                <img src={Youtube} alt="YouTube" className="h-8 w-auto" />
               </a>
               <a href="#" aria-label="Pinterest">
-                <FaPinterest />
+                <img src={Pinterest} alt="Pinterest" className="h-8 w-auto" />
               </a>
               <a href="#" aria-label="Twitter">
-                <FaTwitter />
+                <img src={Twitter} alt="Twitter" className="h-8 w-auto" />
               </a>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <p className="text-sm md:text-base">Safe & Secure Payment</p>
-              <div className="flex flex-wrap gap-2 text-4xl sm:text-5xl">
-                <button aria-label="Mastercard">
-                  <FaCcMastercard />
-                </button>
-                <button aria-label="Visa">
-                  <FaCcVisa />
-                </button>
-                <button aria-label="American Express">
-                  <FaCcAmex />
-                </button>
-                <button aria-label="RuPay">
-                  <img src={rupay_icon} alt="RuPay" className="w-10 h-10" />
-                </button>
-                <button aria-label="UPI">
-                  <img src={upi_icon} alt="UPI" className="w-10 h-10" />
-                </button>
-              </div>
             </div>
 
             <div className="flex flex-col gap-3">
@@ -197,7 +96,7 @@ const Footer = () => {
 
           {/* Company Info */}
           <div>
-            <h3 className="text-lg mb-4">Company</h3>
+            <h3 className="text-lg text-white/70 mb-4">Company</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <a href={`${baseUrl}/about`} className="hover:text-gray-200">
@@ -225,7 +124,7 @@ const Footer = () => {
 
           {/* Customer Services */}
           <div>
-            <h3 className="text-lg mb-4">Customer Services</h3>
+            <h3 className="text-lg text-white/70 mb-4">Customer Services</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <button
@@ -261,7 +160,7 @@ const Footer = () => {
 
           {/* Our Information */}
           <div>
-            <h3 className="text-lg mb-4">Our Information</h3>
+            <h3 className="text-lg text-white/70 mb-4">Our Information</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <a
@@ -284,7 +183,7 @@ const Footer = () => {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-lg mb-4">Contact Info</h3>
+            <h3 className="text-lg text-white/70 mb-4">Contact Information</h3>
             <ul className="space-y-2 text-sm">
               {/* <li>
                 <button onClick={() => (window.location.href = "tel:+911234567890")} className="hover:text-gray-200">
@@ -328,27 +227,40 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Popular Searches - improved responsiveness */}
-        <div className="mt-8 pt-4 border-t border-white/20">
-          <h3 className="text-sm font-medium mb-2">Popular Search:</h3>
-          <div className="flex flex-wrap gap-1 text-xs">
-            {popular_search.map((item, index) => (
-              <button
-                key={index}
-                className="text-xs font-thin flex text-nowrap"
-              >
-                {item.name}
-                {index < popular_search.length - 1 && (
-                  <span className="px-2">/</span>
-                )}
-              </button>
-            ))}
+        <div className="flex flex-col gap-3 mt-4">
+          <p className="text-sm md:text-base">Safe & Secure Payment</p>
+          <div className="flex flex-wrap gap-2 text-4xl sm:text-5xl">
+            <button
+              aria-label="Mastercard"
+              className="h-7 bg-white rounded p-1"
+            >
+              <img src={MasterCard} alt="Mastercard" className="h-full" />
+            </button>
+            <button aria-label="Visa" className="h-7 bg-white rounded p-1">
+              <img src={VisaCard} alt="Visa" className="h-full" />
+            </button>
+            <button
+              aria-label="American Express"
+              className="h-7 bg-white rounded p-1"
+            >
+              <img
+                src={AmericanExpress}
+                alt="American Express"
+                className="h-full"
+              />
+            </button>
+            <button aria-label="RuPay" className="h-7 bg-white rounded p-1">
+              <img src={RupayCard} alt="RuPay" className="h-full" />
+            </button>
+            <button aria-label="UPI" className="h-7 bg-white rounded p-1">
+              <img src={UPI} alt="UPI" className="h-full" />
+            </button>
           </div>
         </div>
 
         {/* Copyright */}
         <div className="mt-8 pt-6 border-t border-white/20">
-          <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-between md:justify-center items-center">
             <p className="text-sm text-white text-center md:text-left mb-2 md:mb-0">
               ©️ 2024 Ierada. All Rights Reserved.
             </p>

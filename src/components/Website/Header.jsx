@@ -25,6 +25,7 @@ import { useAppContext } from "../../context/AppContext";
 import EmptyImg from "/assets/bg/empty-img.svg";
 import { getUserIdentifier } from "../../utils/userIdentifier";
 import { jwtDecode } from "jwt-decode";
+import { LiaHotjar } from "react-icons/lia";
 
 // Reusable CategoryDropdown Component - FIXED VERSION
 const CategoryDropdown = ({
@@ -40,7 +41,7 @@ const CategoryDropdown = ({
   const subcategories = category.subcategory || [];
 
   return (
-    <div className="absolute left-1/2 transform -translate-x-1/2 top-full bg-white text-gray-800 shadow-2xl z-50 border border-gray-200 rounded-lg w-[90vw] max-h-[90vh] overflow-hidden">
+    <div className="absolute left-1/2 transform -translate-x-1/2 top-full bg-white text-gray-800 shadow-2xl z-50 border border-primary-100 rounded-lg w-[90vw] max-h-[90vh] overflow-hidden">
       <div className="flex h-full">
         {/* Categories List */}
         <div className="flex-1 overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
@@ -56,7 +57,11 @@ const CategoryDropdown = ({
                 return (
                   <div
                     key={`sub-${subIndex}`}
-                    className="break-inside-avoid mb-6"
+                    className={`break-inside-avoid mb-6 ${
+                      subIndex % 2 === 0
+                        ? "bg-white"
+                        : "bg-gradient-to-r from-[rgba(255,183,0,0.05)] to-[rgba(255,59,0,0.05)]"
+                    } p-2 rounded-md`}
                     onMouseEnter={() => setHoveredSubcategory(sub)}
                     onMouseLeave={() => setHoveredSubcategory(null)}
                   >
@@ -115,7 +120,7 @@ const CategoryDropdown = ({
         </div>
 
         {/* Image Preview */}
-        <div className="w-80 flex-shrink-0 border-l border-gray-200 bg-gray-50 hidden lg:block">
+        {/* <div className="w-80 flex-shrink-0 border-l border-gray-200 bg-gray-50 hidden lg:block">
           {(hoveredInnerSubcategory?.image ||
             hoveredSubcategory?.image ||
             category?.header_image) && (
@@ -145,7 +150,7 @@ const CategoryDropdown = ({
               )}
             </div>
           )}
-        </div>
+        </div> */}
       </div>
     </div>
   );
@@ -186,7 +191,7 @@ const ProfileDropdown = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <button className="relative text-white hover:text-gray-200 transition-colors duration-200">
+      <button className="relative text-gray-600 hover:text-gray-800 transition-colors duration-200">
         <User className="h-5 w-5" />
       </button>
 
@@ -300,36 +305,48 @@ const SearchResults = ({ results, onSelect, searchResultsRef }) => {
 // Voice Search Popup Component
 const VoiceSearchPopup = ({ isListening, toggleListening, searchQuery }) => {
   return (
-    <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200] transition-opacity duration-300 ${isListening ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+    <div
+      className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200] transition-opacity duration-300 ${
+        isListening ? "opacity-100" : "opacity-0 pointer-events-none"
+      }`}
+    >
       <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl transform transition-all duration-300">
         <div className="flex flex-col items-center gap-4">
           {/* Animated Microphone Icon */}
-          <div className={`relative p-4 rounded-full ${isListening ? 'bg-red-100 animate-pulse' : 'bg-gray-100'}`}>
-            <Mic className={`h-8 w-8 ${isListening ? 'text-red-500' : 'text-gray-500'}`} />
+          <div
+            className={`relative p-4 rounded-full ${
+              isListening ? "bg-red-100 animate-pulse" : "bg-gray-100"
+            }`}
+          >
+            <Mic
+              className={`h-8 w-8 ${
+                isListening ? "text-red-500" : "text-gray-500"
+              }`}
+            />
             {isListening && (
               <div className="absolute inset-0 border-2 border-red-500 rounded-full animate-ping"></div>
             )}
           </div>
-          
+
           {/* Status Text */}
           <p className="text-lg font-medium text-gray-800">
-            {isListening ? 'Listening...' : 'Voice Search Stopped'}
+            {isListening ? "Listening..." : "Voice Search Stopped"}
           </p>
-          
+
           {/* Live Transcript */}
           <div className="w-full bg-gray-100 rounded-lg p-3 min-h-[60px] flex items-center justify-center">
             <p className="text-gray-600 text-center">
-              {searchQuery || 'Say something to search...'}
+              {searchQuery || "Say something to search..."}
             </p>
           </div>
-          
+
           {/* Buttons */}
           <div className="flex gap-4">
             <button
               onClick={toggleListening}
               className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
             >
-              {isListening ? 'Stop' : 'Restart'}
+              {isListening ? "Stop" : "Restart"}
             </button>
             <button
               onClick={toggleListening}
@@ -355,12 +372,14 @@ const Header = () => {
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [floatingOffer, setFloatingOffer] = useState(null);
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [hoveredSubcategory, setHoveredSubcategory] = useState(null);
   const [hoveredInnerSubcategory, setHoveredInnerSubcategory] = useState(null);
   const [headerCounts, setHeaderCounts] = useState({});
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [showOfferBar, setShowOfferBar] = useState(true);
   const recognitionRef = useRef(null);
   const searchRef = useRef(null);
   const categoryTimeoutRef = useRef(null);
@@ -419,50 +438,50 @@ const Header = () => {
 
   // Initialization for speech recognition
   useEffect(() => {
-  if (
-    !("SpeechRecognition" in window) &&
-    !("webkitSpeechRecognition" in window)
-  ) {
-    console.warn("Web Speech API not supported");
-    return;
-  }
-
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognitionRef.current = new SpeechRecognition();
-  recognitionRef.current.continuous = false;
-  recognitionRef.current.interimResults = true;
-  recognitionRef.current.lang = "en-US";
-
-  recognitionRef.current.onresult = (event) => {
-    const transcript = Array.from(event.results)
-      .map((result) => result[0].transcript)
-      .join("");
-    setSearchQuery(transcript);
-  };
-
-  recognitionRef.current.onend = () => {
-    setIsListening(false);
-    if (searchQuery.trim()) {
-      // Create a synthetic event to mimic input change
-      const syntheticEvent = {
-        target: { value: searchQuery },
-      };
-      handleSearchChange(syntheticEvent);
+    if (
+      !("SpeechRecognition" in window) &&
+      !("webkitSpeechRecognition" in window)
+    ) {
+      console.warn("Web Speech API not supported");
+      return;
     }
-  };
 
-  recognitionRef.current.onerror = (event) => {
-    console.error("Speech recognition error:", event.error);
-    setIsListening(false);
-  };
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = true;
+    recognitionRef.current.lang = "en-US";
 
-  return () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
-  };
-}, [searchQuery, handleSearchChange]);
+    recognitionRef.current.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result[0].transcript)
+        .join("");
+      setSearchQuery(transcript);
+    };
+
+    recognitionRef.current.onend = () => {
+      setIsListening(false);
+      if (searchQuery.trim()) {
+        // Create a synthetic event to mimic input change
+        const syntheticEvent = {
+          target: { value: searchQuery },
+        };
+        handleSearchChange(syntheticEvent);
+      }
+    };
+
+    recognitionRef.current.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+      setIsListening(false);
+    };
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [searchQuery]);
 
   // Function to toggle listening
   const toggleListening = () => {
@@ -485,7 +504,7 @@ const Header = () => {
   };
 
   // Location model functionality
-  const [currentLocation, setCurrentLocation] = useState("Select your location");
+  const [currentLocation, setCurrentLocation] = useState("Your Location");
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
   useEffect(() => {
@@ -623,7 +642,13 @@ const Header = () => {
     const loadCategories = async () => {
       try {
         const response = await getHeaderCategories();
-        setCategories(response?.data || []);
+        setCategories(response?.data?.categories || []);
+        const floatingOffer = response?.data?.header_floating_offer
+          ? JSON.parse(response?.data?.header_floating_offer)
+          : null;
+        if (floatingOffer) {
+          setFloatingOffer(floatingOffer);
+        }
       } catch (error) {
         console.error("Failed to fetch categories:", error);
       }
@@ -696,23 +721,25 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-black font-poppins">
-      <nav className="border-b border-gray-800 py-4 px-4">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white font-poppins">
+      <nav className="py-2 px-4">
         <div className="flex items-center justify-between gap-4 w-full">
-          <div className="flex items-center ">
+          <div className="flex items-center gap-4">
             <Link
               to={baseUrl}
-              className="flex-shrink-0 bg-white rounded-lg p-3"
+              className="flex-shrink-0 border-b-2 border-primary-100 rounded-lg py-1"
             >
-              <img src={logoWhite} alt="Logo" className="h-6 w-auto" />
+              <img src={logoWhite} alt="Logo" className="h-6 md:h-8 w-auto" />
             </Link>
             <>
               <button
-                className="text-white flex gap-1 items-center px-3 py-2 rounded-lg"
+                className="text-primary-100 flex gap-1 items-center px-3 md:py-2 rounded-lg border shadow"
                 onClick={openLocationModal}
               >
-                <MapPin className="h-5 w-5" />
-                <span className="hidden md:inline">{currentLocation}</span>
+                <MapPin className="h-2 md:h-4 w-2 md:w-4 text-gray-400" />
+                <span className="text-[10px] md:text-xs">
+                  {currentLocation}
+                </span>
               </button>
 
               {isLocationModalOpen && (
@@ -731,20 +758,20 @@ const Header = () => {
           >
             <form
               onSubmit={handleSearchSubmit}
-              className="flex items-center gap-3 bg-white border rounded-lg px-4"
+              className="flex items-center gap-3 bg-white border border-primary-100 shadow-sm rounded-full px-4 py-2"
             >
-              <Search className="h-5 w-5 text-black flex-shrink-0" />
+              <Search className="h-5 w-5 text-gray-400 flex-shrink-0" />
               <input
                 type="text"
-                placeholder="Search product"
+                placeholder="Search for items..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="bg-white text-black placeholder-black flex-grow outline-none border-none ring-0 focus:ring-0"
+                className="bg-white text-gray-800 placeholder-gray-500 flex-grow outline-none border-none ring-0 focus:ring-0"
               />
               <button
                 type="button"
                 onClick={toggleListening}
-                className="text-black"
+                className="text-gray-400"
               >
                 <Mic
                   className={`h-5 w-5 ${isListening ? "text-red-500" : ""}`}
@@ -765,23 +792,19 @@ const Header = () => {
             {[
               { icon: Heart, route: "wishlist", countKey: "wishlistCount" },
               { icon: ShoppingCart, route: "cart", countKey: "cartCount" },
-              {
-                icon: Bell,
-                route: "notifications",
-                countKey: "notificationsCount",
-              },
             ].map(({ icon: Icon, route, countKey }) => (
               <button
                 key={route}
                 onClick={() => handleButtonClick(route)}
-                className="relative text-white hover:text-gray-200"
+                className="relative flex gap-1 items-center text-gray-600 hover:text-gray-800"
               >
                 <Icon className="h-5 w-5" />
                 {user && headerCounts[countKey] > 0 ? (
-                  <span className="absolute -top-3 -right-3 bg-white text-[#6b705c] text-xs font-semibold rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-3 left-2 bg-primary-100 text-white text-xs font-semibold rounded-full h-5 w-5 flex items-center justify-center">
                     {headerCounts[countKey] || 0}
                   </span>
                 ) : null}
+                <span className="hidden md:inline text-sm">{route}</span>
               </button>
             ))}
             <ProfileDropdown
@@ -793,7 +816,7 @@ const Header = () => {
           </div>
 
           <button
-            className="md:hidden text-white"
+            className="md:hidden text-gray-600"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
@@ -842,8 +865,9 @@ const Header = () => {
                     e.preventDefault();
                     handleNavigation(`${baseUrl}/collection/all`);
                   }}
-                  className="block py-3 text-gray-800 hover:text-gray-600 border-b border-gray-100"
+                  className="block flex items-center gap-2 py-3 text-primary-100 hover:text-gray-600 border-b border-gray-100"
                 >
+                  <LiaHotjar className="h-5 w-5" />
                   Shop
                 </a>
 
@@ -894,13 +918,14 @@ const Header = () => {
 
       <div className="bg-white hidden md:block shadow-sm relative">
         <div className="container mx-auto px-4">
-          <div className="flex items-center md:justify-start xl:justify-center md:space-x-0 md:gap-2 xl:space-x-8 xl:py-3">
+          <div className="flex items-center md:justify-start xl:justify-start md:space-x-0 md:gap-2 xl:space-x-8 xl:py-3">
             <div className="overflow-x-auto whitespace-nowrap px-4">
               <div className="flex items-center gap-6 py-3">
                 <Link
                   to={`${baseUrl}/collection/all`}
-                  className="text-black font-medium text-sm uppercase"
+                  className="flex items-center gap-1 text-primary-100 font-medium text-sm uppercase"
                 >
+                  <LiaHotjar className="h-5 w-5" />
                   Shop
                 </Link>
                 {categories?.map((category) => (
@@ -911,7 +936,7 @@ const Header = () => {
                     to={`${baseUrl}/collection/category/${
                       category.slug || category.title.toLowerCase()
                     }`}
-                    className="text-black font-medium text-sm uppercase"
+                    className="text-gray-800 font-medium text-sm uppercase"
                   >
                     {category.title}
                   </Link>
@@ -937,6 +962,24 @@ const Header = () => {
           </div>
         )}
       </div>
+
+      {showOfferBar && (
+        <div className="bg-button-gradient text-white text-xs md:text-base text-center py-2 text-sm flex flex-col md:flex-row justify-center items-center relative">
+          <span>{floatingOffer?.header_text}</span>
+          <Link
+            to={floatingOffer?.link_url}
+            className="ml-2 text-xs md:text-base font-medium hover:underline"
+          >
+            {floatingOffer?.link_text}
+          </Link>
+          <button
+            onClick={() => setShowOfferBar(false)}
+            className="absolute right-2 md:right-4 text-white"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {isLocationModalOpen && (
         <LocationModal

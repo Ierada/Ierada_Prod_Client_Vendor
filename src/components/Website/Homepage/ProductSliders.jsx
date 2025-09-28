@@ -120,7 +120,7 @@ const BaseProductSlider = ({
           {products?.map(renderProduct)}
         </div>
 
-        {showArrows && products.length > visibleItems && (
+        {showArrows && products?.length > visibleItems && (
           <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between pointer-events-none">
             <button
               onClick={handlePrevClick}
@@ -211,7 +211,7 @@ export const PopularProductsSlider = ({ data }) => {
       key={product.id}
       className="flex-none w-[219px]  sm:w-[219px] md:w-[219px] lg:w-[219px] my-1"
     >
-      <div className="group relative overflow-hidden rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out border border-gray-100">
+      <div className="group relative overflow-hidden rounded-lg transition-all duration-300 ease-in-out">
         <a
           onClick={(e) => {
             e.preventDefault();
@@ -226,9 +226,9 @@ export const PopularProductsSlider = ({ data }) => {
                 "https://via.placeholder.com/512x682?text=Product+Image"
               }
               alt={product.name}
-              className="w-full h-full object-contain object-center transform transition-transform duration-500 ease-out group-hover:scale-105"
+              className="w-full h-full object-contain object-center transform transition-transform duration-500 ease-out group-hover:scale-105 rounded-lg"
             />
-            <button
+            {/* <button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -243,7 +243,7 @@ export const PopularProductsSlider = ({ data }) => {
                     : "text-gray-500"
                 }`}
               />
-            </button>
+            </button> */}
           </div>
           <div className="p-4 space-y-2">
             <h3 className="text-sm font-medium line-clamp-2 h-10 leading-5">
@@ -260,6 +260,17 @@ export const PopularProductsSlider = ({ data }) => {
                 {product.discount_percentage}% OFF
               </span>
             </div>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(
+                  `${config.VITE_BASE_WEBSITE_URL}/product/${product.slug}`
+                );
+              }}
+              className="w-fit mt-4 md:mt-10 bg-button-gradient text-white px-5 py-2 rounded-lg text-sm sm:text-base font-medium hover:from-primary-100 hover:to-orange-600 transition-colors"
+            >
+              Explore More
+            </button>
           </div>
         </a>
       </div>
@@ -267,11 +278,24 @@ export const PopularProductsSlider = ({ data }) => {
   );
 
   return (
-    <BaseProductSlider
-      products={data.items}
-      renderProduct={renderProduct}
-      title={data?.title}
-    />
+    <div>
+      <div className="text-center pb-4">
+        <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
+          {data?.title}
+        </h2>
+        <h3 className="text-base sm:text-lg md:text-xl font-semibold text-black-100 mt-2">
+          {data?.subtitle}
+        </h3>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">
+          {data?.description}
+        </p>
+      </div>
+      <BaseProductSlider
+        products={data.items}
+        renderProduct={renderProduct}
+        // title={data?.title}
+      />
+    </div>
   );
 };
 
@@ -361,11 +385,24 @@ export const OfferProductCollection = ({ data }) => {
   );
 
   return (
-    <BaseProductSlider
-      products={data.items}
-      renderProduct={renderProduct}
-      title={data?.title}
-    />
+    <div>
+      <div className="text-center pb-4">
+        <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
+          {data?.title}
+        </h2>
+        <h3 className="text-base sm:text-lg md:text-xl font-semibold text-black-100 mt-2">
+          {data?.subtitle}
+        </h3>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">
+          {data?.description}
+        </p>
+      </div>
+      <BaseProductSlider
+        products={data.items}
+        renderProduct={renderProduct}
+        // title={data?.title}
+      />
+    </div>
   );
 };
 
@@ -578,10 +615,21 @@ export const ProductCollectionSlider = ({ data }) => {
 
   return (
     <>
+      <div className="text-center pb-4">
+        <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
+          {data?.title}
+        </h2>
+        <h3 className="text-base sm:text-lg md:text-xl font-semibold text-black-100 mt-2">
+          {data?.subtitle}
+        </h3>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">
+          {data?.description}
+        </p>
+      </div>
       <BaseProductSlider
         products={data.items}
         renderProduct={renderProduct}
-        title={data?.title}
+        // title={data?.title}
       />
       <SignInModal
         isOpen={showLoginModal}
