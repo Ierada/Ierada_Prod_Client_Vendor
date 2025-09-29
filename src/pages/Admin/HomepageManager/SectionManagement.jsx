@@ -228,7 +228,7 @@ const sectionTypeConfigs = {
     }),
   },
   category_grid: {
-    title: "Category Grid",
+    title: "Category Grid (New)",
     description: "Select multiple categories to display",
     multiSelect: true,
     singleSelect: false,
@@ -245,14 +245,14 @@ const sectionTypeConfigs = {
     }),
   },
   recently_viewed: {
-    title: "Recently Viewed",
+    title: "Recently Viewed (New)",
     description:
       "Automatically displays recently viewed products based on user",
     multiSelect: false,
     singleSelect: false,
   },
   deal_of_the_day: {
-    title: "Deal of the Day",
+    title: "Deal of the Day (New)",
     description: "Select a offer to display",
     multiSelect: false,
     singleSelect: true,
@@ -269,13 +269,13 @@ const sectionTypeConfigs = {
     }),
   },
   personalized_products: {
-    title: "Personalized Products",
+    title: "Personalized Products (New)",
     description: "Automatically displays personalized products based on user",
     multiSelect: false,
     singleSelect: false,
   },
   dynamicbanner: {
-    title: "Dynamic Banner Section",
+    title: "Dynamic Banner Section (New)",
     description:
       "Select multiple banners to display (up to 4 per page on large screens)",
     multiSelect: true,
@@ -293,7 +293,7 @@ const sectionTypeConfigs = {
     }),
   },
   seo_content: {
-    title: "SEO Content",
+    title: "SEO Content (New)",
     description: "Add rich text content for SEO purposes",
     multiSelect: false,
     singleSelect: false,

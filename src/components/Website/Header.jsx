@@ -27,7 +27,6 @@ import { getUserIdentifier } from "../../utils/userIdentifier";
 import { jwtDecode } from "jwt-decode";
 import { LiaHotjar } from "react-icons/lia";
 
-// Reusable CategoryDropdown Component - FIXED VERSION
 const CategoryDropdown = ({
   category,
   baseUrl,
@@ -46,18 +45,18 @@ const CategoryDropdown = ({
         {/* Categories List */}
         <div className="flex-1 overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           <div className="p-4">
-            <div className="columns-4 gap-x-8">
+            <div className="columns-4 gap-x-4">
               {subcategories.map((sub, subIndex) => {
                 const innerSubcategories = sub.innersubcategory || [];
-                const hasMoreInner = innerSubcategories.length > 7;
+                const hasMoreInner = innerSubcategories.length > 4;
                 const innerToShow = hasMoreInner
-                  ? innerSubcategories.slice(0, 7)
+                  ? innerSubcategories.slice(0, 4)
                   : innerSubcategories;
 
                 return (
                   <div
                     key={`sub-${subIndex}`}
-                    className={`break-inside-avoid mb-6 ${
+                    className={`break-inside-avoid mb-2 ${
                       subIndex % 2 === 0
                         ? "bg-white"
                         : "bg-gradient-to-r from-[rgba(255,183,0,0.05)] to-[rgba(255,59,0,0.05)]"
