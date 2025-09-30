@@ -222,7 +222,7 @@ export const PopularProductsSlider = ({ data }) => {
           <div className="relative max-w-[219px] aspect-[512/682] sm:w-[219px] sm:h-[291px] overflow-hidden">
             <img
               src={
-                product?.images?.[0]?.url ||
+                product?.image ||
                 "https://via.placeholder.com/512x682?text=Product+Image"
               }
               alt={product.name}

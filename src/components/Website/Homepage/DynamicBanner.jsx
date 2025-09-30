@@ -146,27 +146,17 @@ const DynamicBanner = ({ data }) => {
                   style={{ height: "400px" }}
                   onClick={() => handleNavigation(banner)}
                 >
-                  {banner.file_type === "image" ? (
-                    <picture>
-                      <source
-                        media="(max-width: 767px)"
-                        srcSet={banner.mobile_image_url || banner.file_url}
-                      />
-                      <img
-                        src={banner.file_url}
-                        alt={banner.title || `Banner ${banner.id}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </picture>
-                  ) : (
-                    <video
+                  <picture>
+                    <source
+                      media="(max-width: 767px)"
+                      srcSet={banner.mobile_image_url || banner.file_url}
+                    />
+                    <img
                       src={banner.file_url}
-                      autoPlay
-                      muted
-                      loop
+                      alt={banner.title || `Banner ${banner.id}`}
                       className="w-full h-full object-cover"
                     />
-                  )}
+                  </picture>
                   <div className="absolute inset-0 flex items-center justify-center sm:justify-end px-2 sm:px-4 md:px-6 lg:px-8">
                     <div className="text-center sm:text-right flex flex-col items-center sm:items-end text-white space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6 max-w-[90%] sm:max-w-[280px] md:max-w-[300px] lg:max-w-[320px]">
                       <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
@@ -196,27 +186,17 @@ const DynamicBanner = ({ data }) => {
                 className="relative w-full h-full cursor-pointer"
                 onClick={() => handleNavigation(banner)}
               >
-                {banner.file_type === "image" ? (
-                  <picture>
-                    <source
-                      media="(max-width: 767px)"
-                      srcSet={banner.mobile_image_url || banner.file_url}
-                    />
-                    <img
-                      src={banner.file_url}
-                      alt={banner.title || `Banner ${banner.id}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </picture>
-                ) : (
-                  <video
+                <picture>
+                  <source
+                    media="(max-width: 767px)"
+                    srcSet={banner.mobile_image_url || banner.file_url}
+                  />
+                  <img
                     src={banner.file_url}
-                    autoPlay
-                    muted
-                    loop
+                    alt={banner.title || `Banner ${banner.id}`}
                     className="w-full h-full object-cover"
                   />
-                )}
+                </picture>
                 <div className="absolute inset-0 flex items-center justify-center sm:justify-end px-2 sm:px-4 md:px-6 lg:px-8">
                   <div className="text-center sm:text-right flex flex-col items-center sm:items-end text-white space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6 max-w-[90%] sm:max-w-[280px] md:max-w-[300px] lg:max-w-[320px]">
                     <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">

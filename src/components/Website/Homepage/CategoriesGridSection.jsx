@@ -30,11 +30,11 @@ const CategoryGrid = ({ data }) => {
               )
             }
           >
-            <div className="w-24 sm:w-28 md:w-32 lg:w-48 h-24 sm:h-28 md:h-32 lg:h-48 rounded-full overflow-hidden shadow-md flex items-center justify-center bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200">
+            <div className="w-24 sm:w-28 md:w-32 lg:w-48 h-24 sm:h-28 md:h-32 lg:h-48 rounded-full overflow-hidden shadow-md flex items-center justify-center">
               <img
                 src={category.image}
                 alt={category.title}
-                className="w-[70%] h-[70%] object-contain"
+                className="w-50 h-50 object-contain"
               />
             </div>
             <p className="mt-2 sm:mt-3 text-xs sm:text-sm md:text-base font-medium text-gray-800 text-center max-w-[120px] sm:max-w-[140px] md:max-w-[160px]">

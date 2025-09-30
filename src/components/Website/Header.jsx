@@ -511,6 +511,13 @@ const Header = () => {
   }, []);
 
   const getCurrentLocation = () => {
+    // Check if location is already cached
+    const cachedLocation = localStorage.getItem("userLocation");
+    if (cachedLocation) {
+      setCurrentLocation(cachedLocation);
+      return;
+    }
+
     if (!navigator.geolocation) {
       setCurrentLocation("Geolocation not supported");
       return;
@@ -535,24 +542,25 @@ const Header = () => {
               component.types.includes("locality")
             );
 
+            let newLocation;
             if (neighborhood && locality) {
-              setCurrentLocation(
-                neighborhood.short_name + ", " + locality.short_name
-              );
+              newLocation = `${neighborhood.short_name}, ${locality.short_name}`;
             } else {
               const locationStrings =
                 data.results[0]?.formatted_address.split(",");
-
               if (locationStrings.length >= 3) {
                 const firstWord =
                   locationStrings[locationStrings.length - 4]?.trim();
                 const city =
                   locationStrings[locationStrings.length - 3]?.trim();
-                setCurrentLocation(`${firstWord}, ${city}`);
+                newLocation = `${firstWord}, ${city}`;
               } else {
-                setCurrentLocation(data.results[0]?.formatted_address);
+                newLocation = data.results[0]?.formatted_address;
               }
             }
+            setCurrentLocation(newLocation);
+            // Cache the location
+            localStorage.setItem("userLocation", newLocation);
           } else {
             setCurrentLocation("Unable to fetch location");
           }
@@ -564,6 +572,8 @@ const Header = () => {
       (error) => {
         console.error("Geolocation error:", error);
         setCurrentLocation("Permission denied");
+        // Optionally cache the error state to avoid repeated prompts
+        // localStorage.setItem("userLocation", "Permission denied");
       },
       {
         enableHighAccuracy: true,

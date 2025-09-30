@@ -66,11 +66,11 @@ const RecentlyViewed = ({ data }) => {
           {browsing_history.map((item, index) => (
             <div key={index} className="px-2">
               <div className="rounded-2xl overflow-hidden bg-white border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-full aspect-[4/3] overflow-hidden">
+                <div className="w-full aspect-square overflow-hidden">
                   <img
                     src={item.image}
                     alt={`image of ${item.name}`}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-contain object-center hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 <div className="p-3 text-center">
