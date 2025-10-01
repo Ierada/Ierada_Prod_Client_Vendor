@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Loader2, ArrowLeft, Plus, X, ExternalLink } from "lucide-react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
@@ -12,14 +12,13 @@ import {
 } from "../../../services/api.category";
 import { getBannersByType } from "../../../services/api.banner";
 import {
-  createSection,
-  getSectionById,
-  updateSection,
-} from "../../../services/api.homepage";
+  getThemeSectionById,
+  createThemeSection,
+  updateThemeSection,
+} from "../../../services/api.producttheme";
 import config from "../../../config/config";
 import { getActiveOffer } from "../../../services/api.offers";
 import defaultImg from "/assets/bg/empty-img2.svg";
-import { getThemes } from "../../../services/api.producttheme";
 
 const sectionTypeConfigs = {
   slider: {
@@ -229,7 +228,7 @@ const sectionTypeConfigs = {
     }),
   },
   category_grid: {
-    title: "Category Grid (New)",
+    title: "Category Grid",
     description: "Select multiple categories to display",
     multiSelect: true,
     singleSelect: false,
@@ -246,14 +245,14 @@ const sectionTypeConfigs = {
     }),
   },
   recently_viewed: {
-    title: "Recently Viewed (New)",
+    title: "Recently Viewed",
     description:
       "Automatically displays recently viewed products based on user",
     multiSelect: false,
     singleSelect: false,
   },
   deal_of_the_day: {
-    title: "Deal of the Day (New)",
+    title: "Deal of the Day",
     description: "Select a offer to display",
     multiSelect: false,
     singleSelect: true,
@@ -270,13 +269,13 @@ const sectionTypeConfigs = {
     }),
   },
   personalized_products: {
-    title: "Personalized Products (New)",
+    title: "Personalized Products",
     description: "Automatically displays personalized products based on user",
     multiSelect: false,
     singleSelect: false,
   },
   dynamicbanner: {
-    title: "Dynamic Banner Section (New)",
+    title: "Dynamic Banner Section",
     description:
       "Select multiple banners to display (up to 4 per page on large screens)",
     multiSelect: true,
@@ -294,34 +293,16 @@ const sectionTypeConfigs = {
     }),
   },
   seo_content: {
-    title: "SEO Content (New)",
+    title: "SEO Content",
     description: "Add rich text content for SEO purposes",
     multiSelect: false,
     singleSelect: false,
     customContent: true,
   },
-  theme_section: {
-    title: "Theme Section",
-    description: "Select multiple themes to display (up to 4 recommended)",
-    multiSelect: true,
-    singleSelect: false,
-    fetchApi: getThemes,
-    renderOption: (item) => ({
-      title: item.title,
-      media: (
-        <img
-          src={item.image || defaultImg}
-          className="w-20 h-20 object-cover rounded"
-          alt={item.title}
-        />
-      ),
-    }),
-  },
 };
 
-const SectionManagement = () => {
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
+const ThemeSectionEditor = () => {
+  const { themeId, sectionId } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -333,7 +314,6 @@ const SectionManagement = () => {
     type: "slider",
     is_active: true,
     content: [],
-    image: null,
   });
   const [pagination, setPagination] = useState({
     page: 1,
@@ -343,10 +323,10 @@ const SectionManagement = () => {
   });
 
   useEffect(() => {
-    if (id) {
+    if (sectionId) {
       loadSection();
     }
-  }, [id]);
+  }, [sectionId]);
 
   useEffect(() => {
     loadOptions(formData.type);
@@ -355,17 +335,10 @@ const SectionManagement = () => {
   const loadSection = async () => {
     try {
       setLoading(true);
-      const response = await getSectionById(id);
+      const response = await getThemeSectionById(themeId, sectionId);
       if (response.status === 1) {
-        const {
-          title,
-          subtitle,
-          description,
-          type,
-          is_active,
-          content,
-          image,
-        } = response.data;
+        const { title, subtitle, description, type, is_active, content } =
+          response.data;
         const parsedContent =
           typeof content === "string" ? JSON.parse(content) : content;
         let contentValue;
@@ -383,14 +356,12 @@ const SectionManagement = () => {
           type,
           is_active,
           content: contentValue,
-          image: type === "theme_section" ? image || null : null,
         });
       } else {
         setError("Failed to load section");
       }
     } catch (err) {
       setError("Failed to load section");
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -443,52 +414,42 @@ const SectionManagement = () => {
     try {
       const submissionData = new FormData();
 
-      // Append normal fields
       Object.keys(formData).forEach((key) => {
         if (key !== "content") {
           submissionData.append(key, formData[key]);
         }
       });
 
-      // Handle special cases
       if (formData.type === "brand_logos") {
         formData.content.forEach((item) => {
           if (item instanceof File) {
-            submissionData.append("brand_images", item); // Append new images
+            submissionData.append("brand_images", item);
           } else {
-            submissionData.append("existing_images[]", item); // Append existing image filenames
+            submissionData.append("existing_images[]", item);
           }
         });
-      } else if (formData.type === "theme_section") {
-        submissionData.append("content", JSON.stringify(formData.content));
-        if (formData.banner instanceof File) {
-          submissionData.append("image", formData.banner); // For new banner upload
-        } else if (formData.banner) {
-          submissionData.append("existing_images[]", formData.banner); // For existing banner
-        }
       } else if (formData.type === "seo_content") {
         submissionData.append(
           "content",
           JSON.stringify({ html: formData.content })
         );
       } else {
-        // If not brand_logos or seo_content, just send the content as JSON string
         submissionData.append("content", JSON.stringify(formData.content));
       }
 
-      // Choose API function based on edit (id exists) or create (no id)
-      const response = id
-        ? await updateSection(id, submissionData)
-        : await createSection(submissionData);
+      const response = sectionId
+        ? await updateThemeSection(themeId, sectionId, submissionData)
+        : await createThemeSection(themeId, submissionData);
 
       if (response.status === 1) {
-        navigate(`${config.VITE_BASE_ADMIN_URL}/managehomepage`);
+        navigate(
+          `${config.VITE_BASE_ADMIN_URL}/managethemes/managesections/${themeId}`
+        );
       } else {
         setError(response.message || "Failed to save section");
       }
     } catch (err) {
       setError("Failed to save section");
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -638,92 +599,6 @@ const SectionManagement = () => {
                 </div>
               );
             })}
-          </div>
-        </div>
-      );
-    }
-
-    if (formData.type === "theme_section") {
-      const config = sectionTypeConfigs[formData.type];
-      const sortedOptions = [...options].sort((a, b) => {
-        const aSelected = formData.content?.includes(a.id);
-        const bSelected = formData.content?.includes(b.id);
-        if (aSelected && !bSelected) return -1;
-        if (!aSelected && bSelected) return 1;
-        return 0;
-      });
-
-      return (
-        <div className="space-y-6">
-          {/* Themes selector */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Select Themes
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {sortedOptions?.map((option) => {
-                const { title, media } = config.renderOption(option);
-                const isSelected = formData.content?.includes(option.id);
-
-                return (
-                  <div
-                    key={option.id}
-                    onClick={() => {
-                      const newContent = isSelected
-                        ? formData.content.filter((id) => id !== option.id)
-                        : [...formData.content, option.id];
-                      setFormData({ ...formData, content: newContent });
-                    }}
-                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                      isSelected
-                        ? "border-blue-500 bg-blue-50"
-                        : "hover:border-gray-400"
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      {media}
-                      <div>
-                        <h3 className="font-medium">{title}</h3>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Banner upload */}
-          <div className="p-4 bg-white rounded-lg shadow-sm border">
-            <label className="block text-sm font-medium mb-2">
-              Upload Banner Image
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                setFormData({ ...formData, image: e.target.files[0] });
-              }}
-              className="w-full px-4 py-2 border rounded-md"
-            />
-            {formData.image && (
-              <div className="mt-4 relative">
-                <img
-                  src={
-                    formData.image instanceof File
-                      ? URL.createObjectURL(formData.image)
-                      : `${formData.image}`
-                  }
-                  alt="Banner Preview"
-                  className="w-full h-40 object-cover rounded-md border"
-                />
-                <button
-                  onClick={() => setFormData({ ...formData, image: null })}
-                  className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            )}
           </div>
         </div>
       );
@@ -937,15 +812,13 @@ const SectionManagement = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-6 flex items-center">
           <button
-            onClick={() =>
-              navigate(`${config.VITE_BASE_ADMIN_URL}/managehomepage`)
-            }
+            onClick={() => navigate(-1)}
             className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-2xl font-semibold">
-            {id ? "Edit Section" : "Create New Section"}
+            {sectionId ? "Edit Section" : "Create New Section"}
           </h1>
         </div>
 
@@ -1097,9 +970,7 @@ const SectionManagement = () => {
           <div className="flex justify-end gap-4 pt-6">
             <button
               type="button"
-              onClick={() =>
-                navigate(`${config.VITE_BASE_ADMIN_URL}/managehomepage`)
-              }
+              onClick={() => navigate(-1)}
               className="px-6 py-2 text-gray-600 hover:text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
             >
               Cancel
@@ -1109,7 +980,11 @@ const SectionManagement = () => {
               disabled={loading}
               className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >
-              {loading ? "Saving..." : id ? "Update Section" : "Create Section"}
+              {loading
+                ? "Saving..."
+                : sectionId
+                ? "Update Section"
+                : "Create Section"}
             </button>
           </div>
         </form>
@@ -1118,4 +993,4 @@ const SectionManagement = () => {
   );
 };
 
-export default SectionManagement;
+export default ThemeSectionEditor;

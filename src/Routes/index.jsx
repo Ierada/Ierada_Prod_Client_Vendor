@@ -127,6 +127,11 @@ import EmailSubscribers from "../pages/Admin/EmailSubscribe/index.jsx";
 import SizeColorManagement from "../pages/Admin/SizeColorManagement/index.jsx";
 import SettingsManagement from "../pages/Admin/Settings/SettingsManagement.jsx";
 import AccountDeletionInstructions from "../pages/Website/AccountDeletion/index.jsx";
+import ProductThemeManager from "../pages/Admin/ProductThemeManager/index.jsx";
+import ProductThemeEditor from "../pages/Admin/ProductThemeManager/ProductThemeEditor.jsx";
+import ThemeSectionManager from "../pages/Admin/ProductThemeManager/ThemeSectionManager.jsx";
+import ThemeSectionEditor from "../pages/Admin/ProductThemeManager/ThemeSectionEditor.jsx";
+import ProductThemePage from "../pages/Website/ProductTheme/index.jsx";
 
 // Permission mapping for routes
 const routePermissions = {
@@ -406,6 +411,7 @@ const ProjectRoutes = () => {
         { path: `page/:slug`, element: <PageView /> },
         { path: `account-deletion`, element: <AccountDeletionInstructions /> },
         { path: `track/order/:orderToken`, element: <TrackResult /> },
+        { path: `theme/:slug`, element: <ProductThemePage /> },
 
         // Customer Protected Routes
         {
@@ -787,6 +793,36 @@ const ProjectRoutes = () => {
               path: `referral-settings`,
               element: <ReferralSettings />,
               permissionPath: "referral-settings",
+            },
+            {
+              path: `managethemes`,
+              element: <ProductThemeManager />,
+              permissionPath: "managethemes",
+            },
+            {
+              path: `managethemes/add`,
+              element: <ProductThemeEditor />,
+              permissionPath: "managethemes/add",
+            },
+            {
+              path: `managethemes/edit/:id`,
+              element: <ProductThemeEditor />,
+              permissionPath: "managethemes/edit/:id",
+            },
+            {
+              path: `managethemes/managesections/:themeId`,
+              element: <ThemeSectionManager />,
+              permissionPath: "managethemes/managesections/:themeId",
+            },
+            {
+              path: `managethemes/addsection/:themeId`,
+              element: <ThemeSectionEditor />,
+              permissionPath: "managethemes/addsection/:themeId",
+            },
+            {
+              path: `managethemes/editsection/:themeId/:sectionId`,
+              element: <ThemeSectionEditor />,
+              permissionPath: "managethemes/editsection/:themeId/:sectionId",
             },
           ],
         },

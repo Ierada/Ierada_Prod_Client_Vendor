@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { getHomePageData } from "../../../services/api.homepage";
 import { getUserIdentifier } from "../../../utils/userIdentifier";
+import { getThemePageData } from "../../../services/api.producttheme";
+
 import HeroSlider from "../../../components/Website/Homepage/HeroSlider";
-import ProductCollection from "../../../components/Website/Homepage/ProductCollection";
 import CategoryCollection from "../../../components/Website/Homepage/CategoryCollection";
 import Banner from "../../../components/Website/Homepage/Banner";
 import VideoSection from "../../../components/Website/Homepage/VideoSection";
@@ -25,17 +25,20 @@ import CategoryGrid from "../../../components/Website/Homepage/CategoriesGridSec
 import RecentlyViewed from "../../../components/Website/Homepage/RecentlyViewedSection";
 import DealOfTheDay from "../../../components/Website/Homepage/DealOfTheDay";
 import SeoContent from "../../../components/Website/Homepage/SEOContent";
-import ThemeSection from "../../../components/Website/Homepage/ThemeSection";
+import { useParams } from "react-router";
 
-const Home = () => {
+const ProductThemePage = () => {
+  const { slug } = useParams();
   const [sections, setSections] = useState([]);
+  const [themeData, setThemeData] = useState({});
 
   const fetchData = async () => {
     try {
       const userId = getUserIdentifier();
-      const response = await getHomePageData(userId);
+      const response = await getThemePageData(slug, userId);
       if (response.status === 1) {
-        setSections(response.data);
+        setThemeData(response.data?.theme);
+        setSections(response.data?.sections);
       }
     } catch (error) {
       console.error("Error fetching homepage data:", error);
@@ -90,8 +93,6 @@ const Home = () => {
         return <PopularProductsSlider key={section.id} data={section} />;
       case "seo_content":
         return <SeoContent key={section.id} data={section} />;
-      case "theme_section":
-        return <ThemeSection key={section.id} data={section} />;
       default:
         return null;
     }
@@ -104,4 +105,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default ProductThemePage;

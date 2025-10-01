@@ -50,6 +50,7 @@ import {
   Receipt,
   Wallet,
   ScrollText,
+  Paintbrush,
 } from "lucide-react";
 
 const vendorBaseUrl = config.VITE_BASE_VENDOR_URL;
@@ -322,6 +323,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         icon: Home,
         path: "/managehomepage",
         permissionKey: "managehomepage",
+        permissionType: "view",
+      },
+      {
+        text: "Manage Themes",
+        icon: Paintbrush,
+        path: "/managethemes",
+        permissionKey: "managethemes",
         permissionType: "view",
       },
       {
