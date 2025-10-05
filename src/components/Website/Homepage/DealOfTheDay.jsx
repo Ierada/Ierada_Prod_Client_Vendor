@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import config from "../../../config/config";
+import left_decor from "/assets/heading_decoration/heading_decoration_left.svg";
+import right_decor from "/assets/heading_decoration/heading_decoration_right.svg";
 
 const DealOfTheDay = ({ data }) => {
   const navigate = useNavigate();
@@ -39,9 +41,23 @@ const DealOfTheDay = ({ data }) => {
     <section className="py-6 md:py-10 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-2 mb-6 md:mb-8">
+          {left_decor && (
+            <img
+              src={left_decor}
+              alt="Left Decoration"
+              className="h-6 md:h-10 lg:h-12 w-auto"
+            />
+          )}
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary-100">
             {data?.title}
           </h2>
+          {right_decor && (
+            <img
+              src={right_decor}
+              alt="Right Decoration"
+              className="h-6 md:h-10 lg:h-12 w-auto"
+            />
+          )}
           <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-600">
             {data?.subtitle}
           </h3>

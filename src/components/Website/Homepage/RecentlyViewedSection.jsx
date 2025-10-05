@@ -4,6 +4,8 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { useNavigate } from "react-router-dom";
 import config from "../../../config/config";
+import left_decor from "/assets/heading_decoration/heading_decoration_left.svg";
+import right_decor from "/assets/heading_decoration/heading_decoration_right.svg";
 
 const RecentlyViewed = ({ data }) => {
   const navigate = useNavigate();
@@ -50,9 +52,23 @@ const RecentlyViewed = ({ data }) => {
   return (
     <section className="px-4 sm:px-6 md:px-8 lg:px-16 space-y-4">
       <div className="text-center pb-4">
+        {left_decor && (
+          <img
+            src={left_decor}
+            alt="Left Decoration"
+            className="h-6 md:h-10 lg:h-12 w-auto"
+          />
+        )}
         <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
           {data?.title}
         </h2>
+        {right_decor && (
+          <img
+            src={right_decor}
+            alt="Right Decoration"
+            className="h-6 md:h-10 lg:h-12 w-auto"
+          />
+        )}
         <h3 className="text-base sm:text-lg md:text-xl font-semibold text-black-100 mt-2">
           {data?.subtitle}
         </h3>

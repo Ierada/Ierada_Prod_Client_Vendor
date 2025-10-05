@@ -10,6 +10,7 @@ import {
   ChevronUp,
   ArrowUpDown,
   Filter,
+  Plus,
 } from "lucide-react";
 import {
   useTable,
@@ -28,6 +29,8 @@ import { getProductsByVendorId } from "../../../services/api.product";
 import VendorDetails from "./VendorDetails";
 import DefaultProfile from "/assets/user/person-circle.png";
 import { format } from "date-fns";
+import { useNavigate } from "react-router";
+import config from "../../../config/config";
 
 // Confirmation Modal Component
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
@@ -186,6 +189,7 @@ const exportToCSV = (data) => {
 };
 
 const VendorManagement = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("sellers_request");
   const [vendorsData, setVendorsData] = useState([]);
   const [filterOptions, setFilterOptions] = useState({
@@ -574,14 +578,27 @@ const VendorManagement = () => {
           <h1 className="text-2xl text-gray-800 font-semibold">
             Vendors Management
           </h1>
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-            <Download className="h-4 w-4" />
-            Export CSV
-            {selectedFlatRows.length > 0 ? `(${selectedFlatRows.length})` : ""}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <Download className="h-4 w-4" />
+              Export CSV
+              {selectedFlatRows.length > 0
+                ? `(${selectedFlatRows.length})`
+                : ""}
+            </button>
+            <button
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              onClick={() =>
+                navigate(`${config.VITE_BASE_ADMIN_URL}/vendors/add`)
+              }
+            >
+              Add
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm">

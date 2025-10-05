@@ -19,6 +19,25 @@ export const registerVendor = async (vendorData) => {
   }
 };
 
+export const registerVendorByAdmin = async (vendorData) => {
+  try {
+    const res = await apiClient.post(
+      `/auth/vendor/registerbyadmin`,
+      vendorData
+    );
+    if (res.data.status === 1) {
+      notifyOnSuccess(res.data.message);
+    } else {
+      // notifyOnFail(res.data.message);
+    }
+    return res.data;
+  } catch (error) {
+    //default fallback for error
+    notifyOnFail("Error reaching the server");
+    // return error.response || error;
+  }
+};
+
 export const vendorLogin = async (data) => {
   try {
     const res = await apiClient.post(`/auth/vendor/login`, data);
@@ -113,7 +132,7 @@ export const verifyGoogle = async (data) => {
   } catch (error) {
     notifyOnFail("Error reaching the server");
   }
-}
+};
 
 export const verifyFacebook = async (data) => {
   try {
@@ -127,7 +146,7 @@ export const verifyFacebook = async (data) => {
   } catch (error) {
     notifyOnFail("Error reaching the server");
   }
-}
+};
 
 export const verifyInstagram = async (data) => {
   try {
@@ -141,7 +160,7 @@ export const verifyInstagram = async (data) => {
   } catch (error) {
     notifyOnFail("Error reaching the server");
   }
-}
+};
 
 export const verifyMobile = async (data) => {
   try {

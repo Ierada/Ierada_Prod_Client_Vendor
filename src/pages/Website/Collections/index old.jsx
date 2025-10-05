@@ -36,8 +36,6 @@ import CommonTopBanner from "../../../components/Website/CommonTopBanner";
 import common_top_banner from "/assets/banners/Commen-top-banner.png";
 import debounce from "lodash/debounce";
 import { Loader2 } from "lucide-react";
-import { AiFillLike, AiOutlineLike } from "react-icons/ai";
-import { addLike, getUserLikes } from "../../../services/api.likes";
 
 const bannerData = [
   {
@@ -72,9 +70,8 @@ const CollectionsPage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [wishlists, setWishlists] = useState([]);
   const [wishlistedItems, setWishlistedItems] = useState(new Set());
-  const [likedItems, setLikedItems] = useState(new Set());
   const pageTopRef = useRef(null);
-  const sectionRef = useRef(null);
+  const sectionRef = useRef(null); // Ref for the product section
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(100);
@@ -387,26 +384,9 @@ const CollectionsPage = () => {
     }
   }, [user]);
 
-  const fetchLikes = useCallback(async () => {
-    if (user) {
-      try {
-        const likesResponse = await getUserLikes(user.id);
-        if (likesResponse) {
-          setLikedItems(new Set(likesResponse.map((item) => item.product_id)));
-        }
-      } catch (error) {
-        console.error("Error fetching likes:", error);
-      }
-    }
-  }, [user]);
-
   useEffect(() => {
     fetchWishlist();
   }, [fetchWishlist]);
-
-  useEffect(() => {
-    fetchLikes();
-  }, [fetchLikes]);
 
   const buildActiveFiltersFromState = useCallback(
     (data) => {
@@ -681,7 +661,7 @@ const CollectionsPage = () => {
           className="flex items-center space-x-2 px-4 py-2 border rounded-md bg-white hover:bg-gray-50 transition-colors"
         >
           <span>
-            Sort by: {sortOptions.find((opt) => opt.value === sortBy)?.label}
+            Sort By: {sortOptions.find((opt) => opt.value === sortBy)?.label}
           </span>
           <ChevronDown
             className={`w-4 h-4 transition-transform ${
@@ -756,29 +736,6 @@ const CollectionsPage = () => {
       }
     },
     [user, wishlistedItems, wishlists, fetchWishlist, setTriggerHeaderCounts]
-  );
-
-  const handleLike = useCallback(
-    async (productId) => {
-      if (!user) {
-        setShowLoginModal(true);
-        return;
-      }
-
-      if (likedItems.has(productId)) {
-        notifyOnFail("Product already liked!");
-        return;
-      }
-
-      try {
-        await addLike(user.id, productId);
-        setLikedItems((prev) => new Set(prev).add(productId));
-        await fetchLikes();
-      } catch (error) {
-        console.error("Error liking product:", error);
-      }
-    },
-    [user, likedItems]
   );
 
   const RatingStars = useCallback(({ rating = 0 }) => {
@@ -874,10 +831,9 @@ const CollectionsPage = () => {
                 >
                   {product.media && product.media.length > 0 ? (
                     <img
-                      // src={product.media[0].url}
-                      src="/assets/product/productImg.jpg"
+                      src={product.media[0].url}
                       alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
                       loading="lazy"
                     />
                   ) : (
@@ -902,39 +858,25 @@ const CollectionsPage = () => {
                   </button>
                 </div>
 
-                <div className="bg-white absolute bottom-3 left-3 px-1.5 text-sm  z-10 rounded">
-                  <div className="flex items-center gap-1">
-                    <AiFillLike className="w-4 h-4 text-[#FF3B00]" />
-                    <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent font-semibold font-medium">
-                      {product.total_likes || 0}
-                    </span>
+                {product.discount > 0 && (
+                  <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 text-xs font-bold rounded">
+                    {product.discount}% OFF
                   </div>
-                </div>
+                )}
               </div>
 
               <div
-                className="p-4 relative"
+                className="p-4"
                 onClick={() => navigate(`/product/${product.slug}`)}
               >
-                <button
-                  className="absolute top-1 right-1 rounded bg-white p-1 flex items-center justify-center transition-all shadow-sm hover:shadow-md"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLike(product.id);
-                  }}
-                >
-                  {likedItems.has(product.id) ? (
-                    <AiFillLike className="w-4 h-4 text-[#FF3B00]" />
-                  ) : (
-                    <AiOutlineLike className="w-4 h-4 text-[#FF3B00] hover:text-[#FFB700]" />
-                  )}
-                </button>
                 <h3 className="font-medium text-sm mb-1 truncate cursor-pointer hover:text-gray-700">
                   {product.name}
                 </h3>
 
                 <div className="flex items-center mb-2">
-                  <RatingStars rating={product.reviewStats?.average_rating} />
+                  <RatingStars
+                    rating={product.reviewStats?.average_rating || 0}
+                  />
                   <span className="text-xs text-gray-500 ml-2">
                     ({product.reviewStats?.total_reviews || 0})
                   </span>
@@ -944,12 +886,9 @@ const CollectionsPage = () => {
                   <span className="font-semibold">
                     ₹{product.discounted_price}
                   </span>
-                  <span className="text-gray-400 text-sm line-through">
-                    ₹{product.original_price}
-                  </span>
                   {product.discount > 0 && (
-                    <span className="uppercase bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent text-sm">
-                      {product.discount}% OFF
+                    <span className="text-gray-400 text-sm line-through">
+                      ₹{product.original_price}
                     </span>
                   )}
                 </div>
@@ -965,59 +904,55 @@ const CollectionsPage = () => {
     navigate,
     handleWishlistToggle,
     wishlistedItems,
-    handleLike,
-    likedItems,
     RatingStars,
     collectionData?.isTrending,
   ]);
 
   const renderCategoryFilters = useCallback(
     () => (
-      <div className="p-[1.5px] rounded-md bg-gradient-to-r from-[#FFB700] to-[#FF3B00] shadow-lg shadow-orange-500/40 mb-6">
-        <div className="bg-white rounded-md px-3 py-3">
-          <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => toggleFilterExpansion("categories")}
-          >
-            <h3 className="font-semibold uppercase">Categories</h3>
-            {expandedFilters.categories ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
-          </div>
-
-          <AnimatePresence>
-            {expandedFilters.categories && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-2 ml-2 mt-2 overflow-hidden"
-              >
-                {collectionData?.categories.map((category) => (
-                  <div key={category.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`cat-${category.id}`}
-                      checked={filters.categories.includes(category.id)}
-                      onChange={() => {
-                        handleFilterChange("categories", category.id);
-                        handleFilterChange("subcategories", []);
-                        handleFilterChange("innersubcategories", []);
-                      }}
-                      className="mr-2 w-4 h-4 border border-gray-400 rounded"
-                    />
-                    <label htmlFor={`cat-${category.id}`} className="text-sm">
-                      {category.title}
-                    </label>
-                  </div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+      <div className="mb-6">
+        <div
+          className="flex justify-between items-center cursor-pointer mb-2"
+          onClick={() => toggleFilterExpansion("categories")}
+        >
+          <h3 className="font-medium">Categories</h3>
+          {expandedFilters.categories ? (
+            <Minus className="w-4 h-4" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
         </div>
+
+        <AnimatePresence>
+          {expandedFilters.categories && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-2 ml-2 overflow-hidden"
+            >
+              {collectionData?.categories.map((category) => (
+                <div key={category.id} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`cat-${category.id}`}
+                    checked={filters.categories.includes(category.id)}
+                    onChange={() => {
+                      handleFilterChange("categories", category.id);
+                      handleFilterChange("subcategories", []);
+                      handleFilterChange("innersubcategories", []);
+                    }}
+                    className="mr-2"
+                  />
+                  <label htmlFor={`cat-${category.id}`} className="text-sm">
+                    {category.title}
+                  </label>
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     ),
     [
@@ -1037,53 +972,51 @@ const CollectionsPage = () => {
     }
 
     return (
-      <div className="p-[1.5px] rounded-md bg-gradient-to-r from-[#FFB700] to-[#FF3B00] shadow-lg shadow-orange-500/40 mb-6">
-        <div className="bg-white rounded-md px-3 py-3">
-          <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => toggleFilterExpansion("subcategories")}
-          >
-            <h3 className="font-semibold capitalize">Subcategories</h3>
-            {expandedFilters.subcategories ? (
-              <Minus className="w-4 h-4" />
-            ) : (
-              <Plus className="w-4 h-4" />
-            )}
-          </div>
-
-          <AnimatePresence>
-            {expandedFilters.subcategories && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-2 ml-2 overflow-hidden"
-              >
-                {categoryHierarchy.subcategories.map((subcategory) => (
-                  <div key={subcategory.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`subcat-${subcategory.id}`}
-                      checked={filters.subcategories.includes(subcategory.id)}
-                      onChange={() => {
-                        handleFilterChange("subcategories", subcategory.id);
-                        handleFilterChange("innersubcategories", []);
-                      }}
-                      className="mr-2"
-                    />
-                    <label
-                      htmlFor={`subcat-${subcategory.id}`}
-                      className="text-sm"
-                    >
-                      {subcategory.title}
-                    </label>
-                  </div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+      <div className="mb-6">
+        <div
+          className="flex justify-between items-center cursor-pointer mb-2"
+          onClick={() => toggleFilterExpansion("subcategories")}
+        >
+          <h3 className="font-medium">Subcategories</h3>
+          {expandedFilters.subcategories ? (
+            <Minus className="w-4 h-4" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
         </div>
+
+        <AnimatePresence>
+          {expandedFilters.subcategories && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-2 ml-2 overflow-hidden"
+            >
+              {categoryHierarchy.subcategories.map((subcategory) => (
+                <div key={subcategory.id} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`subcat-${subcategory.id}`}
+                    checked={filters.subcategories.includes(subcategory.id)}
+                    onChange={() => {
+                      handleFilterChange("subcategories", subcategory.id);
+                      handleFilterChange("innersubcategories", []);
+                    }}
+                    className="mr-2"
+                  />
+                  <label
+                    htmlFor={`subcat-${subcategory.id}`}
+                    className="text-sm"
+                  >
+                    {subcategory.title}
+                  </label>
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }, [
@@ -1110,57 +1043,55 @@ const CollectionsPage = () => {
     if (relevantInnerSubcategories.length === 0) return null;
 
     return (
-      <div className="p-[1.5px] rounded-md bg-gradient-to-r from-[#FFB700] to-[#FF3B00] shadow-lg shadow-orange-500/40 mb-6">
-        <div className="bg-white rounded-md px-3 py-3">
-          <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => toggleFilterExpansion("innersubcategories")}
-          >
-            <h3 className="font-semibold capitalize">Inner Subcategories</h3>
-            {expandedFilters.innersubcategories ? (
-              <Minus className="w-4 h-4" />
-            ) : (
-              <Plus className="w-4 h-4" />
-            )}
-          </div>
-
-          <AnimatePresence>
-            {expandedFilters.innersubcategories && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-2 ml-2 overflow-hidden"
-              >
-                {relevantInnerSubcategories.map((innerSubcategory) => (
-                  <div key={innerSubcategory.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`innersubcat-${innerSubcategory.id}`}
-                      checked={filters.innersubcategories.includes(
-                        innerSubcategory.id
-                      )}
-                      onChange={() =>
-                        handleFilterChange(
-                          "innersubcategories",
-                          innerSubcategory.id
-                        )
-                      }
-                      className="mr-2"
-                    />
-                    <label
-                      htmlFor={`innersubcat-${innerSubcategory.id}`}
-                      className="text-sm"
-                    >
-                      {innerSubcategory.title}
-                    </label>
-                  </div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+      <div className="mb-6">
+        <div
+          className="flex justify-between items-center cursor-pointer mb-2"
+          onClick={() => toggleFilterExpansion("innersubcategories")}
+        >
+          <h3 className="font-medium">Inner Subcategories</h3>
+          {expandedFilters.innersubcategories ? (
+            <Minus className="w-4 h-4" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
         </div>
+
+        <AnimatePresence>
+          {expandedFilters.innersubcategories && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-2 ml-2 overflow-hidden"
+            >
+              {relevantInnerSubcategories.map((innerSubcategory) => (
+                <div key={innerSubcategory.id} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`innersubcat-${innerSubcategory.id}`}
+                    checked={filters.innersubcategories.includes(
+                      innerSubcategory.id
+                    )}
+                    onChange={() =>
+                      handleFilterChange(
+                        "innersubcategories",
+                        innerSubcategory.id
+                      )
+                    }
+                    className="mr-2"
+                  />
+                  <label
+                    htmlFor={`innersubcat-${innerSubcategory.id}`}
+                    className="text-sm"
+                  >
+                    {innerSubcategory.title}
+                  </label>
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }, [
@@ -1181,64 +1112,59 @@ const CollectionsPage = () => {
     ];
 
     return (
-      <div className="p-[1.5px] rounded-md bg-gradient-to-r from-[#FFB700] to-[#FF3B00] shadow-lg shadow-orange-500/40 mb-6">
-        <div className="bg-white rounded-md px-3 py-3">
-          <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => toggleFilterExpansion("rating")}
-          >
-            <h3 className="font-semibold capitalize">Rating</h3>
-            {expandedFilters.rating ? (
-              <Minus className="w-4 h-4" />
-            ) : (
-              <Plus className="w-4 h-4" />
-            )}
-          </div>
-
-          <AnimatePresence>
-            {expandedFilters.rating && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-2 pl-2 overflow-hidden"
-              >
-                {ratingOptions.map((option) => (
-                  <div key={option.value} className="flex items-center">
-                    <input
-                      type="radio"
-                      id={`rating-${option.value}`}
-                      checked={filters.minRating === option.value}
-                      onChange={() =>
-                        handleFilterChange("minRating", option.value)
-                      }
-                      className="mr-2"
-                      disabled={collectionData?.isTrending}
-                    />
-                    <label
-                      htmlFor={`rating-${option.value}`}
-                      className="text-sm flex items-center"
-                    >
-                      <div className="flex mr-2">
-                        {[...Array(option.value)].map((_, i) => (
-                          <FaStar key={i} className="text-amber-400 text-sm" />
-                        ))}
-                        {[...Array(5 - option.value)].map((_, i) => (
-                          <FaRegStar
-                            key={i}
-                            className="text-amber-400 text-sm"
-                          />
-                        ))}
-                      </div>
-                      {option.label}
-                    </label>
-                  </div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+      <div className="mb-6">
+        <div
+          className="flex justify-between items-center cursor-pointer mb-2"
+          onClick={() => toggleFilterExpansion("rating")}
+        >
+          <h3 className="font-medium">Rating</h3>
+          {expandedFilters.rating ? (
+            <Minus className="w-4 h-4" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
         </div>
+
+        <AnimatePresence>
+          {expandedFilters.rating && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-2 pl-2 overflow-hidden"
+            >
+              {ratingOptions.map((option) => (
+                <div key={option.value} className="flex items-center">
+                  <input
+                    type="radio"
+                    id={`rating-${option.value}`}
+                    checked={filters.minRating === option.value}
+                    onChange={() =>
+                      handleFilterChange("minRating", option.value)
+                    }
+                    className="mr-2"
+                    disabled={collectionData?.isTrending}
+                  />
+                  <label
+                    htmlFor={`rating-${option.value}`}
+                    className="text-sm flex items-center"
+                  >
+                    <div className="flex mr-2">
+                      {[...Array(option.value)].map((_, i) => (
+                        <FaStar key={i} className="text-amber-400 text-sm" />
+                      ))}
+                      {[...Array(5 - option.value)].map((_, i) => (
+                        <FaRegStar key={i} className="text-amber-400 text-sm" />
+                      ))}
+                    </div>
+                    {option.label}
+                  </label>
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }, [
@@ -1715,358 +1641,286 @@ const CollectionsPage = () => {
 
         <ActiveFiltersSection />
 
-        <div className="flex flex-col md:flex-row items-start gap-6">
-          <div className="hidden md:block w-64 flex-shrink-0 self-start">
-            <div className="sticky top-24 p-4 rounded-lg shadow-sm">
-              <h2 className="text-lg font-semibold mb-4">Filter Item</h2>
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="hidden md:block w-64 flex-shrink-0">
+            <div className="sticky top-24 bg-white p-4 rounded-lg shadow-sm">
+              <h2 className="text-lg font-semibold mb-4">Filter Products</h2>
 
               {renderCategoryFilters()}
               {renderSubcategoryFilters()}
               {renderInnerSubcategoryFilters()}
 
               {collectionData?.colors && (
-                <div className="p-[1.5px] rounded-md bg-gradient-to-r from-[#FFB700] to-[#FF3B00] shadow-lg shadow-orange-500/40 mb-6">
-                  <div className="bg-white rounded-md px-3 py-3">
-                    <div
-                      className="flex justify-between items-center cursor-pointer"
-                      onClick={() => toggleFilterExpansion("colors")}
-                    >
-                      <h3 className="font-semibold capitalize">Colors</h3>
-                      {expandedFilters.colors ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </div>
-
-                    <AnimatePresence>
-                      {expandedFilters.colors && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="flex flex-wrap gap-2 ml-2 overflow-hidden"
-                        >
-                          {collectionData.colors.map((color) => (
-                            // <button
-                            //   key={color.id}
-                            //   onClick={() =>
-                            //     handleFilterChange("colors", color.id)
-                            //   }
-                            //   className={`px-3 py-1 border rounded-md text-sm ${filters.colors.includes(color.id)
-                            //     ? "bg-black text-white border-black"
-                            //     : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                            //     }`}
-                            // >
-                            //   {color.name}
-                            // </button>
-                            <div
-                              key={color.id}
-                              className="flex item-center mb-2 w-full"
-                            >
-                              <input
-                                type="checkbox"
-                                id={`color-${color.id}`}
-                                checked={collectionData.colors.includes(
-                                  color.id
-                                )}
-                                onChange={() => {
-                                  handleFilterChange("colors", color.id);
-                                }}
-                                className="mr-2 w-4 h-4 border border-gray-400 rounded"
-                              />
-                              <div
-                                className="mr-2 w-5 h-5 rounded-full border border-black-900"
-                                style={{ backgroundColor: color.name }}
-                              ></div>
-                              <label
-                                htmlFor={`color-${color.id}`}
-                                className="text-sm black-900"
-                              >
-                                {color.name}
-                              </label>
-                            </div>
-                            // <div
-                            //   key={color.id}
-                            //   className="flex flex-col items-center"
-                            // >
-                            //   <button
-                            //     onClick={() =>
-                            //       handleFilterChange("colors", color.id)
-                            //     }
-                            //     className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                            //       filters.colors.includes(color.id)
-                            //         ? "ring-2 ring-black ring-offset-1"
-                            //         : ""
-                            //     }`}
-                            //     style={{ backgroundColor: color.code }}
-                            //     title={color.name}
-                            //   ></button>
-                            //   <span className="text-xs mt-1">{color.name}</span>
-                            // </div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                    {/* </div> */}
-                  </div>
-                </div>
-              )}
-
-              {collectionData?.sizes && (
-                <div className="p-[1.5px] rounded-md bg-gradient-to-r from-[#FFB700] to-[#FF3B00] shadow-lg shadow-orange-500/40 mb-6">
-                  <div className="bg-white rounded-md px-3 py-3">
-                    <div
-                      className="flex justify-between items-center cursor-pointer"
-                      onClick={() => toggleFilterExpansion("sizes")}
-                    >
-                      <h3 className="font-semibold capitalize">Sizes</h3>
-                      {expandedFilters.sizes ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </div>
-
-                    <AnimatePresence>
-                      {expandedFilters.sizes && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="flex flex-wrap gap-2 ml-2 overflow-hidden"
-                        >
-                          {collectionData.sizes.map((size) => (
-                            // <button
-                            //   key={size.id}
-                            //   onClick={() => handleFilterChange("sizes", size.id)}
-                            //   className={`px-3 py-1 border rounded-md text-sm ${filters.sizes.includes(size.id)
-                            //     ? "bg-black text-white border-black"
-                            //     : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                            //     }`}
-                            // >
-                            //   {size.name}
-                            // </button>
-                            <div
-                              key={size.id}
-                              className="flex item-center mb-2 w-full"
-                            >
-                              <input
-                                type="checkbox"
-                                id={`size-${size.id}`}
-                                checked={collectionData.sizes.includes(size.id)}
-                                onChange={() => {
-                                  handleFilterChange("sizes", size.id);
-                                }}
-                                className="mr-2 w-4 h-4 border border-gray-400 rounded"
-                              />
-                              <label
-                                htmlFor={`size-${size.id}`}
-                                className="text-sm black-900"
-                              >
-                                {size.name}
-                              </label>
-                            </div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                    {/* </div> */}
-                  </div>
-                </div>
-              )}
-
-              {collectionData?.fabric && (
-                <div className="p-[1.5px] rounded-md bg-gradient-to-r from-[#FFB700] to-[#FF3B00] shadow-lg shadow-orange-500/40 mb-6">
-                  <div className="bg-white rounded-md px-3 py-3">
-                    <div
-                      className="flex justify-between items-center cursor-pointer"
-                      onClick={() => toggleFilterExpansion("fabrics")}
-                    >
-                      <h3 className="font-semibold capitalize">Fabric</h3>
-                      {expandedFilters.fabrics ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </div>
-
-                    <AnimatePresence>
-                      {expandedFilters.fabrics && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="space-y-2 ml-2 overflow-hidden"
-                        >
-                          {collectionData.fabric.map((fabric) => (
-                            <div key={fabric.id} className="flex items-center">
-                              <input
-                                type="checkbox"
-                                id={`fab-${fabric.id}`}
-                                checked={filters.fabric.includes(fabric.id)}
-                                onChange={() =>
-                                  handleFilterChange("fabric", fabric.id)
-                                }
-                                className="mr-2 rounded"
-                              />
-                              <label
-                                htmlFor={`fab-${fabric.id}`}
-                                className="text-sm"
-                              >
-                                {fabric.name}
-                              </label>
-                            </div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                    {/* </div> */}
-                  </div>
-                </div>
-              )}
-
-              {/* {renderRatingFilters()} */}
-
-              <div className="p-[1.5px] rounded-md bg-gradient-to-r from-[#FFB700] to-[#FF3B00] shadow-lg shadow-orange-500/40 mb-6">
-                <div className="bg-white rounded-md px-3 py-3">
+                <div className="mb-6">
                   <div
-                    className="flex justify-between items-center cursor-pointer"
-                    onClick={() => toggleFilterExpansion("priceRange")}
+                    className="flex justify-between items-center cursor-pointer mb-2"
+                    onClick={() => toggleFilterExpansion("colors")}
                   >
-                    <h3 className="font-semibold capitalize">Price Range</h3>
-                    {expandedFilters.priceRange ? (
-                      <ChevronUp className="w-4 h-4" />
+                    <h3 className="font-medium">Colors</h3>
+                    {expandedFilters.colors ? (
+                      <Minus className="w-4 h-4" />
                     ) : (
-                      <ChevronDown className="w-4 h-4" />
+                      <Plus className="w-4 h-4" />
                     )}
                   </div>
 
                   <AnimatePresence>
-                    {expandedFilters.priceRange && (
+                    {expandedFilters.colors && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="mt-6 px-2 overflow-hidden"
+                        className="flex flex-wrap gap-2 ml-2 overflow-hidden"
                       >
-                        <div className="flex justify-between mb-4">
-                          <span className="font-medium">
-                            ₹{filters.priceRange[0]}
-                          </span>
-                          <span className="font-medium">
-                            ₹{filters.priceRange[1]}
-                          </span>
-                        </div>
-                        <div className="flex flex-col gap-2 mb-4">
-                          <div className="flex gap-4">
-                            <input
-                              type="number"
-                              value={filters.priceRange[0]}
-                              onChange={(e) =>
-                                setFilters((prev) => ({
-                                  ...prev,
-                                  priceRange: [
-                                    Math.max(0, Number(e.target.value)),
-                                    prev.priceRange[1],
-                                  ],
-                                }))
-                              }
-                              className="w-24 p-2 border rounded-md text-sm"
-                              placeholder="Min Price"
-                              min="0"
-                              max={filters.priceRange[1]}
-                            />
-                            <input
-                              type="number"
-                              value={filters.priceRange[1]}
-                              onChange={(e) =>
-                                setFilters((prev) => ({
-                                  ...prev,
-                                  priceRange: [
-                                    prev.priceRange[0],
-                                    Math.min(15000, Number(e.target.value)),
-                                  ],
-                                }))
-                              }
-                              className="w-24 p-2 border rounded-md text-sm"
-                              placeholder="Max Price"
-                              min={filters.priceRange[0]}
-                              max="15000"
-                            />
-                          </div>
+                        {collectionData.colors.map((color) => (
                           <button
+                            key={color.id}
                             onClick={() =>
-                              handlePriceRangeChange(filters.priceRange)
+                              handleFilterChange("colors", color.id)
                             }
-                            className="px-4 py-2 bg-black text-white rounded-md text-sm hover:bg-gray-800"
+                            className={`px-3 py-1 border rounded-md text-sm ${
+                              filters.colors.includes(color.id)
+                                ? "bg-black text-white border-black"
+                                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                            }`}
                           >
-                            Apply
+                            {color.name}
                           </button>
-                        </div>
-
-                        <Range
-                          step={500}
-                          min={0}
-                          max={15000}
-                          values={filters.priceRange}
-                          onChange={(values) =>
-                            setFilters((prev) => ({
-                              ...prev,
-                              priceRange: values,
-                            }))
-                          }
-                          renderTrack={({ props, children }) => {
-                            const [minVal, maxVal] = filters.priceRange;
-                            const percentMin = (minVal / 15000) * 100;
-                            const percentMax = (maxVal / 15000) * 100;
-
-                            return (
-                              <div
-                                {...props}
-                                className="relative h-1 w-full rounded-md bg-gray-200"
-                              >
-                                <div
-                                  className="absolute h-1 rounded-md bg-gradient-to-r from-[#FFB700] to-[#FF3B00]"
-                                  style={{
-                                    left: `${percentMin}%`,
-                                    width: `${percentMax - percentMin}%`,
-                                  }}
-                                ></div>
-
-                                {children}
-                              </div>
-                            );
-                          }}
-                          renderThumb={({ props, index }) => {
-                            const thumbColors = ["#FFB700", "#FF3B00"];
-
-                            return (
-                              <div
-                                {...props}
-                                className="h-4 w-4 rounded-full border-2 border-white shadow-md focus:outline-none"
-                                style={{
-                                  ...props.style,
-                                  backgroundColor: thumbColors[index],
-                                }}
-                              />
-                            );
-                          }}
-                        />
-
-                        <div className="flex justify-between mt-2 text-xs text-gray-500">
-                          <span>₹0</span>
-                          <span>₹15,000+</span>
-                        </div>
+                          // <div
+                          //   key={color.id}
+                          //   className="flex flex-col items-center"
+                          // >
+                          //   <button
+                          //     onClick={() =>
+                          //       handleFilterChange("colors", color.id)
+                          //     }
+                          //     className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                          //       filters.colors.includes(color.id)
+                          //         ? "ring-2 ring-black ring-offset-1"
+                          //         : ""
+                          //     }`}
+                          //     style={{ backgroundColor: color.code }}
+                          //     title={color.name}
+                          //   ></button>
+                          //   <span className="text-xs mt-1">{color.name}</span>
+                          // </div>
+                        ))}
                       </motion.div>
                     )}
                   </AnimatePresence>
-                  {/* </div> */}
                 </div>
+              )}
+
+              {collectionData?.sizes && (
+                <div className="mb-6">
+                  <div
+                    className="flex justify-between items-center cursor-pointer mb-2"
+                    onClick={() => toggleFilterExpansion("sizes")}
+                  >
+                    <h3 className="font-medium">Sizes</h3>
+                    {expandedFilters.sizes ? (
+                      <Minus className="w-4 h-4" />
+                    ) : (
+                      <Plus className="w-4 h-4" />
+                    )}
+                  </div>
+
+                  <AnimatePresence>
+                    {expandedFilters.sizes && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex flex-wrap gap-2 ml-2 overflow-hidden"
+                      >
+                        {collectionData.sizes.map((size) => (
+                          <button
+                            key={size.id}
+                            onClick={() => handleFilterChange("sizes", size.id)}
+                            className={`px-3 py-1 border rounded-md text-sm ${
+                              filters.sizes.includes(size.id)
+                                ? "bg-black text-white border-black"
+                                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                            }`}
+                          >
+                            {size.name}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              {collectionData?.fabric && (
+                <div className="mb-6">
+                  <div
+                    className="flex justify-between items-center cursor-pointer mb-2"
+                    onClick={() => toggleFilterExpansion("fabrics")}
+                  >
+                    <h3 className="font-medium">Fabric</h3>
+                    {expandedFilters.fabrics ? (
+                      <Minus className="w-4 h-4" />
+                    ) : (
+                      <Plus className="w-4 h-4" />
+                    )}
+                  </div>
+
+                  <AnimatePresence>
+                    {expandedFilters.fabrics && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-2 ml-2 overflow-hidden"
+                      >
+                        {collectionData.fabric.map((fabric) => (
+                          <div key={fabric.id} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id={`fab-${fabric.id}`}
+                              checked={filters.fabric.includes(fabric.id)}
+                              onChange={() =>
+                                handleFilterChange("fabric", fabric.id)
+                              }
+                              className="mr-2"
+                            />
+                            <label
+                              htmlFor={`fab-${fabric.id}`}
+                              className="text-sm"
+                            >
+                              {fabric.name}
+                            </label>
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              {renderRatingFilters()}
+
+              <div className="mb-6">
+                <div
+                  className="flex justify-between items-center cursor-pointer mb-2"
+                  onClick={() => toggleFilterExpansion("priceRange")}
+                >
+                  <h3 className="font-medium">Price Range</h3>
+                  {expandedFilters.priceRange ? (
+                    <Minus className="w-4 h-4" />
+                  ) : (
+                    <Plus className="w-4 h-4" />
+                  )}
+                </div>
+
+                <AnimatePresence>
+                  {expandedFilters.priceRange && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="mt-6 px-2 overflow-hidden"
+                    >
+                      <div className="flex justify-between mb-4">
+                        <span className="font-medium">
+                          ₹{filters.priceRange[0]}
+                        </span>
+                        <span className="font-medium">
+                          ₹{filters.priceRange[1]}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-2 mb-4">
+                        <div className="flex gap-4">
+                          <input
+                            type="number"
+                            value={filters.priceRange[0]}
+                            onChange={(e) =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                priceRange: [
+                                  Math.max(0, Number(e.target.value)),
+                                  prev.priceRange[1],
+                                ],
+                              }))
+                            }
+                            className="w-24 p-2 border rounded-md text-sm"
+                            placeholder="Min Price"
+                            min="0"
+                            max={filters.priceRange[1]}
+                          />
+                          <input
+                            type="number"
+                            value={filters.priceRange[1]}
+                            onChange={(e) =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                priceRange: [
+                                  prev.priceRange[0],
+                                  Math.min(15000, Number(e.target.value)),
+                                ],
+                              }))
+                            }
+                            className="w-24 p-2 border rounded-md text-sm"
+                            placeholder="Max Price"
+                            min={filters.priceRange[0]}
+                            max="15000"
+                          />
+                        </div>
+                        <button
+                          onClick={() =>
+                            handlePriceRangeChange(filters.priceRange)
+                          }
+                          className="px-4 py-2 bg-black text-white rounded-md text-sm hover:bg-gray-800"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                      <Range
+                        step={500}
+                        min={0}
+                        max={15000}
+                        values={filters.priceRange}
+                        onChange={(values) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            priceRange: values,
+                          }))
+                        }
+                        renderTrack={({ props, children }) => (
+                          <div
+                            {...props}
+                            className="h-2 w-full rounded-md"
+                            style={{
+                              background: getTrackBackground({
+                                values: filters.priceRange,
+                                colors: ["#E5E7EB", "#000000", "#E5E7EB"],
+                                min: 0,
+                                max: 15000,
+                              }),
+                            }}
+                          >
+                            {children}
+                          </div>
+                        )}
+                        renderThumb={({ props, index }) => (
+                          <div
+                            {...props}
+                            className="h-5 w-5 rounded-full bg-black border-2 border-white shadow-md focus:outline-none"
+                          />
+                        )}
+                      />
+                      <div className="flex justify-between mt-2 text-xs text-gray-500">
+                        <span>₹0</span>
+                        <span>₹15,000+</span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>

@@ -132,6 +132,7 @@ import ProductThemeEditor from "../pages/Admin/ProductThemeManager/ProductThemeE
 import ThemeSectionManager from "../pages/Admin/ProductThemeManager/ThemeSectionManager.jsx";
 import ThemeSectionEditor from "../pages/Admin/ProductThemeManager/ThemeSectionEditor.jsx";
 import ProductThemePage from "../pages/Website/ProductTheme/index.jsx";
+import AdminVendorForm from "../pages/Admin/Vendor/addVendor.jsx";
 
 // Permission mapping for routes
 const routePermissions = {
@@ -623,6 +624,16 @@ const ProjectRoutes = () => {
               path: `vendors`,
               element: <VendorManagement />,
               permissionPath: "vendors",
+            },
+            {
+              path: `vendors/add`,
+              element: <AdminVendorForm />,
+              permissionPath: "vendors/add",
+            },
+            {
+              path: `vendors/edit/:id`,
+              element: <AdminVendorForm />,
+              permissionPath: "vendors/add",
             },
             {
               path: `customers`,

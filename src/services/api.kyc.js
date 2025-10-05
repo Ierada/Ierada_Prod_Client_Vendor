@@ -5,7 +5,7 @@ export const initiateKYCSession = async (vendorTempId) => {
   try {
     const res = await apiClient.post("/kyc/initiate-session", { vendorTempId });
     if (res.data.status === 1) {
-      notifyOnSuccess("KYC session initiated successfully");
+      // notifyOnSuccess("KYC session initiated successfully");
     } else {
       notifyOnFail(res.data.message || "Failed to initiate KYC session");
       throw new Error(res.data.message);
@@ -180,6 +180,45 @@ export const adminVerifyBank = async (data) => {
     return res.data;
   } catch (error) {
     notifyOnFail(error.message || "Error verifying Bank");
+    throw error;
+  }
+};
+
+export const adminVerifyPAN = async (panNumber, name, vendorTempId) => {
+  try {
+    const res = await apiClient.post("/kyc/admin/verify-pan", {
+      panNumber,
+      name,
+      vendorTempId,
+    });
+    if (res.data.status === 1) {
+      notifyOnSuccess("PAN verified successfully");
+    } else {
+      notifyOnFail(res.data.message || "Failed to verify PAN");
+      throw new Error(res.data.message);
+    }
+    return res.data;
+  } catch (error) {
+    notifyOnFail(error.message || "Error verifying PAN");
+    throw error;
+  }
+};
+
+export const adminVerifyGST = async (gstNumber, vendorTempId) => {
+  try {
+    const res = await apiClient.post("/kyc/admin/verify-gst", {
+      gstNumber,
+      vendorTempId,
+    });
+    if (res.data.status === 1) {
+      notifyOnSuccess("GST verified successfully");
+    } else {
+      notifyOnFail(res.data.message || "Failed to verify GST");
+      throw new Error(res.data.message);
+    }
+    return res.data;
+  } catch (error) {
+    notifyOnFail(error.message || "Error verifying GST");
     throw error;
   }
 };

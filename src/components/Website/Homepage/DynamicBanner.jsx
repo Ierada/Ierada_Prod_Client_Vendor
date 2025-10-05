@@ -5,6 +5,8 @@ import Slider from "react-slick";
 import config from "../../../config/config";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import left_decor from "/assets/heading_decoration/heading_decoration_left.svg";
+import right_decor from "/assets/heading_decoration/heading_decoration_right.svg";
 
 const DynamicBanner = ({ data }) => {
   const navigate = useNavigate();
@@ -124,9 +126,25 @@ const DynamicBanner = ({ data }) => {
   return (
     <section className="relative w-full overflow-hidden">
       <div className="text-center pb-4">
-        <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
-          {data?.title}
-        </h2>
+        <div className="w-full flex justify-center items-center py-8 gap-4 md:gap-8">
+          {left_decor && (
+            <img
+              src={left_decor}
+              alt="Left Decoration"
+              className="h-6 md:h-10 lg:h-12 w-auto"
+            />
+          )}
+          <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
+            {data?.title}
+          </h2>
+          {right_decor && (
+            <img
+              src={right_decor}
+              alt="Right Decoration"
+              className="h-6 md:h-10 lg:h-12 w-auto"
+            />
+          )}
+        </div>
         <h3 className="text-base sm:text-lg md:text-xl font-semibold text-black-100 mt-2">
           {data?.subtitle}
         </h3>
