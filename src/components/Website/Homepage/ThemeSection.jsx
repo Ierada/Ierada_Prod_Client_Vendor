@@ -12,23 +12,25 @@ const ThemeSection = ({ data }) => {
   return (
     <section className="px-4 sm:px-6 md:px-8 lg:px-16 space-y-4 md:space-y-6">
       <div className="text-left md:text-center pb-4">
-        {left_decor && (
-          <img
-            src={left_decor}
-            alt="Left Decoration"
-            className="h-6 md:h-10 lg:h-12 w-auto"
-          />
-        )}
-        <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
-          {data?.title || "Buy By Region"}
-        </h2>
-        {right_decor && (
-          <img
-            src={right_decor}
-            alt="Right Decoration"
-            className="h-6 md:h-10 lg:h-12 w-auto"
-          />
-        )}
+        <div className="w-full flex justify-center items-center py-6 gap-3 sm:gap-4 md:gap-6">
+          {left_decor && (
+            <img
+              src={left_decor}
+              alt="Left Decoration"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+            />
+          )}
+          <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
+            {data?.title || "Buy By Region"}
+          </h2>
+          {right_decor && (
+            <img
+              src={right_decor}
+              alt="Right Decoration"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+            />
+          )}
+        </div>
         <h3 className="text-base sm:text-lg md:text-xl font-semibold text-black-100 mt-2">
           {data?.subtitle ||
             "Compare and purchase plans tailored to your location"}

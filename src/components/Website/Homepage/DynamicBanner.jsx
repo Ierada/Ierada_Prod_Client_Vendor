@@ -131,7 +131,7 @@ const DynamicBanner = ({ data }) => {
             <img
               src={left_decor}
               alt="Left Decoration"
-              className="h-6 md:h-10 lg:h-12 w-auto"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
             />
           )}
           <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
@@ -141,7 +141,7 @@ const DynamicBanner = ({ data }) => {
             <img
               src={right_decor}
               alt="Right Decoration"
-              className="h-6 md:h-10 lg:h-12 w-auto"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
             />
           )}
         </div>

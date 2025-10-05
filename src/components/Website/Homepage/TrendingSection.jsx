@@ -17,17 +17,17 @@ const TrendingSection = ({ data }) => {
           <img
             src={left_decor}
             alt="Left Decoration"
-            className="h-3 sm:h-4 md:h-5 lg:h-6 w-auto"
+            className="h-2 md:h-4 lg:h-6 w-[50vh]"
           />
         )}
-        <h2 className="text-2xl md:text-3xl lg:text-4xl font-italiana text-nowrap">
-          <span>{data?.title}</span>
+        <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
+          {data?.title}
         </h2>
         {right_decor && (
           <img
             src={right_decor}
             alt="Right Decoration"
-            className="h-3 sm:h-4 md:h-5 lg:h-6 w-auto"
+            className="h-2 md:h-4 lg:h-6 w-[50vh]"
           />
         )}
       </div>

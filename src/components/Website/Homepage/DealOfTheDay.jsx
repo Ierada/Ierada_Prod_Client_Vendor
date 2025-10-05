@@ -41,23 +41,25 @@ const DealOfTheDay = ({ data }) => {
     <section className="py-6 md:py-10 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-2 mb-6 md:mb-8">
-          {left_decor && (
-            <img
-              src={left_decor}
-              alt="Left Decoration"
-              className="h-6 md:h-10 lg:h-12 w-auto"
-            />
-          )}
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary-100">
-            {data?.title}
-          </h2>
-          {right_decor && (
-            <img
-              src={right_decor}
-              alt="Right Decoration"
-              className="h-6 md:h-10 lg:h-12 w-auto"
-            />
-          )}
+          <div className="w-full flex justify-center items-center py-8 gap-4 md:gap-8">
+            {left_decor && (
+              <img
+                src={left_decor}
+                alt="Left Decoration"
+                className="h-2 md:h-4 lg:h-6 w-[50vh]"
+              />
+            )}
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary-100">
+              {data?.title}
+            </h2>
+            {right_decor && (
+              <img
+                src={right_decor}
+                alt="Right Decoration"
+                className="h-2 md:h-4 lg:h-6 w-[50vh]"
+              />
+            )}
+          </div>
           <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-600">
             {data?.subtitle}
           </h3>

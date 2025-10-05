@@ -132,7 +132,7 @@ const AllProductsSection = () => {
           <img
             src={left_decor}
             alt="Left Decoration"
-            className="h-3 sm:h-4 md:h-5 lg:h-6 object-contain"
+            className="h-2 md:h-4 lg:h-6 w-[50vh]"
           />
         )}
         <h2 className="text-xl sm:text-2xl md:text-3xl font-italiana text-center whitespace-nowrap px-2">
@@ -142,7 +142,7 @@ const AllProductsSection = () => {
           <img
             src={right_decor}
             alt="Right Decoration"
-            className="h-3 sm:h-4 md:h-5 lg:h-6 object-contain"
+            className="h-2 md:h-4 lg:h-6 w-[50vh]"
           />
         )}
       </div>

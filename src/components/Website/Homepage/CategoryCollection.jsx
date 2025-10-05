@@ -52,7 +52,12 @@ const CategoryCollection = ({ data }) => {
 
   // Auto-scrolling and continuous loop logic
   useEffect(() => {
-    if (!itemWidth || !sliderRef.current || !data?.items?.length || duplicatedItems.length === 0) {
+    if (
+      !itemWidth ||
+      !sliderRef.current ||
+      !data?.items?.length ||
+      duplicatedItems.length === 0
+    ) {
       return;
     }
 
@@ -99,21 +104,24 @@ const CategoryCollection = ({ data }) => {
     }
     setStartX(e.pageX - sliderRef.current.offsetLeft);
     setScrollLeftState(sliderRef.current.scrollLeft);
-    sliderRef.current.style.cursor = 'grabbing';
+    sliderRef.current.style.cursor = "grabbing";
   }, []);
 
-  const handleMouseMove = useCallback((e) => {
-    if (!isDragging || !sliderRef.current) return;
-    e.preventDefault(); // Prevent text selection and other default behaviors
-    const x = e.pageX - sliderRef.current.offsetLeft;
-    const walk = (x - startX) * 2; // Adjust scroll speed during drag
-    sliderRef.current.scrollLeft = scrollLeftState - walk;
-  }, [isDragging, startX, scrollLeftState]);
+  const handleMouseMove = useCallback(
+    (e) => {
+      if (!isDragging || !sliderRef.current) return;
+      e.preventDefault(); // Prevent text selection and other default behaviors
+      const x = e.pageX - sliderRef.current.offsetLeft;
+      const walk = (x - startX) * 2; // Adjust scroll speed during drag
+      sliderRef.current.scrollLeft = scrollLeftState - walk;
+    },
+    [isDragging, startX, scrollLeftState]
+  );
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
     if (sliderRef.current) {
-      sliderRef.current.style.cursor = 'grab';
+      sliderRef.current.style.cursor = "grab";
     }
     // Auto-scroll will naturally restart because `isDragging` changes state,
     // triggering the `useEffect` for auto-scrolling (which has `isDragging` in its dependencies).
@@ -148,13 +156,21 @@ const CategoryCollection = ({ data }) => {
       {data?.title && (
         <div className="w-full flex justify-center items-center py-6 gap-3 sm:gap-4 md:gap-6">
           {left_decor && (
-            <img src={left_decor} alt="Left Decoration" className="h-3 sm:h-4 md:h-5 lg:h-6" />
+            <img
+              src={left_decor}
+              alt="Left Decoration"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+            />
           )}
           <h2 className="text-xl sm:text-2xl md:text-3xl font-italiana text-center whitespace-nowrap">
             {data.title}
           </h2>
           {right_decor && (
-            <img src={right_decor} alt="Right Decoration" className="h-3 sm:h-4 md:h-5 lg:h-6" />
+            <img
+              src={right_decor}
+              alt="Right Decoration"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+            />
           )}
         </div>
       )}
@@ -173,9 +189,11 @@ const CategoryCollection = ({ data }) => {
             <div
               key={`${category.id}-${index}`} // Ensure unique key for duplicated items
               className="flex-shrink-0 flex flex-col items-center text-center cursor-pointer transition-transform hover:scale-105"
-              style={{ minWidth: 'clamp(120px, 20vw, 200px)' }}
+              style={{ minWidth: "clamp(120px, 20vw, 200px)" }}
               onClick={() =>
-                navigate(`${config.VITE_BASE_WEBSITE_URL}/collection/category/${category.slug}`)
+                navigate(
+                  `${config.VITE_BASE_WEBSITE_URL}/collection/category/${category.slug}`
+                )
               }
             >
               <div className="w-[80%] aspect-square rounded-full flex items-center justify-center overflow-hidden shadow">
@@ -185,7 +203,9 @@ const CategoryCollection = ({ data }) => {
                   className="object-contain w-50 h-50"
                 />
               </div>
-              <p className="mt-2 text-sm sm:text-base font-medium text-gray-700">{category.title}</p>
+              <p className="mt-2 text-sm sm:text-base font-medium text-gray-700">
+                {category.title}
+              </p>
             </div>
           ))}
         </div>

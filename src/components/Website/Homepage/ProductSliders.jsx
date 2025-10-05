@@ -93,7 +93,7 @@ const BaseProductSlider = ({
             <img
               src={left_decor}
               alt="Left Decoration"
-              className="h-3 sm:h-4 md:h-5 lg:h-6 w-auto"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
             />
           )}
           <h2 className="text-xl sm:text-2xl md:text-3xl font-italiana text-nowrap text-center">
@@ -103,7 +103,7 @@ const BaseProductSlider = ({
             <img
               src={right_decor}
               alt="Right Decoration"
-              className="h-3 sm:h-4 md:h-5 lg:h-6 w-auto"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
             />
           )}
         </div>
@@ -280,9 +280,25 @@ export const PopularProductsSlider = ({ data }) => {
   return (
     <div>
       <div className="text-center pb-4">
-        <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
-          {data?.title}
-        </h2>
+        <div className="w-full flex justify-center items-center py-6 gap-3 sm:gap-4 md:gap-6">
+          {left_decor && (
+            <img
+              src={left_decor}
+              alt="Left Decoration"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+            />
+          )}
+          <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
+            {data?.title}
+          </h2>
+          {right_decor && (
+            <img
+              src={right_decor}
+              alt="Right Decoration"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+            />
+          )}
+        </div>
         <h3 className="text-base sm:text-lg md:text-xl font-semibold text-black-100 mt-2">
           {data?.subtitle}
         </h3>
@@ -387,9 +403,25 @@ export const OfferProductCollection = ({ data }) => {
   return (
     <div>
       <div className="text-center pb-4">
-        <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
-          {data?.title}
-        </h2>
+        <div className="w-full flex justify-center items-center py-6 gap-3 sm:gap-4 md:gap-6">
+          {left_decor && (
+            <img
+              src={left_decor}
+              alt="Left Decoration"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+            />
+          )}
+          <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
+            {data?.title}
+          </h2>
+          {right_decor && (
+            <img
+              src={right_decor}
+              alt="Right Decoration"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+            />
+          )}
+        </div>
         <h3 className="text-base sm:text-lg md:text-xl font-semibold text-black-100 mt-2">
           {data?.subtitle}
         </h3>
@@ -616,9 +648,25 @@ export const ProductCollectionSlider = ({ data }) => {
   return (
     <>
       <div className="text-center pb-4">
-        <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
-          {data?.title}
-        </h2>
+        <div className="w-full flex justify-center items-center py-6 gap-3 sm:gap-4 md:gap-6">
+          {left_decor && (
+            <img
+              src={left_decor}
+              alt="Left Decoration"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+            />
+          )}
+          <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
+            {data?.title}
+          </h2>
+          {right_decor && (
+            <img
+              src={right_decor}
+              alt="Right Decoration"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+            />
+          )}
+        </div>
         <h3 className="text-base sm:text-lg md:text-xl font-semibold text-black-100 mt-2">
           {data?.subtitle}
         </h3>
