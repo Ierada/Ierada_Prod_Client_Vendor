@@ -24,20 +24,16 @@ import {
 import { getCollectionData } from "../../../services/api.collection";
 import SignInModal from "../../../components/Website/SigninModal";
 import { useAppContext } from "../../../context/AppContext";
-import {
-  addToWishlist,
-  removeFromWishlist,
-  getWishlist,
-} from "../../../services/api.wishlist";
+import { getWishlist } from "../../../services/api.wishlist";
 import { IoMdArrowUp } from "react-icons/io";
-import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { FaStar, FaRegStar } from "react-icons/fa";
 import { Range, getTrackBackground } from "react-range";
 import CommonTopBanner from "../../../components/Website/CommonTopBanner";
 import common_top_banner from "/assets/banners/Commen-top-banner.png";
 import debounce from "lodash/debounce";
 import { Loader2 } from "lucide-react";
-import { AiFillLike, AiOutlineLike } from "react-icons/ai";
-import { addLike, getUserLikes } from "../../../services/api.likes";
+import { getUserLikes } from "../../../services/api.likes";
+import ProductCard from "../../../components/Website/ProductCard";
 
 const bannerData = [
   {
@@ -63,12 +59,10 @@ const CollectionsPage = () => {
   const { user, setTriggerHeaderCounts } = useAppContext();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [collectionData, setCollectionData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [totalProducts, setTotalProducts] = useState(0);
-  const [searchQuery, setSearchQuery] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [wishlists, setWishlists] = useState([]);
   const [wishlistedItems, setWishlistedItems] = useState(new Set());
@@ -727,100 +721,32 @@ const CollectionsPage = () => {
     [filters, debouncedFetchCollectionData]
   );
 
-  const handleWishlistToggle = useCallback(
-    async (productId) => {
-      if (!user) {
-        setShowLoginModal(true);
-        return;
-      }
-
-      try {
-        if (wishlistedItems.has(productId)) {
-          const wishlist = wishlists.find(
-            (item) => item.product_id === productId
-          );
-          await removeFromWishlist(wishlist.id);
-          setWishlistedItems((prev) => {
-            const newSet = new Set(prev);
-            newSet.delete(productId);
-            return newSet;
-          });
+  const onWishlistChange = useCallback(
+    (productId, newState) => {
+      setWishlistedItems((prev) => {
+        const newSet = new Set(prev);
+        if (newState) {
+          newSet.add(productId);
         } else {
-          await addToWishlist(user.id, productId);
-          setWishlistedItems((prev) => new Set(prev).add(productId));
+          newSet.delete(productId);
         }
-        setTriggerHeaderCounts((prev) => prev + 1);
-        await fetchWishlist();
-      } catch (error) {
-        console.error("Error toggling wishlist:", error);
-      }
+        return newSet;
+      });
+      setTriggerHeaderCounts((prev) => prev + 1);
+      fetchWishlist();
     },
-    [user, wishlistedItems, wishlists, fetchWishlist, setTriggerHeaderCounts]
+    [fetchWishlist, setTriggerHeaderCounts]
   );
 
-  const handleLike = useCallback(
-    async (productId) => {
-      if (!user) {
-        setShowLoginModal(true);
-        return;
-      }
-
-      if (likedItems.has(productId)) {
-        notifyOnFail("Product already liked!");
-        return;
-      }
-
-      try {
-        await addLike(user.id, productId);
-        setLikedItems((prev) => new Set(prev).add(productId));
-        await fetchLikes();
-      } catch (error) {
-        console.error("Error liking product:", error);
-      }
+  const onLikeChange = useCallback(
+    (productId) => {
+      setLikedItems((prev) => new Set([...prev, productId]));
+      fetchLikes();
     },
-    [user, likedItems]
+    [fetchLikes]
   );
-
-  const RatingStars = useCallback(({ rating = 0 }) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 1; i <= 5; i++) {
-      if (i <= fullStars) {
-        stars.push(<FaStar key={i} className="text-amber-400 text-sm" />);
-      } else if (i === fullStars + 1 && hasHalfStar) {
-        stars.push(
-          <FaStarHalfAlt key={i} className="text-amber-400 text-sm" />
-        );
-      } else {
-        stars.push(<FaRegStar key={i} className="text-amber-400 text-sm" />);
-      }
-    }
-
-    return <div className="flex">{stars}</div>;
-  }, []);
 
   const renderProducts = useCallback(() => {
-    // if (isInitialLoading) {
-    //   return (
-    //     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-    //       {[...Array(12)].map((_, index) => (
-    //         <div
-    //           key={index}
-    //           className="border rounded-md overflow-hidden bg-gray-100 animate-pulse"
-    //         >
-    //           <div className="aspect-[512/682] w-full bg-gray-200" />
-    //           <div className="p-4 space-y-2">
-    //             <div className="h-4 bg-gray-200 rounded w-3/4" />
-    //             <div className="h-4 bg-gray-200 rounded w-1/2" />
-    //           </div>
-    //         </div>
-    //       ))}
-    //     </div>
-    //   );
-    // }
-
     if (isInitialLoading) {
       return (
         <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
@@ -859,103 +785,23 @@ const CollectionsPage = () => {
           transition={{ duration: 0.3 }}
           className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4"
         >
-          {filteredProducts?.map((product, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="group border rounded-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-            >
-              <div className="relative">
-                <div
-                  className="relative aspect-[512/682] w-full overflow-hidden cursor-pointer"
-                  onClick={() => navigate(`/product/${product.slug}`)}
-                >
-                  {product.media && product.media.length > 0 ? (
-                    <img
-                      // src={product.media[0].url}
-                      src="/assets/product/productImg.jpg"
-                      alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                      <span className="text-gray-400">No image</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="absolute top-3 right-3 z-10">
-                  <button
-                    onClick={() => handleWishlistToggle(product.id)}
-                    className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow hover:bg-gray-100 transition-all"
-                  >
-                    <Heart
-                      className={`w-5 h-5 ${
-                        wishlistedItems.has(product.id)
-                          ? "fill-rose-500 text-rose-500"
-                          : "text-gray-600"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                <div className="bg-white absolute bottom-3 left-3 px-1.5 text-sm  z-10 rounded">
-                  <div className="flex items-center gap-1">
-                    <AiFillLike className="w-4 h-4 text-[#FF3B00]" />
-                    <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent font-semibold font-medium">
-                      {product.total_likes || 0}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                className="p-4 relative"
-                onClick={() => navigate(`/product/${product.slug}`)}
-              >
-                <button
-                  className="absolute top-1 right-1 rounded bg-white p-1 flex items-center justify-center transition-all shadow-sm hover:shadow-md"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLike(product.id);
-                  }}
-                >
-                  {likedItems.has(product.id) ? (
-                    <AiFillLike className="w-4 h-4 text-[#FF3B00]" />
-                  ) : (
-                    <AiOutlineLike className="w-4 h-4 text-[#FF3B00] hover:text-[#FFB700]" />
-                  )}
-                </button>
-                <h3 className="font-medium text-sm mb-1 truncate cursor-pointer hover:text-gray-700">
-                  {product.name}
-                </h3>
-
-                <div className="flex items-center mb-2">
-                  <RatingStars rating={product.reviewStats?.average_rating} />
-                  <span className="text-xs text-gray-500 ml-2">
-                    ({product.reviewStats?.total_reviews || 0})
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">
-                    ₹{product.discounted_price}
-                  </span>
-                  <span className="text-gray-400 text-sm line-through">
-                    ₹{product.original_price}
-                  </span>
-                  {product.discount > 0 && (
-                    <span className="uppercase bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent text-sm">
-                      {product.discount}% OFF
-                    </span>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ))}
+          {filteredProducts?.map((product) => {
+            const wishlistEntry = wishlists.find(
+              (item) => item.product_id === product.id
+            );
+            return (
+              <ProductCard
+                key={product.id}
+                product={product}
+                isWishlisted={wishlistedItems.has(product.id)}
+                wishlistId={wishlistEntry?.id}
+                isLiked={likedItems.has(product.id)}
+                onWishlistChange={onWishlistChange}
+                onLikeChange={onLikeChange}
+                onRequireLogin={() => setShowLoginModal(true)}
+              />
+            );
+          })}
         </motion.div>
       </>
     );
@@ -963,11 +809,8 @@ const CollectionsPage = () => {
     isInitialLoading,
     filteredProducts,
     navigate,
-    handleWishlistToggle,
     wishlistedItems,
-    handleLike,
     likedItems,
-    RatingStars,
     collectionData?.isTrending,
   ]);
 

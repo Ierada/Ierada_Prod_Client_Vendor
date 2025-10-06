@@ -1,15 +1,76 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { useNavigate } from "react-router-dom";
-import config from "../../../config/config";
+import { useAppContext } from "../../../context/AppContext";
+import {
+  addToWishlist,
+  removeFromWishlist,
+  getWishlist,
+} from "../../../services/api.wishlist";
+import { addLike, getUserLikes } from "../../../services/api.likes";
+import SignInModal from "../../../components/Website/SigninModal";
 import left_decor from "/assets/heading_decoration/heading_decoration_left.svg";
 import right_decor from "/assets/heading_decoration/heading_decoration_right.svg";
+import ProductCard from "../../../components/Website/ProductCard";
 
 const RecentlyViewed = ({ data }) => {
-  const navigate = useNavigate();
   const browsing_history = data ? data.items : [];
+  const { user, setTriggerHeaderCounts } = useAppContext();
+  const [wishlists, setWishlists] = useState([]);
+  const [wishlistedItems, setWishlistedItems] = useState(new Set());
+  const [likedItems, setLikedItems] = useState(new Set());
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const fetchWishlist = useCallback(async () => {
+    if (user) {
+      try {
+        const response = await getWishlist(user.id);
+        if (response?.data) {
+          setWishlists(response.data);
+          setWishlistedItems(
+            new Set(response.data.map((item) => item.product_id))
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+      }
+    }
+  }, [user]);
+
+  const fetchLikes = useCallback(async () => {
+    if (user) {
+      try {
+        const likesResponse = await getUserLikes(user.id);
+        if (likesResponse) {
+          setLikedItems(new Set(likesResponse.map((item) => item.product_id)));
+        }
+      } catch (error) {
+        console.error("Error fetching likes:", error);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchWishlist();
+    fetchLikes();
+  }, [fetchWishlist, fetchLikes]);
+
+  const onWishlistChange = (productId, newState) => {
+    setWishlistedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newState) newSet.add(productId);
+      else newSet.delete(productId);
+      return newSet;
+    });
+    setTriggerHeaderCounts((prev) => prev + 1);
+    fetchWishlist();
+  };
+
+  const onLikeChange = (productId) => {
+    setLikedItems((prev) => new Set([...prev, productId]));
+    fetchLikes();
+  };
 
   const settings = {
     dots: false,
@@ -60,8 +121,11 @@ const RecentlyViewed = ({ data }) => {
               className="h-2 md:h-4 lg:h-6 w-[50vh]"
             />
           )}
-          <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
-            {data?.title}
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
+            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
+              {data?.title?.split(" ")[0]}
+            </span>
+            <span>{data?.title?.split(" ")?.slice(1)?.join(" ")}</span>
           </h2>
           {right_decor && (
             <img
@@ -81,35 +145,17 @@ const RecentlyViewed = ({ data }) => {
 
       {browsing_history?.length > 0 ? (
         <Slider {...settings}>
-          {browsing_history.map((item, index) => (
-            <div key={index} className="px-2">
-              <div className="rounded-2xl overflow-hidden bg-white border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-full aspect-square overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={`image of ${item.name}`}
-                    className="w-full h-full object-contain object-center hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <div className="p-3 text-center">
-                  <h4 className="text-base sm:text-lg font-bold text-black uppercase h-14 line-clamp-2">
-                    {item.name}
-                  </h4>
-                  {/* <p className="text-xs sm:text-sm text-gray-500 uppercase mt-1">
-                    {item.type || "Category"}
-                  </p> */}
-                  <button
-                    onClick={() =>
-                      navigate(
-                        `${config.VITE_BASE_WEBSITE_URL}/product/${item.slug}`
-                      )
-                    }
-                    className="mt-2 bg-button-gradient text-white px-4 py-1.5 rounded-full text-sm font-medium hover:from-primary-100 hover:to-orange-600 transition-colors w-full max-w-[150px] mx-auto block"
-                  >
-                    Explore More
-                  </button>
-                </div>
-              </div>
+          {browsing_history.map((item) => (
+            <div key={item.id} className="px-2">
+              <ProductCard
+                product={item}
+                isWishlisted={wishlistedItems.has(item.id)}
+                wishlistId={wishlists.find((w) => w.product_id === item.id)?.id}
+                isLiked={likedItems.has(item.id)}
+                onWishlistChange={onWishlistChange}
+                onLikeChange={onLikeChange}
+                onRequireLogin={() => setShowLoginModal(true)}
+              />
             </div>
           ))}
         </Slider>
@@ -118,6 +164,10 @@ const RecentlyViewed = ({ data }) => {
           <p className="text-gray-500">You haven't viewed any products yet.</p>
         </div>
       )}
+      <SignInModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
     </section>
   );
 };

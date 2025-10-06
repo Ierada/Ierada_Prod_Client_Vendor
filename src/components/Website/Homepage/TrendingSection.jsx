@@ -1,14 +1,76 @@
-import React from "react";
-import { ArrowUpRight } from "lucide-react";
-import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import config from "../../../config/config";
 import left_decor from "/assets/heading_decoration/heading_decoration_left.svg";
 import right_decor from "/assets/heading_decoration/heading_decoration_right.svg";
+import { useAppContext } from "../../../context/AppContext";
+import {
+  addToWishlist,
+  removeFromWishlist,
+  getWishlist,
+} from "../../../services/api.wishlist";
+import { addLike, getUserLikes } from "../../../services/api.likes";
+import SignInModal from "../../../components/Website/SigninModal";
+import ProductCard from "../../../components/Website/ProductCard";
 
 const TrendingSection = ({ data }) => {
   const navigate = useNavigate();
   const { trending_products, browsing_history } = data ? data.items : [];
+  const { user, setTriggerHeaderCounts } = useAppContext();
+  const [wishlists, setWishlists] = useState([]);
+  const [wishlistedItems, setWishlistedItems] = useState(new Set());
+  const [likedItems, setLikedItems] = useState(new Set());
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const fetchWishlist = useCallback(async () => {
+    if (user) {
+      try {
+        const response = await getWishlist(user.id);
+        if (response?.data) {
+          setWishlists(response.data);
+          setWishlistedItems(
+            new Set(response.data.map((item) => item.product_id))
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+      }
+    }
+  }, [user]);
+
+  const fetchLikes = useCallback(async () => {
+    if (user) {
+      try {
+        const likesResponse = await getUserLikes(user.id);
+        if (likesResponse) {
+          setLikedItems(new Set(likesResponse.map((item) => item.product_id)));
+        }
+      } catch (error) {
+        console.error("Error fetching likes:", error);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchWishlist();
+    fetchLikes();
+  }, [fetchWishlist, fetchLikes]);
+
+  const onWishlistChange = (productId, newState) => {
+    setWishlistedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newState) newSet.add(productId);
+      else newSet.delete(productId);
+      return newSet;
+    });
+    setTriggerHeaderCounts((prev) => prev + 1);
+    fetchWishlist();
+  };
+
+  const onLikeChange = (productId) => {
+    setLikedItems((prev) => new Set([...prev, productId]));
+    fetchLikes();
+  };
 
   return (
     <section className="px-4 md:px-8 lg:px-16 space-y-4">
@@ -20,8 +82,11 @@ const TrendingSection = ({ data }) => {
             className="h-2 md:h-4 lg:h-6 w-[50vh]"
           />
         )}
-        <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
-          {data?.title}
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
+          <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
+            {data?.title?.split(" ")[0]}
+          </span>
+          <span>{data?.title?.split(" ")?.slice(1)?.join(" ")}</span>
         </h2>
         {right_decor && (
           <img
@@ -47,25 +112,17 @@ const TrendingSection = ({ data }) => {
           </div>
 
           <div className="grid grid-cols-3 gap-4 mb-6">
-            {browsing_history?.slice(0, 6)?.map((item, index) => (
-              <a
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate(
-                    `${config.VITE_BASE_WEBSITE_URL}/product/${item.slug}`
-                  );
-                }}
-                key={index}
-                className="block"
-              >
-                <div className="overflow-hidden rounded-md aspect-[512/682] w-[100px] mx-auto">
-                  <img
-                    src={item?.image}
-                    alt={`image of ${item?.name}`}
-                    className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-              </a>
+            {browsing_history?.slice(0, 6)?.map((item) => (
+              <ProductCard
+                key={item.id}
+                product={item}
+                isWishlisted={wishlistedItems.has(item.id)}
+                wishlistId={wishlists.find((w) => w.product_id === item.id)?.id}
+                isLiked={likedItems.has(item.id)}
+                onWishlistChange={onWishlistChange}
+                onLikeChange={onLikeChange}
+                onRequireLogin={() => setShowLoginModal(true)}
+              />
             ))}
           </div>
           <button
@@ -81,59 +138,26 @@ const TrendingSection = ({ data }) => {
         <div className="w-full lg:w-2/3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
             {trending_products?.map((product) => (
-              <a
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate(
-                    `${config.VITE_BASE_WEBSITE_URL}/product/${product.slug}`
-                  );
-                }}
+              <ProductCard
                 key={product.id}
-                className="block"
-              >
-                <div className="flex gap-4 border border-gray-200 rounded-md shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-white">
-                  <div className="overflow-hidden rounded-md aspect-[512/682] w-[100px] flex-shrink-0">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="items-start flex flex-col justify-center gap-3 p-4">
-                    <div className="text-yellow-500 flex justify-center items-center mt-1">
-                      {[...Array(5)].map((_, index) => {
-                        if (
-                          index < Math.floor(product.reviewStats.average_rating)
-                        ) {
-                          return <FaStar key={`full-${index}`} />;
-                        } else if (
-                          index < product.reviewStats.average_rating &&
-                          product.reviewStats.average_rating % 1 !== 0
-                        ) {
-                          return <FaStarHalfAlt key={`half-${index}`} />;
-                        }
-                        return <FaRegStar key={`empty-${index}`} />;
-                      })}
-                      <span className="ml-1 text-gray-500">
-                        {product.reviewStats.total_reviews}
-                      </span>
-                    </div>
-                    <h3 className="max-w-[200px] text-lg text-[black] truncate">
-                      {product.name}
-                    </h3>
-                    <div className="flex gap-2 items-center">
-                      <p className="text-base sm:text-xl">{`₹${
-                        product.original_price - product.discounted_price
-                      }`}</p>
-                      <p className="line-through text-gray-500">{`₹${product.original_price}`}</p>
-                    </div>
-                  </div>
-                </div>
-              </a>
+                product={product}
+                isWishlisted={wishlistedItems.has(product.id)}
+                wishlistId={
+                  wishlists.find((w) => w.product_id === product.id)?.id
+                }
+                isLiked={likedItems.has(product.id)}
+                onWishlistChange={onWishlistChange}
+                onLikeChange={onLikeChange}
+                onRequireLogin={() => setShowLoginModal(true)}
+              />
             ))}
           </div>
         </div>
       </div>
+      <SignInModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
     </section>
   );
 };

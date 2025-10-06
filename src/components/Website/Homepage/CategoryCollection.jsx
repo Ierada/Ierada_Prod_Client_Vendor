@@ -162,8 +162,11 @@ const CategoryCollection = ({ data }) => {
               className="h-2 md:h-4 lg:h-6 w-[50vh]"
             />
           )}
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-italiana text-center whitespace-nowrap">
-            {data.title}
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
+            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
+              {data?.title?.split(" ")[0]}
+            </span>
+            <span>{data?.title?.split(" ")?.slice(1)?.join(" ")}</span>
           </h2>
           {right_decor && (
             <img

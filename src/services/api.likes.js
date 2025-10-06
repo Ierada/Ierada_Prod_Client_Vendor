@@ -9,7 +9,7 @@ export const addLike = async (userId, productId) => {
     });
 
     if (res.data.status === 1) {
-      notifyOnSuccess("Product liked successfully!");
+      notifyOnSuccess("Thank you for liking the product!");
       return res.data;
     } else {
       notifyOnFail(res.data.message);

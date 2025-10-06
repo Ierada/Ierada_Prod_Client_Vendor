@@ -769,12 +769,12 @@ const AddEditProduct = () => {
       }
 
       // Validate SKU for non-variation product
-      if (!formData.is_variation && !formData.sku.trim()) {
+      if (!formData.is_variation && !formData.sku?.trim()) {
         notifyOnFail("SKU is required for the product.");
         return;
       }
 
-      if (!formData.hsn.trim()) {
+      if (!formData.hsn_code?.trim()) {
         notifyOnFail("HSN is required for the product.");
         return;
       }
@@ -783,7 +783,7 @@ const AddEditProduct = () => {
       if (formData.is_variation) {
         for (const variation of variations) {
           for (const size of variation.sizes) {
-            if (!size.sku.trim()) {
+            if (!size.sku?.trim()) {
               notifyOnFail("SKU is required for all variations.");
               return;
             }
@@ -1469,9 +1469,9 @@ const AddEditProduct = () => {
                   type="text"
                   placeholder="Add a tag and press Enter"
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && e.target.value.trim()) {
+                    if (e.key === "Enter" && e.target.value?.trim()) {
                       e.preventDefault();
-                      const newTag = e.target.value.trim();
+                      const newTag = e.target.value?.trim();
                       if (!formData.tags.includes(newTag)) {
                         setFormData((prev) => ({
                           ...prev,

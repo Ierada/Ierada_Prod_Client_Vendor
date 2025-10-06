@@ -13,6 +13,7 @@ import SignInModal from "../../../components/Website/SigninModal";
 import { Loader2 } from "lucide-react";
 import left_decor from "/assets/heading_decoration/heading_decoration_left.svg";
 import right_decor from "/assets/heading_decoration/heading_decoration_right.svg";
+import ProductCard from "../../../components/Website/ProductCard";
 
 const AllProductsSection = () => {
   const [products, setProducts] = useState([]);
@@ -21,9 +22,9 @@ const AllProductsSection = () => {
   const [loading, setLoading] = useState(false);
   const [wishlists, setWishlists] = useState([]);
   const [wishlistedItems, setWishlistedItems] = useState(new Set());
-  const { user, setTriggerHeaderCounts } = useAppContext();
-  const navigate = useNavigate();
+  const [likedItems, setLikedItems] = useState(new Set());
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const { user, setTriggerHeaderCounts } = useAppContext();
   const sectionRef = useRef(null);
 
   const fetchProducts = useCallback(async () => {
@@ -52,17 +53,15 @@ const AllProductsSection = () => {
     }
   }, [page, hasMore, loading]);
 
-  // Fetch wishlist for authenticated user
   const fetchWishlist = useCallback(async () => {
     if (user) {
       try {
         const response = await getWishlist(user.id);
         if (response?.data) {
           setWishlists(response.data);
-          const wishlistSet = new Set(
-            response.data.map((item) => item.product_id)
+          setWishlistedItems(
+            new Set(response.data.map((item) => item.product_id))
           );
-          setWishlistedItems(wishlistSet);
         }
       } catch (error) {
         console.error("Error fetching wishlist:", error);
@@ -70,39 +69,42 @@ const AllProductsSection = () => {
     }
   }, [user]);
 
+  const fetchLikes = useCallback(async () => {
+    if (user) {
+      try {
+        const likesResponse = await getUserLikes(user.id);
+        if (likesResponse) {
+          setLikedItems(new Set(likesResponse.map((item) => item.product_id)));
+        }
+      } catch (error) {
+        console.error("Error fetching likes:", error);
+      }
+    }
+  }, [user]);
+
   useEffect(() => {
     fetchWishlist();
-  }, [fetchWishlist]);
+    fetchLikes();
+  }, [fetchWishlist, fetchLikes]);
 
-  // Initial fetch
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  // Handle wishlist toggle
-  const handleWishlistToggle = async (productId) => {
-    if (!user) {
-      setShowLoginModal(true);
-      return;
-    }
+  const onWishlistChange = (productId, newState) => {
+    setWishlistedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newState) newSet.add(productId);
+      else newSet.delete(productId);
+      return newSet;
+    });
+    setTriggerHeaderCounts((prev) => prev + 1);
+    fetchWishlist();
+  };
 
-    try {
-      if (wishlistedItems.has(productId)) {
-        const wishlist = wishlists.find(
-          (item) => item.product_id === productId
-        );
-        await removeFromWishlist(wishlist.id);
-        wishlistedItems.delete(productId);
-      } else {
-        await addToWishlist(user.id, productId);
-        wishlistedItems.add(productId);
-      }
-      setWishlistedItems(new Set(wishlistedItems));
-      setTriggerHeaderCounts((prev) => prev + 1);
-      await fetchWishlist(); // Re-fetch wishlist to get updated IDs if needed
-    } catch (error) {
-      console.error("Error toggling wishlist:", error);
-    }
+  const onLikeChange = (productId) => {
+    setLikedItems((prev) => new Set([...prev, productId]));
+    fetchLikes();
   };
 
   // Infinite scroll logic with half-section trigger
@@ -114,8 +116,6 @@ const AllProductsSection = () => {
       const sectionRect = section.getBoundingClientRect();
       const windowHeight = window.innerHeight;
 
-      // Trigger fetch when scrolled to half of the section
-      // Adjusted slightly to ensure it triggers before reaching the very end
       if (sectionRect.bottom <= windowHeight + sectionRect.height / 2) {
         fetchProducts();
       }
@@ -135,8 +135,11 @@ const AllProductsSection = () => {
             className="h-2 md:h-4 lg:h-6 w-[50vh]"
           />
         )}
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-italiana text-center whitespace-nowrap px-2">
-          Customized Products For You
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
+          <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
+            Customized
+          </span>
+          <span>Products For You</span>
         </h2>
         {right_decor && (
           <img
@@ -148,99 +151,18 @@ const AllProductsSection = () => {
       </div>
       <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-x-5 lg:gap-y-10">
         {products.map((product) => (
-          <div
+          <ProductCard
             key={product.id}
-            className="group border border-gray-200 rounded-md overflow-hidden bg-white shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <div className="relative">
-              {/* Product image */}
-              <div
-                className="relative w-full aspect-[512/682] overflow-hidden cursor-pointer"
-                onClick={() => navigate(`/product/${product.slug}`)}
-              >
-                {product.media && product.media.length > 0 ? (
-                  <img
-                    src={product.media[0].url}
-                    alt={product.name}
-                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">No image</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Wishlist button */}
-              <div className="absolute top-3 right-3 z-10">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent navigating to product page
-                    handleWishlistToggle(product.id);
-                  }}
-                  className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-md hover:bg-gray-50 transition-all duration-200"
-                  aria-label={
-                    wishlistedItems.has(product.id)
-                      ? "Remove from wishlist"
-                      : "Add to wishlist"
-                  }
-                >
-                  <Heart
-                    className={`w-5 h-5 ${
-                      wishlistedItems.has(product.id)
-                        ? "fill-rose-500 text-rose-500"
-                        : "text-gray-600"
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* Discount tag */}
-              {product.discount > 0 && (
-                <div className="absolute top-3 left-3 bg-red-600 text-white px-2 py-0.5 text-xs font-semibold rounded-full shadow-sm">
-                  {product.discount}% OFF
-                </div>
-              )}
-            </div>
-
-            {/* Product info */}
-            <div
-              className="p-3 sm:p-4 cursor-pointer"
-              onClick={() => navigate(`/product/${product.slug}`)}
-            >
-              <h3 className="font-medium text-sm sm:text-base mb-4 truncate text-gray-800 hover:text-gray-950">
-                {product.name}
-              </h3>
-              {/* <div className="flex items-center gap-2 text-sm sm:text-base">
-                <span className="font-bold text-gray-900">
-                  ₹{product.discounted_price}
-                </span>
-                {product.discount > 0 && (
-                  <span className="text-gray-500 text-xs sm:text-sm line-through">
-                    ₹{product.original_price}
-                  </span>
-                )}
-              </div> */}
-              <div className="flex justify-between mt-auto items-center">
-                <div className="flex gap-2 items-center">
-                  <p className="font-medium text-md sm:text-base font-lato text-gray-900">{`₹${product.discounted_price}`}</p>
-                  <p className="line-through font-medium text-md sm:text-base font-lato text-[#9CA3AF]">{`₹${product.original_price}`}</p>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    navigate(
-                      `${config.VITE_BASE_WEBSITE_URL}/product/${product.slug}`
-                    );
-                  }}
-                  className="border-black-2 border-2 rounded-full w-7 h-7 flex items-center text-black-2 justify-center hover:bg-black hover:text-white transition-colors"
-                >
-                  <ArrowUpRight size={12} />
-                </button>
-              </div>
-            </div>
-          </div>
+            product={product}
+            isWishlisted={wishlistedItems.has(product.id)}
+            wishlistId={
+              wishlists.find((item) => item.product_id === product.id)?.id
+            }
+            isLiked={likedItems.has(product.id)}
+            onWishlistChange={onWishlistChange}
+            onLikeChange={onLikeChange}
+            onRequireLogin={() => setShowLoginModal(true)}
+          />
         ))}
       </div>
       {loading && (
@@ -254,14 +176,10 @@ const AllProductsSection = () => {
           You've seen all our amazing products!
         </p>
       )}
-      <AnimatePresence>
-        {showLoginModal && (
-          <SignInModal
-            isOpen={showLoginModal}
-            onClose={() => setShowLoginModal(false)}
-          />
-        )}
-      </AnimatePresence>
+      <SignInModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
     </section>
   );
 };

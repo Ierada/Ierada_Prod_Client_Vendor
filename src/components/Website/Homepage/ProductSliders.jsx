@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import SignInModal from "../../../components/Website/SigninModal";
 import left_decor from "/assets/heading_decoration/heading_decoration_left.svg";
 import right_decor from "/assets/heading_decoration/heading_decoration_right.svg";
+import ProductCard from "../ProductCard";
 
 // Base Product Slider Component
 const BaseProductSlider = ({
@@ -96,8 +97,11 @@ const BaseProductSlider = ({
               className="h-2 md:h-4 lg:h-6 w-[50vh]"
             />
           )}
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-italiana text-nowrap text-center">
-            <span>{title}</span>
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
+            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
+              {data?.title?.split(" ")[0]}
+            </span>
+            <span>{data?.title?.split(" ")?.slice(1)?.join(" ")}</span>
           </h2>
           {right_decor && (
             <img
@@ -204,76 +208,78 @@ const useWishlist = () => {
 // Popular Products Slider
 export const PopularProductsSlider = ({ data }) => {
   const navigate = useNavigate();
-  const { wishlistedItems, toggleWishlist } = useWishlist();
+  const { user, setTriggerHeaderCounts } = useAppContext();
+  const [wishlists, setWishlists] = useState([]);
+  const [wishlistedItems, setWishlistedItems] = useState(new Set());
+  const [likedItems, setLikedItems] = useState(new Set());
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const fetchWishlist = useCallback(async () => {
+    if (user) {
+      try {
+        const response = await getWishlist(user.id);
+        if (response?.data) {
+          setWishlists(response.data);
+          setWishlistedItems(
+            new Set(response.data.map((item) => item.product_id))
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+      }
+    }
+  }, [user]);
+
+  const fetchLikes = useCallback(async () => {
+    if (user) {
+      try {
+        const likesResponse = await getUserLikes(user.id);
+        if (likesResponse) {
+          setLikedItems(new Set(likesResponse.map((item) => item.product_id)));
+        }
+      } catch (error) {
+        console.error("Error fetching likes:", error);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchWishlist();
+    fetchLikes();
+  }, [fetchWishlist, fetchLikes]);
+
+  const onWishlistChange = (productId, newState) => {
+    setWishlistedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newState) newSet.add(productId);
+      else newSet.delete(productId);
+      return newSet;
+    });
+    setTriggerHeaderCounts((prev) => prev + 1);
+    fetchWishlist();
+  };
+
+  const onLikeChange = (productId) => {
+    setLikedItems((prev) => new Set([...prev, productId]));
+    fetchLikes();
+  };
 
   const renderProduct = (product) => (
     <div
       key={product.id}
-      className="flex-none w-[219px]  sm:w-[219px] md:w-[219px] lg:w-[219px] my-1"
+      className="flex-none w-[219px] sm:w-[219px] md:w-[219px] lg:w-[219px] my-1"
     >
-      <div className="group relative overflow-hidden rounded-lg transition-all duration-300 ease-in-out">
-        <a
-          onClick={(e) => {
-            e.preventDefault();
-            navigate(`${config.VITE_BASE_WEBSITE_URL}/product/${product.slug}`);
-          }}
-          href="#"
-        >
-          <div className="relative max-w-[219px] aspect-[512/682] sm:w-[219px] sm:h-[291px] overflow-hidden">
-            <img
-              src={
-                product?.image ||
-                "https://via.placeholder.com/512x682?text=Product+Image"
-              }
-              alt={product.name}
-              className="w-full h-full object-contain object-center transform transition-transform duration-500 ease-out group-hover:scale-105 rounded-lg"
-            />
-            {/* <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleWishlist(product.id);
-              }}
-              className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:scale-110 transition-transform duration-200 z-10"
-            >
-              <Heart
-                className={`w-5 h-5 transition-colors duration-300 ${
-                  wishlistedItems.has(product.id)
-                    ? "text-red-500 fill-current"
-                    : "text-gray-500"
-                }`}
-              />
-            </button> */}
-          </div>
-          <div className="p-4 space-y-2">
-            <h3 className="text-sm font-medium line-clamp-2 h-10 leading-5">
-              {product.name}
-            </h3>
-            <div className="flex items-center gap-2">
-              <span className="line-through text-gray-500 text-sm">
-                ₹{product.original_price}
-              </span>
-              <span className="font-bold">
-                ₹{product.original_price - product.discounted_price}
-              </span>
-              <span className="text-red-500 text-sm">
-                {product.discount_percentage}% OFF
-              </span>
-            </div>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                navigate(
-                  `${config.VITE_BASE_WEBSITE_URL}/product/${product.slug}`
-                );
-              }}
-              className="w-fit mt-4 md:mt-10 bg-button-gradient text-white px-5 py-2 rounded-lg text-sm sm:text-base font-medium hover:from-primary-100 hover:to-orange-600 transition-colors"
-            >
-              Explore More
-            </button>
-          </div>
-        </a>
-      </div>
+      <ProductCard
+        product={product}
+        isWishlisted={wishlistedItems.has(product.id)}
+        wishlistId={
+          wishlists.find((item) => item.product_id === product.id)?.id
+        }
+        isLiked={likedItems.has(product.id)}
+        onWishlistChange={onWishlistChange}
+        onLikeChange={onLikeChange}
+        onRequireLogin={() => setShowLoginModal(true)}
+      />
     </div>
   );
 
@@ -288,8 +294,11 @@ export const PopularProductsSlider = ({ data }) => {
               className="h-2 md:h-4 lg:h-6 w-[50vh]"
             />
           )}
-          <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
-            {data?.title}
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
+            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
+              {data?.title?.split(" ")[0]}
+            </span>
+            <span>{data?.title?.split(" ")?.slice(1)?.join(" ")}</span>
           </h2>
           {right_decor && (
             <img
@@ -306,10 +315,10 @@ export const PopularProductsSlider = ({ data }) => {
           {data?.description}
         </p>
       </div>
-      <BaseProductSlider
-        products={data.items}
-        renderProduct={renderProduct}
-        // title={data?.title}
+      <BaseProductSlider products={data.items} renderProduct={renderProduct} />
+      <SignInModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
       />
     </div>
   );
@@ -318,85 +327,78 @@ export const PopularProductsSlider = ({ data }) => {
 // Offer Products Slider
 export const OfferProductCollection = ({ data }) => {
   const navigate = useNavigate();
+  const { user, setTriggerHeaderCounts } = useAppContext();
+  const [wishlists, setWishlists] = useState([]);
+  const [wishlistedItems, setWishlistedItems] = useState(new Set());
+  const [likedItems, setLikedItems] = useState(new Set());
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const fetchWishlist = useCallback(async () => {
+    if (user) {
+      try {
+        const response = await getWishlist(user.id);
+        if (response?.data) {
+          setWishlists(response.data);
+          setWishlistedItems(
+            new Set(response.data.map((item) => item.product_id))
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+      }
+    }
+  }, [user]);
+
+  const fetchLikes = useCallback(async () => {
+    if (user) {
+      try {
+        const likesResponse = await getUserLikes(user.id);
+        if (likesResponse) {
+          setLikedItems(new Set(likesResponse.map((item) => item.product_id)));
+        }
+      } catch (error) {
+        console.error("Error fetching likes:", error);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchWishlist();
+    fetchLikes();
+  }, [fetchWishlist, fetchLikes]);
+
+  const onWishlistChange = (productId, newState) => {
+    setWishlistedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newState) newSet.add(productId);
+      else newSet.delete(productId);
+      return newSet;
+    });
+    setTriggerHeaderCounts((prev) => prev + 1);
+    fetchWishlist();
+  };
+
+  const onLikeChange = (productId) => {
+    setLikedItems((prev) => new Set([...prev, productId]));
+    fetchLikes();
+  };
 
   const renderProduct = (product) => (
     <div
       key={product.id}
       className="flex-none w-[219px] sm:w-[219px] md:w-[219px] lg:w-[219px]"
     >
-      <a
-        onClick={(e) => {
-          e.preventDefault();
-          navigate(`${config.VITE_BASE_WEBSITE_URL}/product/${product.slug}`);
-        }}
-        href="#"
-      >
-        <div className="group relative bg-[#f1f2ec] border border-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-          <div className="relative max-w-[219px] aspect-[512/682] sm:w-[219px] sm:h-[291px] overflow-hidden">
-            <img
-              src={
-                product?.image ||
-                "https://via.placeholder.com/512x682?text=Product+Image"
-              }
-              alt={product.name}
-              className="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-300"
-            />
-            <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-              <p>
-                {`${(
-                  ((product.original_price - product.discounted_price) /
-                    product.original_price) *
-                  100
-                )?.toFixed(0)}% Off`}
-              </p>
-            </div>
-          </div>
-
-          <div className="p-4 text-black">
-            <div className="flex pb-2 items-center gap-1 text-[#FC9231] text-lg">
-              {[
-                ...Array(Math.floor(product?.reviewStats?.average_rating || 0)),
-              ].map((_, index) => (
-                <FaStar key={`full-${index}`} />
-              ))}
-              {product?.reviewStats?.average_rating % 1 !== 0 && (
-                <FaStarHalfAlt />
-              )}
-              {[
-                ...Array(
-                  5 - Math.ceil(product?.reviewStats?.average_rating || 0)
-                ),
-              ].map((_, index) => (
-                <FaRegStar key={`empty-${index}`} />
-              ))}
-              <p className="text-gray-500 ml-2">
-                ({product?.reviewStats?.total_reviews || 0})
-              </p>
-            </div>
-            <p className="text-sm font-medium line-clamp-2">{product.name}</p>
-            <div className="flex justify-between mt-4">
-              <div className="flex gap-2 items-center">
-                <p className="text-xl">{`₹${
-                  product.original_price - product.discounted_price
-                }`}</p>
-                <p className="line-through text-gray-500">{`₹${product.original_price}`}</p>
-              </div>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  navigate(
-                    `${config.VITE_BASE_WEBSITE_URL}/product/${product.slug}`
-                  );
-                }}
-                className="border-black border-2 rounded-full w-8 h-8 flex items-center justify-center hover:bg-black hover:text-white transition-colors"
-              >
-                <ArrowUpRight size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-      </a>
+      <ProductCard
+        product={product}
+        isWishlisted={wishlistedItems.has(product.id)}
+        wishlistId={
+          wishlists.find((item) => item.product_id === product.id)?.id
+        }
+        isLiked={likedItems.has(product.id)}
+        onWishlistChange={onWishlistChange}
+        onLikeChange={onLikeChange}
+        onRequireLogin={() => setShowLoginModal(true)}
+      />
     </div>
   );
 
@@ -411,8 +413,11 @@ export const OfferProductCollection = ({ data }) => {
               className="h-2 md:h-4 lg:h-6 w-[50vh]"
             />
           )}
-          <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
-            {data?.title}
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
+            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
+              {data?.title?.split(" ")[0]}
+            </span>
+            <span>{data?.title?.split(" ")?.slice(1)?.join(" ")}</span>
           </h2>
           {right_decor && (
             <img
@@ -429,10 +434,10 @@ export const OfferProductCollection = ({ data }) => {
           {data?.description}
         </p>
       </div>
-      <BaseProductSlider
-        products={data.items}
-        renderProduct={renderProduct}
-        // title={data?.title}
+      <BaseProductSlider products={data.items} renderProduct={renderProduct} />
+      <SignInModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
       />
     </div>
   );
@@ -489,19 +494,18 @@ export const ProductCollectionSlider = ({ data }) => {
   const { user, setTriggerHeaderCounts } = useAppContext();
   const [wishlists, setWishlists] = useState([]);
   const [wishlistedItems, setWishlistedItems] = useState(new Set());
+  const [likedItems, setLikedItems] = useState(new Set());
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // Fetch wishlist for authenticated user
   const fetchWishlist = useCallback(async () => {
     if (user) {
       try {
         const response = await getWishlist(user.id);
         if (response?.data) {
           setWishlists(response.data);
-          const wishlistSet = new Set(
-            response.data.map((item) => item.product_id)
+          setWishlistedItems(
+            new Set(response.data.map((item) => item.product_id))
           );
-          setWishlistedItems(wishlistSet);
         }
       } catch (error) {
         console.error("Error fetching wishlist:", error);
@@ -509,139 +513,53 @@ export const ProductCollectionSlider = ({ data }) => {
     }
   }, [user]);
 
+  const fetchLikes = useCallback(async () => {
+    if (user) {
+      try {
+        const likesResponse = await getUserLikes(user.id);
+        if (likesResponse) {
+          setLikedItems(new Set(likesResponse.map((item) => item.product_id)));
+        }
+      } catch (error) {
+        console.error("Error fetching likes:", error);
+      }
+    }
+  }, [user]);
+
   useEffect(() => {
     fetchWishlist();
-  }, [fetchWishlist]);
+    fetchLikes();
+  }, [fetchWishlist, fetchLikes]);
 
-  // Handle wishlist toggle
-  const handleWishlistToggle = async (productId, e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const onWishlistChange = (productId, newState) => {
+    setWishlistedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newState) newSet.add(productId);
+      else newSet.delete(productId);
+      return newSet;
+    });
+    setTriggerHeaderCounts((prev) => prev + 1);
+    fetchWishlist();
+  };
 
-    if (!user) {
-      setShowLoginModal(true);
-      return;
-    }
-
-    try {
-      if (wishlistedItems.has(productId)) {
-        const wishlist = wishlists.find(
-          (item) => item.product_id === productId
-        );
-        await removeFromWishlist(wishlist.id);
-        wishlistedItems.delete(productId);
-      } else {
-        await addToWishlist(user.id, productId);
-        wishlistedItems.add(productId);
-      }
-      setWishlistedItems(new Set(wishlistedItems));
-      setTriggerHeaderCounts((prev) => prev + 1);
-      await fetchWishlist(); // Re-fetch wishlist to get updated IDs if needed
-    } catch (error) {
-      console.error("Error toggling wishlist:", error);
-    }
+  const onLikeChange = (productId) => {
+    setLikedItems((prev) => new Set([...prev, productId]));
+    fetchLikes();
   };
 
   const renderProduct = (product) => (
     <div key={product.id} className="flex-none w-1/2 sm:w-[219px]">
-      <a
-        onClick={(e) => {
-          e.preventDefault();
-          navigate(`${config.VITE_BASE_WEBSITE_URL}/product/${product.slug}`);
-        }}
-        href="#"
-        className="block h-full"
-      >
-        <div className="group relative bg-[#f1f2ec] border border-white overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col h-full rounded-lg">
-          <div className="relative max-w-[219px] aspect-[512/682] sm:w-[219px] sm:h-[291px] overflow-hidden flex items-center justify-center bg-white rounded-t-lg">
-            <img
-              src={
-                product?.image ||
-                "https://via.placeholder.com/512x682?text=Product+Image"
-              }
-              alt={product.name}
-              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-            />
-
-            {/* Wishlist button - Updated for mobile visibility */}
-            <button
-              onClick={(e) => handleWishlistToggle(product.id, e)}
-              className="absolute top-2 right-14 w-10 h-10 md:right-2 z-10 md:w-10 md:h-10 sm:w-8 sm:h-8 rounded-full bg-white/80 flex items-center justify-center shadow-md hover:bg-white transition-all duration-200"
-              aria-label={
-                wishlistedItems.has(product.id)
-                  ? "Remove from wishlist"
-                  : "Add to wishlist"
-              }
-            >
-              <Heart
-                className={`md:w-4 md:h-4 w-4 h-4 ${
-                  wishlistedItems.has(product.id)
-                    ? "fill-rose-500 text-rose-500"
-                    : "text-gray-600"
-                }`}
-              />
-            </button>
-
-            {product.original_price && product.discounted_price && (
-              <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded min-w-[50px] text-center">
-                <p>
-                  {`${(
-                    ((product.original_price - product.discounted_price) /
-                      product.original_price) *
-                    100
-                  )?.toFixed(0)}% Off`}
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div className="p-4 text-black bg-[#F8F8F8] flex flex-col flex-grow">
-            <div className="flex pb-2 items-center gap-1 text-[#FC9231] text-lg min-h-[24px]">
-              {[
-                ...Array(Math.floor(product?.reviewStats?.average_rating || 0)),
-              ].map((_, index) => (
-                <FaStar key={`full-${index}`} />
-              ))}
-              {product?.reviewStats?.average_rating % 1 !== 0 && (
-                <FaStarHalfAlt />
-              )}
-              {[
-                ...Array(
-                  5 - Math.ceil(product?.reviewStats?.average_rating || 0)
-                ),
-              ].map((_, index) => (
-                <FaRegStar key={`empty-${index}`} />
-              ))}
-              <p className="text-gray-500 ml-2 text-sm">
-                ({product?.reviewStats?.total_reviews || 0})
-              </p>
-            </div>
-
-            <p className="text-md font-normal font-lato text-gray-900 line-clamp-2 min-h-[48px] mb-2 break-words">
-              {product.name}
-            </p>
-
-            <div className="flex justify-between mt-auto items-center">
-              <div className="flex gap-2 items-center">
-                <p className="text-xl font-medium font-lato text-gray-900">{`₹${product.discounted_price}`}</p>
-                <p className="line-through text-lg font-medium font-lato text-[#9CA3AF]">{`₹${product.original_price}`}</p>
-              </div>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  navigate(
-                    `${config.VITE_BASE_WEBSITE_URL}/product/${product.slug}`
-                  );
-                }}
-                className="border-black-2 border-2 rounded-full w-7 h-7 flex items-center text-black-2 justify-center hover:bg-black hover:text-white transition-colors"
-              >
-                <ArrowUpRight size={12} />
-              </button>
-            </div>
-          </div>
-        </div>
-      </a>
+      <ProductCard
+        product={product}
+        isWishlisted={wishlistedItems.has(product.id)}
+        wishlistId={
+          wishlists.find((item) => item.product_id === product.id)?.id
+        }
+        isLiked={likedItems.has(product.id)}
+        onWishlistChange={onWishlistChange}
+        onLikeChange={onLikeChange}
+        onRequireLogin={() => setShowLoginModal(true)}
+      />
     </div>
   );
 
@@ -656,8 +574,11 @@ export const ProductCollectionSlider = ({ data }) => {
               className="h-2 md:h-4 lg:h-6 w-[50vh]"
             />
           )}
-          <h2 className="text-primary-100 text-xl sm:text-2xl md:text-3xl font-bold">
-            {data?.title}
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
+            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
+              {data?.title?.split(" ")[0]}
+            </span>
+            <span>{data?.title?.split(" ")?.slice(1)?.join(" ")}</span>
           </h2>
           {right_decor && (
             <img
@@ -674,11 +595,7 @@ export const ProductCollectionSlider = ({ data }) => {
           {data?.description}
         </p>
       </div>
-      <BaseProductSlider
-        products={data.items}
-        renderProduct={renderProduct}
-        // title={data?.title}
-      />
+      <BaseProductSlider products={data.items} renderProduct={renderProduct} />
       <SignInModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
@@ -690,93 +607,118 @@ export const ProductCollectionSlider = ({ data }) => {
 // Featured Products Slider
 export const FeaturedCollectionSlider = ({ data }) => {
   const navigate = useNavigate();
+  const { user, setTriggerHeaderCounts } = useAppContext();
+  const [wishlists, setWishlists] = useState([]);
+  const [wishlistedItems, setWishlistedItems] = useState(new Set());
+  const [likedItems, setLikedItems] = useState(new Set());
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const fetchWishlist = useCallback(async () => {
+    if (user) {
+      try {
+        const response = await getWishlist(user.id);
+        if (response?.data) {
+          setWishlists(response.data);
+          setWishlistedItems(
+            new Set(response.data.map((item) => item.product_id))
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+      }
+    }
+  }, [user]);
+
+  const fetchLikes = useCallback(async () => {
+    if (user) {
+      try {
+        const likesResponse = await getUserLikes(user.id);
+        if (likesResponse) {
+          setLikedItems(new Set(likesResponse.map((item) => item.product_id)));
+        }
+      } catch (error) {
+        console.error("Error fetching likes:", error);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchWishlist();
+    fetchLikes();
+  }, [fetchWishlist, fetchLikes]);
+
+  const onWishlistChange = (productId, newState) => {
+    setWishlistedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newState) newSet.add(productId);
+      else newSet.delete(productId);
+      return newSet;
+    });
+    setTriggerHeaderCounts((prev) => prev + 1);
+    fetchWishlist();
+  };
+
+  const onLikeChange = (productId) => {
+    setLikedItems((prev) => new Set([...prev, productId]));
+    fetchLikes();
+  };
 
   const renderProduct = (product) => (
     <div
       key={product.id}
       className="flex-none w-[219px] sm:w-[219px] md:w-[219px] lg:w-[219px]"
     >
-      <a
-        onClick={(e) => {
-          e.preventDefault();
-          navigate(`${config.VITE_BASE_WEBSITE_URL}/product/${product.slug}`);
-        }}
-        href="#"
-      >
-        <div className="group relative bg-[#f1f2ec] border border-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-          <div className="relative max-w-[219px] aspect-[512/682] sm:w-[219px] sm:h-[291px] overflow-hidden">
-            <img
-              src={
-                product?.image ||
-                "https://via.placeholder.com/512x682?text=Product+Image"
-              }
-              alt={product.name}
-              className="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-300"
-            />
-            <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-              <p>
-                {`${(
-                  ((product.original_price - product.discounted_price) /
-                    product.original_price) *
-                  100
-                )?.toFixed(0)}% Off`}
-              </p>
-            </div>
-          </div>
-
-          <div className="p-4 text-black">
-            <div className="flex pb-2 items-center gap-1 text-[#FC9231] text-lg">
-              {[
-                ...Array(Math.floor(product?.reviewStats?.average_rating || 0)),
-              ].map((_, index) => (
-                <FaStar key={`full-${index}`} />
-              ))}
-              {product?.reviewStats?.average_rating % 1 !== 0 && (
-                <FaStarHalfAlt />
-              )}
-              {[
-                ...Array(
-                  5 - Math.ceil(product?.reviewStats?.average_rating || 0)
-                ),
-              ].map((_, index) => (
-                <FaRegStar key={`empty-${index}`} />
-              ))}
-              <p className="text-gray-500 ml-2">
-                ({product?.reviewStats?.total_reviews || 0})
-              </p>
-            </div>
-            <p className="text-sm font-medium line-clamp-2">{product.name}</p>
-            <div className="flex justify-between mt-4">
-              <div className="flex gap-2 items-center">
-                <p className="text-xl">{`₹${
-                  product.original_price - product.discounted_price
-                }`}</p>
-                <p className="line-through text-gray-500">{`₹${product.original_price}`}</p>
-              </div>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  navigate(
-                    `${config.VITE_BASE_WEBSITE_URL}/product/${product.slug}`
-                  );
-                }}
-                className="border-black border-2 rounded-full w-8 h-8 flex items-center justify-center hover:bg-black hover:text-white transition-colors"
-              >
-                <ArrowUpRight size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-      </a>
+      <ProductCard
+        product={product}
+        isWishlisted={wishlistedItems.has(product.id)}
+        wishlistId={
+          wishlists.find((item) => item.product_id === product.id)?.id
+        }
+        isLiked={likedItems.has(product.id)}
+        onWishlistChange={onWishlistChange}
+        onLikeChange={onLikeChange}
+        onRequireLogin={() => setShowLoginModal(true)}
+      />
     </div>
   );
 
   return (
-    <BaseProductSlider
-      products={data.items}
-      renderProduct={renderProduct}
-      title={data?.title}
-    />
+    <div>
+      <div className="text-center pb-4">
+        <div className="w-full flex justify-center items-center py-6 gap-3 sm:gap-4 md:gap-6">
+          {left_decor && (
+            <img
+              src={left_decor}
+              alt="Left Decoration"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+            />
+          )}
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
+            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
+              {data?.title?.split(" ")[0]}
+            </span>
+            <span>{data?.title?.split(" ")?.slice(1)?.join(" ")}</span>
+          </h2>
+          {right_decor && (
+            <img
+              src={right_decor}
+              alt="Right Decoration"
+              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+            />
+          )}
+        </div>
+        <h3 className="text-base sm:text-lg md:text-xl font-semibold text-black-100 mt-2">
+          {data?.subtitle}
+        </h3>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">
+          {data?.description}
+        </p>
+      </div>
+      <BaseProductSlider products={data.items} renderProduct={renderProduct} />
+      <SignInModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
+    </div>
   );
 };
