@@ -285,8 +285,8 @@ export const PopularProductsSlider = ({ data }) => {
 
   return (
     <div>
-      <div className="text-center pb-4">
-        <div className="w-full flex justify-center items-center py-6 gap-3 sm:gap-4 md:gap-6">
+      <div className="text-center pb-8">
+        <div className="w-full flex justify-center items-center py-2 gap-3 sm:gap-4 md:gap-6">
           {left_decor && (
             <img
               src={left_decor}
@@ -404,8 +404,8 @@ export const OfferProductCollection = ({ data }) => {
 
   return (
     <div>
-      <div className="text-center pb-4">
-        <div className="w-full flex justify-center items-center py-6 gap-3 sm:gap-4 md:gap-6">
+      <div className="text-center pb-8">
+        <div className="w-full flex justify-center items-center py-2 gap-3 sm:gap-4 md:gap-6">
           {left_decor && (
             <img
               src={left_decor}
@@ -565,8 +565,8 @@ export const ProductCollectionSlider = ({ data }) => {
 
   return (
     <>
-      <div className="text-center pb-4">
-        <div className="w-full flex justify-center items-center py-6 gap-3 sm:gap-4 md:gap-6">
+      <div className="text-center pb-8">
+        <div className="w-full flex justify-center items-center py-2 gap-3 sm:gap-4 md:gap-6">
           {left_decor && (
             <img
               src={left_decor}
@@ -684,8 +684,8 @@ export const FeaturedCollectionSlider = ({ data }) => {
 
   return (
     <div>
-      <div className="text-center pb-4">
-        <div className="w-full flex justify-center items-center py-6 gap-3 sm:gap-4 md:gap-6">
+      <div className="text-center pb-8">
+        <div className="w-full flex justify-center items-center py-2 gap-3 sm:gap-4 md:gap-6">
           {left_decor && (
             <img
               src={left_decor}

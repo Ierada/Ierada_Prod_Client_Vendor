@@ -1129,11 +1129,11 @@ export default function ProductPage() {
                     onClick={() => handleAddToCart("add")}
                     disabled={addingToCart || productData.stock === 0}
                     className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 border border-black text-base md:text-lg font-medium transition-colors
-      ${
-        addingToCart || productData.stock === 0
-          ? "bg-gray-100 text-gray-400 border-gray-300"
-          : "bg-white text-black hover:bg-gray-50"
-      }`}
+                    ${
+                      addingToCart || productData.stock === 0
+                        ? "bg-gray-100 text-gray-400 border-gray-300"
+                        : "bg-white text-black hover:bg-gray-50"
+                    }`}
                   >
                     {addingToCart ? (
                       "Adding to Cart..."
@@ -1148,11 +1148,11 @@ export default function ProductPage() {
                     onClick={() => handleAddToCart("buy")}
                     disabled={addingToCart || productData.stock === 0}
                     className={`flex-1 items-center justify-center gap-2 px-6 py-3 text-base md:text-lg font-medium text-white transition-colors
-      ${
-        addingToCart || productData.stock === 0
-          ? "bg-gray-400 cursor-not-allowed"
-          : "bg-[#f47954] hover:bg-[#e66843]"
-      } hidden sm:flex`}
+                    ${
+                      addingToCart || productData.stock === 0
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-[#f47954] hover:bg-[#e66843]"
+                    } hidden sm:flex`}
                   >
                     Buy Now <IoMdArrowForward />
                   </button>
@@ -1163,11 +1163,11 @@ export default function ProductPage() {
                     onClick={() => handleAddToCart("buy")}
                     disabled={addingToCart || productData.stock === 0}
                     className={`w-full flex items-center justify-center gap-2 px-6 py-3 text-base font-medium text-white transition-colors rounded
-      ${
-        addingToCart || productData.stock === 0
-          ? "bg-gray-400 cursor-not-allowed"
-          : "bg-[#f47954] hover:bg-[#e66843]"
-      }`}
+                    ${
+                      addingToCart || productData.stock === 0
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-[#f47954] hover:bg-[#e66843]"
+                    }`}
                   >
                     {addingToCart ? (
                       "Adding..."

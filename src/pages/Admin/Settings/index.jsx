@@ -63,8 +63,10 @@ const AdminSetting = () => {
       // Set header floating offer values
       if (response.data.header_floating_offer) {
         const headerFloatingOffer = response.data.header_floating_offer
-          ? JSON.parse(response.data.header_floating_offer)
-          : {};
+          ? typeof response.data.header_floating_offer === "string"
+            ? JSON.parse(response.data.header_floating_offer)
+            : response.data.header_floating_offer
+          : null;
         setValue("header_text", headerFloatingOffer.header_text || "");
         setValue("link_text", headerFloatingOffer.link_text || "");
         setValue("link_url", headerFloatingOffer.link_url || "");

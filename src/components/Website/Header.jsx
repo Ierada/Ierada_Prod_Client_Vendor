@@ -653,7 +653,9 @@ const Header = () => {
         const response = await getHeaderCategories();
         setCategories(response?.data?.categories || []);
         const floatingOffer = response?.data?.header_floating_offer
-          ? JSON.parse(response?.data?.header_floating_offer)
+          ? typeof response?.data?.header_floating_offer === "string"
+            ? JSON.parse(response?.data?.header_floating_offer)
+            : response?.data?.header_floating_offer
           : null;
         if (floatingOffer) {
           setFloatingOffer(floatingOffer);

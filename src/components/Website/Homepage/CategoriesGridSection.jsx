@@ -7,10 +7,25 @@ import right_decor from "/assets/heading_decoration/heading_decoration_right.svg
 const CategoryGrid = ({ data }) => {
   const navigate = useNavigate();
 
+  const items = data?.items || [];
+  const n = items.length;
+  let chunks = [];
+  if (n > 0) {
+    const r = Math.ceil(n / 5);
+    const q = Math.floor(n / r);
+    const rem = n % r;
+    let idx = 0;
+    for (let i = 0; i < r; i++) {
+      const size = q + (i < rem ? 1 : 0);
+      chunks.push(items.slice(idx, idx + size));
+      idx += size;
+    }
+  }
+
   return (
     <section className="px-4 sm:px-6 md:px-8 lg:px-16 space-y-4 md:space-y-6">
-      <div className="text-center pb-4">
-        <div className="w-full flex justify-center items-center py-8 gap-4 md:gap-8">
+      <div className="text-center pb-8">
+        <div className="w-full flex justify-center items-center py-2 gap-4 md:gap-8">
           {left_decor && (
             <img
               src={left_decor}
@@ -40,27 +55,35 @@ const CategoryGrid = ({ data }) => {
         </p>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-4 sm:gap-10 md:gap-14">
-        {data?.items?.map((category) => (
+      <div className="space-y-4 md:space-y-6">
+        {chunks.map((row, rowIdx) => (
           <div
-            key={category.id}
-            className="flex flex-col items-center cursor-pointer transition-transform hover:scale-105"
-            onClick={() =>
-              navigate(
-                `${config.VITE_BASE_WEBSITE_URL}/collection/category/${category.slug}`
-              )
-            }
+            key={rowIdx}
+            className={`max-w-6xl mx-auto grid justify-items-center grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-${row.length} gap-6 sm:gap-10 md:gap-20`}
           >
-            <div className="w-24 sm:w-28 md:w-32 lg:w-48 h-24 sm:h-28 md:h-32 lg:h-48 rounded-full overflow-hidden shadow-md flex items-center justify-center">
-              <img
-                src={category.image}
-                alt={category.title}
-                className="w-50 h-50 object-contain"
-              />
-            </div>
-            <p className="mt-2 sm:mt-3 text-xs sm:text-sm md:text-base font-medium text-gray-800 text-center max-w-[120px] sm:max-w-[140px] md:max-w-[160px]">
-              {category.title.toUpperCase()}
-            </p>
+            {row.map((category) => (
+              <div
+                key={category.id}
+                className="flex flex-col items-center cursor-pointer transition-transform hover:scale-105"
+                onClick={() =>
+                  navigate(
+                    `${config.VITE_BASE_WEBSITE_URL}/collection/category/${category.slug}`
+                  )
+                }
+              >
+                <div className="w-20 md:w-28 lg:w-40 h-20 md:h-28 lg:h-40 rounded-full overflow-hidden shadow-md flex items-center justify-center">
+                  <img
+                    // src={category.image}
+                    src="https://plus.unsplash.com/premium_photo-1683121263622-664434494177?q=80&w=1288&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    alt={category.title}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <p className="mt-2 sm:mt-3 text-xs sm:text-sm md:text-base font-medium text-gray-800 text-center max-w-[120px] sm:max-w-[140px] md:max-w-[160px]">
+                  {category.title.toUpperCase()}
+                </p>
+              </div>
+            ))}
           </div>
         ))}
       </div>

@@ -125,8 +125,8 @@ const DynamicBanner = ({ data }) => {
 
   return (
     <section className="relative w-full overflow-hidden">
-      <div className="text-center pb-4">
-        <div className="w-full flex justify-center items-center py-8 gap-4 md:gap-8">
+      <div className="text-center pb-8">
+        <div className="w-full flex justify-center items-center py-2 gap-4 md:gap-8">
           {left_decor && (
             <img
               src={left_decor}
