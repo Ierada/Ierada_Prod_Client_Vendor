@@ -86,11 +86,11 @@ const ProductCard = ({
   const productPath = `/product/${product.slug}`;
 
   return (
-    <motion.div className="group border rounded-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+    <motion.div className="group overflow-hidden transition-shadow duration-300">
       <Link to={productPath} className="block">
         <div className="relative">
-          <div className="relative aspect-[512/682] w-full overflow-hidden">
-            {product.media && product.media.length > 0 ? (
+          <div className="relative aspect-[512/682] w-full overflow-hidden rounded-lg">
+            {(product.media && product.media.length > 0) || product.image ? (
               <img
                 src={
                   product.media && product.media.length > 0
@@ -115,13 +115,15 @@ const ProductCard = ({
             >
               <Heart
                 className={`w-5 h-5 ${
-                  isWishlisted ? "fill-rose-500 text-rose-500" : "text-gray-600"
+                  isWishlisted
+                    ? "fill-rose-500 text-rose-500"
+                    : "text-[#D8232F]"
                 }`}
               />
             </button>
           </div>
 
-          <div className="bg-white absolute bottom-3 left-3 px-1.5 text-sm z-10 rounded">
+          <div className="bg-white absolute bottom-2 left-2 px-1.5 text-sm z-10 rounded">
             <div className="flex items-center gap-1">
               <AiFillLike className="w-4 h-4 text-[#FF3B00]" />
               <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent font-semibold font-medium">
@@ -131,7 +133,7 @@ const ProductCard = ({
           </div>
         </div>
 
-        <div className="p-4 relative">
+        <div className="py-4 px-2 relative">
           <button
             className="absolute top-1 right-1 rounded bg-white p-1 flex items-center justify-center transition-all shadow-sm hover:shadow-md"
             onClick={handleLikeProduct}
@@ -142,25 +144,27 @@ const ProductCard = ({
               <AiOutlineLike className="w-4 h-4 text-[#FF3B00] hover:text-[#FFB700]" />
             )}
           </button>
-          <h3 className="font-medium text-sm mb-1 truncate hover:text-gray-700">
+          <h3 className="font-poppins text-sm mb-1 truncate text-[#3F0D0C]">
             {product.name}
           </h3>
 
-          <div className="flex items-center mb-2">
+          {/* <div className="flex items-center mb-2">
             <RatingStars rating={product.reviewStats?.average_rating} />
             <span className="text-xs text-gray-500 ml-2">
               ({product.reviewStats?.total_reviews || 0})
             </span>
-          </div>
+          </div> */}
 
           <div className="flex items-center gap-2">
-            <span className="font-semibold">₹{product.discounted_price}</span>
-            <span className="text-gray-400 text-sm line-through">
-              ₹{product.original_price}
+            <span className="text-sm font-semibold text-[#3F0D0C]">
+              Rs.{product.discounted_price}
+            </span>
+            <span className="text-[#3F0D0C] text-xs line-through">
+              Rs.{product.original_price}
             </span>
             {product.discount > 0 && (
-              <span className="uppercase bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent text-sm">
-                {product.discount}% OFF
+              <span className="uppercase bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent text-xs">
+                ({product.discount}% OFF)
               </span>
             )}
           </div>
