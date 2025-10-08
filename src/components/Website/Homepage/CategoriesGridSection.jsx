@@ -73,8 +73,7 @@ const CategoryGrid = ({ data }) => {
               >
                 <div className="w-20 md:w-28 lg:w-40 h-20 md:h-28 lg:h-40 rounded-full overflow-hidden shadow-md flex items-center justify-center">
                   <img
-                    // src={category.image}
-                    src="https://plus.unsplash.com/premium_photo-1683121263622-664434494177?q=80&w=1288&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    src={category.image}
                     alt={category.title}
                     className="w-full h-full object-contain"
                   />
