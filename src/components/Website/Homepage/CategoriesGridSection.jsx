@@ -59,7 +59,7 @@ const CategoryGrid = ({ data }) => {
         {chunks.map((row, rowIdx) => (
           <div
             key={rowIdx}
-            className={`max-w-6xl mx-auto grid justify-items-center grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-${row.length} gap-6 sm:gap-10 md:gap-20`}
+            className={`max-w-6xl mx-auto grid justify-items-center grid-cols-3 lg:grid-cols-${row.length} gap-6 sm:gap-10 md:gap-20`}
           >
             {row.map((category) => (
               <div

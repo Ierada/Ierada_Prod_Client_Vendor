@@ -855,6 +855,17 @@ const Header = () => {
                       onChange={handleSearchChange}
                       className="bg-transparent flex-grow outline-none border-none ring-0 focus:ring-0"
                     />
+                    <button
+                      type="button"
+                      onClick={toggleListening}
+                      className="text-gray-400"
+                    >
+                      <Mic
+                        className={`h-5 w-5 ${
+                          isListening ? "text-red-500" : "text-gray-400"
+                        }`}
+                      />
+                    </button>
                   </form>
                   {showSearchResults && (
                     <SearchResults
