@@ -97,6 +97,7 @@ const ProductCard = ({
                     ? product.media[0].url
                     : product.image
                 }
+                // src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                 alt={product.name}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 loading="lazy"
@@ -108,13 +109,13 @@ const ProductCard = ({
             )}
           </div>
 
-          <div className="absolute top-3 right-3 z-10">
+          <div className="absolute top-1 md:top-2 right-1 md:right-2 z-10">
             <button
               onClick={handleWishlistToggle}
-              className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow hover:bg-gray-100 transition-all"
+              className="h-5 w-5 md:w-6 md:h-6 rounded-full bg-white flex items-center justify-center shadow hover:bg-gray-100 transition-all"
             >
               <Heart
-                className={`w-5 h-5 ${
+                className={`w-3 h-3 md:w-3 md:h-3 ${
                   isWishlisted
                     ? "fill-rose-500 text-rose-500"
                     : "text-[#D8232F]"
@@ -123,30 +124,33 @@ const ProductCard = ({
             </button>
           </div>
 
-          <div className="bg-white absolute bottom-2 left-2 px-1.5 text-sm z-10 rounded">
+          <div className="bg-white absolute bottom-1 md:bottom-2 left-1 md:left-2 px-1.5 text-sm z-10 rounded">
             <div className="flex items-center gap-1">
-              <AiFillLike className="w-4 h-4 text-[#FF3B00]" />
-              <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent font-semibold font-medium">
+              <AiFillLike className="w-2 md:w-3 w-2 md:h-3 text-[#FF3B00]" />
+              <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent text-[10px]">
                 {product.total_likes || 0}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="py-4 px-2 relative">
-          <button
-            className="absolute top-1 right-1 rounded bg-white p-1 flex items-center justify-center transition-all shadow-sm hover:shadow-md"
-            onClick={handleLikeProduct}
-          >
-            {isLiked ? (
-              <AiFillLike className="w-4 h-4 text-[#FF3B00]" />
-            ) : (
-              <AiOutlineLike className="w-4 h-4 text-[#FF3B00] hover:text-[#FFB700]" />
-            )}
-          </button>
-          <h3 className="font-poppins text-sm mb-1 truncate text-[#3F0D0C]">
-            {product.name}
-          </h3>
+        <div className="py-4 relative">
+          <div className="flex justify-between mb-1">
+            <h3 className="font-poppins text-[8px] leading-4 md:text-sm truncate text-[#3F0D0C]">
+              {product.name}
+            </h3>
+            <button
+              className="rounded bg-white flex items-center justify-center transition-all"
+              onClick={handleLikeProduct}
+              disabled={isLiked}
+            >
+              {isLiked ? (
+                <AiFillLike className="w-3 h-3 md:w-4 md:h-4 text-[#FF3B00]" />
+              ) : (
+                <AiOutlineLike className="w-3 h-3 md:w-4 md:h-4 text-[#FF3B00] hover:text-[#FFB700]" />
+              )}
+            </button>
+          </div>
 
           {/* <div className="flex items-center mb-2">
             <RatingStars rating={product.reviewStats?.average_rating} />
@@ -155,15 +159,15 @@ const ProductCard = ({
             </span>
           </div> */}
 
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-[#3F0D0C]">
+          <div className="flex items-center gap-1 md:gap-2">
+            <span className="text-[8px] leading-4 md:text-sm font-semibold text-[#3F0D0C]">
               Rs.{product.discounted_price}
             </span>
-            <span className="text-[#3F0D0C] text-xs line-through">
+            <span className="text-[#3F0D0C] text-[6px] leading-4 md:text-xs line-through">
               Rs.{product.original_price}
             </span>
             {product.discount > 0 && (
-              <span className="uppercase bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent text-xs">
+              <span className="uppercase bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent text-[6px] leading-4 md:text-xs">
                 ({product.discount}% OFF)
               </span>
             )}

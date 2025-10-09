@@ -25,12 +25,12 @@ const CategoryGrid = ({ data }) => {
   return (
     <section className="px-4 sm:px-6 md:px-8 lg:px-16 space-y-4 md:space-y-6">
       <div className="text-center pb-8">
-        <div className="w-full flex justify-center items-center py-2 gap-4 md:gap-8">
+        <div className="w-full flex justify-center items-center md:py-2 gap-4 md:gap-8">
           {left_decor && (
             <img
               src={left_decor}
               alt="Left Decoration"
-              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+              className="h-2 md:h-4 lg:h-6 w-[50vh] hidden md:block"
             />
           )}
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
@@ -43,20 +43,44 @@ const CategoryGrid = ({ data }) => {
             <img
               src={right_decor}
               alt="Right Decoration"
-              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+              className="h-2 md:h-4 lg:h-6 w-[50vh] hidden md:block"
             />
           )}
         </div>
-        <h3 className="text-base sm:text-lg md:text-xl font-semibold text-black-100 mt-2">
+        <h3 className="text-xs sm:text-lg md:text-xl md:font-semibold text-black-100 mt-2">
           {data?.subtitle}
         </h3>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">
+        <p className="text-[10px] leading-4 sm:text-base text-gray-600 mt-1">
           {data?.description}
         </p>
       </div>
 
-      <div className="space-y-4 md:space-y-6">
-        {chunks.map((row, rowIdx) => (
+      {/* <div className="space-y-4 md:space-y-6"> */}
+      <div className="flex flex-wrap justify-center gap-6 sm:gap-14 md:gap-20">
+        {data?.items?.map((category) => (
+          <div
+            key={category.id}
+            className="flex flex-col items-center cursor-pointer transition-transform hover:scale-105 w-[100px] sm:w-[120px] md:w-[140px]"
+            onClick={() =>
+              navigate(
+                `${config.VITE_BASE_WEBSITE_URL}/collection/category/${category.slug}`
+              )
+            }
+          >
+            <div className="w-16 md:w-24 lg:w-32 h-16 md:h-24 lg:h-32 rounded-full overflow-hidden shadow-md flex items-center justify-center">
+              <img
+                src={category.image}
+                // src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                alt={category.title}
+                className="w-50 h-50 object-contain"
+              />
+            </div>
+            <p className="mt-2 sm:mt-3 text-[10px] leading-4 sm:text-sm md:text-base font-medium text-gray-800 text-center">
+              {category.title.toUpperCase()}
+            </p>
+          </div>
+        ))}
+        {/* {chunks.map((row, rowIdx) => (
           <div
             key={rowIdx}
             className={`max-w-6xl mx-auto grid justify-items-center grid-cols-3 lg:grid-cols-${row.length} gap-6 sm:gap-10 md:gap-20`}
@@ -71,20 +95,21 @@ const CategoryGrid = ({ data }) => {
                   )
                 }
               >
-                <div className="w-20 md:w-28 lg:w-40 h-20 md:h-28 lg:h-40 rounded-full overflow-hidden shadow-md flex items-center justify-center">
+            <div className="w-16 md:w-24 lg:w-32 h-16 md:h-24 lg:h-32 rounded-full overflow-hidden shadow-md flex items-center justify-center">
                   <img
-                    src={category.image}
+                    // src={category.image}
+                    src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt={category.title}
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <p className="mt-2 sm:mt-3 text-xs sm:text-sm md:text-base font-medium text-gray-800 text-center max-w-[120px] sm:max-w-[140px] md:max-w-[160px]">
+            <p className="mt-2 sm:mt-3 text-[10px] sm:text-sm md:text-base font-medium text-gray-800 text-center">
                   {category.title.toUpperCase()}
                 </p>
               </div>
             ))}
           </div>
-        ))}
+        ))} */}
       </div>
     </section>
   );
