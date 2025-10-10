@@ -361,7 +361,7 @@ const VoiceSearchPopup = ({ isListening, toggleListening, searchQuery }) => {
 };
 
 // Main Header Component
-const Header = () => {
+const Header = ({ setHeaderHeight }) => {
   const location = useLocation();
   const { user, setUser, triggerHeaderCounts } = useAppContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -386,6 +386,8 @@ const Header = () => {
   const profileDropdownRef = useRef(null);
   const navigate = useNavigate();
   const baseUrl = config.VITE_BASE_WEBSITE_URL;
+
+  const headerRef = useRef(null);
 
   // Check for customer token and user
   useEffect(() => {
@@ -420,6 +422,25 @@ const Header = () => {
     setHoveredInnerSubcategory(null);
     setIsMobileMenuOpen(false);
   }, [location]);
+
+  useEffect(() => {
+    if (!headerRef.current || !setHeaderHeight) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setHeaderHeight(entry.contentRect.height - 80);
+      }
+    });
+
+    resizeObserver.observe(headerRef.current);
+
+    // Initial measurement
+    setHeaderHeight(headerRef.current.offsetHeight);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [setHeaderHeight]);
 
   const handleSearchChange = async (e) => {
     const query = e.target.value;
@@ -732,8 +753,11 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white font-poppins">
-      <nav className="py-2 px-4">
+    <header
+      ref={headerRef}
+      className="fixed top-0 left-0 right-0 z-50 font-poppins"
+    >
+      <nav className="py-2 px-4 bg-white">
         <div className="flex items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-4">
             <Link
@@ -839,21 +863,21 @@ const Header = () => {
         </div>
 
         {isMobileMenuOpen && (
-          <div className="md:hidden fixed top-20 left-0 right-0 bottom-0 bg-white shadow-lg z-50 overflow-hidden">
+          <div className="md:hidden fixed top-14 left-0 right-0 bottom-0 bg-white shadow-lg z-50 overflow-hidden">
             <div className="flex flex-col h-full">
-              <div className="p-4 border-b bg-white">
+              <div className="px-4 py-2 border-b bg-white">
                 <div className="relative">
                   <form
                     onSubmit={handleSearchSubmit}
                     className="flex items-center bg-gray-100 rounded-lg p-1"
                   >
-                    <Search className="h-5 w-5 text-gray-500 mx-2" />
+                    <Search className="h-3 w-3 text-gray-500 mx-2" />
                     <input
                       type="text"
                       placeholder="Search product"
                       value={searchQuery}
                       onChange={handleSearchChange}
-                      className="bg-transparent flex-grow outline-none border-none ring-0 focus:ring-0"
+                      className="bg-transparent flex-grow outline-none border-none ring-0 focus:ring-0 h-7 text-xs"
                     />
                     <button
                       type="button"
@@ -861,7 +885,7 @@ const Header = () => {
                       className="text-gray-400"
                     >
                       <Mic
-                        className={`h-5 w-5 ${
+                        className={`h-3 w-3 ${
                           isListening ? "text-red-500" : "text-gray-400"
                         }`}
                       />
@@ -878,7 +902,7 @@ const Header = () => {
               </div>
 
               <div
-                className="flex-1 overflow-y-auto py-2 px-4"
+                className="flex-1 overflow-y-auto py-2 px-4 text-sm"
                 style={{ height: "calc(100vh - 180px)" }}
               >
                 <a
@@ -927,8 +951,8 @@ const Header = () => {
                       }}
                       className="flex flex-col items-center text-gray-600"
                     >
-                      <Icon className="h-6 w-6 mb-1" />
-                      <span className="text-sm">{label}</span>
+                      <Icon className="h-4 w-4 mb-1" />
+                      <span className="text-xs">{label}</span>
                     </button>
                   ))}
                 </div>
@@ -986,11 +1010,11 @@ const Header = () => {
       </div>
 
       {showOfferBar && (
-        <div className="bg-button-gradient text-white text-xs md:text-base text-center py-2 text-sm flex flex-col md:flex-row justify-center items-center relative">
+        <div className="bg-button-gradient text-white text-[10px] leading-4 md:text-base text-center py-1 md:py-2 flex flex-col md:flex-row justify-center items-center relative">
           <span>{floatingOffer?.header_text}</span>
           <Link
             to={floatingOffer?.link_url}
-            className="ml-2 text-xs md:text-base font-medium hover:underline"
+            className="ml-2 font-medium hover:underline"
           >
             {floatingOffer?.link_text}
           </Link>
@@ -998,7 +1022,7 @@ const Header = () => {
             onClick={() => setShowOfferBar(false)}
             className="absolute right-2 md:right-4 text-white"
           >
-            <X className="h-4 w-4" />
+            <X className="h-2 md:h-4 w-2 md:w-4" />
           </button>
         </div>
       )}

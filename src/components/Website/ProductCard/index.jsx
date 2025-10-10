@@ -1,7 +1,7 @@
 import React from "react";
 import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AiFillLike, AiOutlineLike } from "react-icons/ai";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import {
@@ -23,6 +23,14 @@ const ProductCard = ({
 }) => {
   const navigate = useNavigate();
   const { user } = useAppContext();
+
+  const handleCardClick = (e) => {
+    if (e.target.closest("button")) {
+      return;
+    }
+    const productPath = `/product/${product.slug}`;
+    navigate(productPath);
+  };
 
   const handleWishlistToggle = async (e) => {
     e.stopPropagation();
@@ -87,7 +95,7 @@ const ProductCard = ({
 
   return (
     <motion.div className="group overflow-hidden transition-shadow duration-300">
-      <Link to={productPath} className="block">
+      <div className="block cursor-pointer" onClick={handleCardClick}>
         <div className="relative">
           <div className="relative aspect-[512/682] w-full overflow-hidden rounded-lg">
             {(product.media && product.media.length > 0) || product.image ? (
@@ -173,7 +181,7 @@ const ProductCard = ({
             )}
           </div>
         </div>
-      </Link>
+      </div>
     </motion.div>
   );
 };

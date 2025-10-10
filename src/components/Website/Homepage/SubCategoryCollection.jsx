@@ -14,10 +14,10 @@ const SubCategoryCollection = ({ data }) => {
           <img
             src={left_decor}
             alt="Left Decoration"
-            className="h-2 md:h-4 lg:h-6 w-[50vh]"
+            className="h-2 md:h-4 lg:h-6 w-[50vh] hidden md:block"
           />
         )}
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
+        <h2 className="text-lg sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
           <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
             {data?.title?.split(" ")[0]}
           </span>
@@ -27,7 +27,7 @@ const SubCategoryCollection = ({ data }) => {
           <img
             src={right_decor}
             alt="Right Decoration"
-            className="h-2 md:h-4 lg:h-6 w-[50vh]"
+            className="h-2 md:h-4 lg:h-6 w-[50vh] hidden md:block"
           />
         )}
       </div>

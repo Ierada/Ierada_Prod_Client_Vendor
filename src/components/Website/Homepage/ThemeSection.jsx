@@ -11,16 +11,16 @@ const ThemeSection = ({ data }) => {
 
   return (
     <section className="px-4 sm:px-6 md:px-8 lg:px-16 space-y-4 md:space-y-6">
-      <div className="text-left md:text-center pb-8">
-        <div className="w-full flex justify-center items-center py-2 gap-3 sm:gap-4 md:gap-6">
+      <div className="text-center pb-8">
+        <div className="w-full flex justify-center items-center md:py-2 gap-4 md:gap-8">
           {left_decor && (
             <img
               src={left_decor}
               alt="Left Decoration"
-              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+              className="h-2 md:h-4 lg:h-6 w-[50vh] hidden md:block"
             />
           )}
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
+          <h2 className="text-lg sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
             <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
               {data?.title?.split(" ")[0]}
             </span>
@@ -30,23 +30,21 @@ const ThemeSection = ({ data }) => {
             <img
               src={right_decor}
               alt="Right Decoration"
-              className="h-2 md:h-4 lg:h-6 w-[50vh]"
+              className="h-2 md:h-4 lg:h-6 w-[50vh] hidden md:block"
             />
           )}
         </div>
-        <h3 className="text-base sm:text-lg md:text-xl font-semibold text-black-100 mt-2">
-          {data?.subtitle ||
-            "Compare and purchase plans tailored to your location"}
+        <h3 className="text-xs sm:text-lg md:text-xl md:font-semibold text-black-100 mt-2">
+          {data?.subtitle}
         </h3>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">
-          {data?.description ||
-            "Would you like to make this more formal (professional website style) or catchy (marketing/ad style)?"}
+        <p className="text-[10px] leading-4 sm:text-base text-gray-600 mt-1">
+          {data?.description}
         </p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         {/* Left side: Theme grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 w-full md:w-2/3">
+        <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 md:gap-6 w-full md:w-2/3">
           {themes.map((theme) => (
             <div
               key={theme.id}

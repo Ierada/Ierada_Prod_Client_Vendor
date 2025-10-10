@@ -42,37 +42,57 @@ const Footer = () => {
     <footer className="relative bg-[#333333] text-white py-8 md:py-12 font-poppins">
       <div className="container mx-auto px-4">
         {/* Main grid - responsive columns */}
-        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           {/* Logo & Social Section */}
           <div className="md:col-span-2 lg:col-span-1 flex flex-col gap-6">
             <div>
               <img
                 src={logoWhite}
                 alt="Brand Logo"
-                className="bg-white p-2 rounded-lg w-40 md:w-auto border-b-2 border-primary-100"
+                className="bg-white p-1 md:p-2 rounded-lg w-28 md:w-40 md:w-auto border-b-2 border-primary-100"
               />
             </div>
 
-            <div className="flex flex-wrap gap-2 text-2xl sm:text-3xl">
+            <div className="flex flex-wrap gap-2 text-lg sm:text-3xl">
               <a href="#" aria-label="Instagram">
-                <img src={Instagram} alt="Instagram" className="h-8 w-auto" />
+                <img
+                  src={Instagram}
+                  alt="Instagram"
+                  className="h-5 md:h-8 w-auto"
+                />
               </a>
               <a href="#" aria-label="Facebook">
-                <img src={Facebook} alt="Facebook" className="h-8 w-auto" />
+                <img
+                  src={Facebook}
+                  alt="Facebook"
+                  className="h-5 md:h-8 w-auto"
+                />
               </a>
               <a href="#" aria-label="YouTube">
-                <img src={Youtube} alt="YouTube" className="h-8 w-auto" />
+                <img
+                  src={Youtube}
+                  alt="YouTube"
+                  className="h-5 md:h-8 w-auto"
+                />
               </a>
               <a href="#" aria-label="Pinterest">
-                <img src={Pinterest} alt="Pinterest" className="h-8 w-auto" />
+                <img
+                  src={Pinterest}
+                  alt="Pinterest"
+                  className="h-5 md:h-8 w-auto"
+                />
               </a>
               <a href="#" aria-label="Twitter">
-                <img src={Twitter} alt="Twitter" className="h-8 w-auto" />
+                <img
+                  src={Twitter}
+                  alt="Twitter"
+                  className="h-5 md:h-8 w-auto"
+                />
               </a>
             </div>
 
             <div className="flex flex-col gap-3">
-              <p className="text-sm md:text-base">
+              <p className="text-xs md:text-base">
                 Experience our app on Mobile
               </p>
               <div className="flex gap-3">
@@ -80,14 +100,14 @@ const Footer = () => {
                   <img
                     src={android_store}
                     alt="Google Play"
-                    className="h-10 w-auto"
+                    className="h-7 md:h-10 w-auto"
                   />
                 </button>
                 <button aria-label="Download on App Store">
                   <img
                     src={apple_store}
                     alt="App Store"
-                    className="h-10 w-auto"
+                    className="h-7 md:h-10 w-auto"
                   />
                 </button>
               </div>
@@ -96,8 +116,8 @@ const Footer = () => {
 
           {/* Company Info */}
           <div>
-            <h3 className="text-lg text-white/70 mb-4">Company</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="text-sm md:text-lg text-white/70 mb-4">Company</h3>
+            <ul className="space-y-2 text-xs md:text-sm">
               <li>
                 <a href={`${baseUrl}/about`} className="hover:text-gray-200">
                   About us
@@ -124,8 +144,10 @@ const Footer = () => {
 
           {/* Customer Services */}
           <div>
-            <h3 className="text-lg text-white/70 mb-4">Customer Services</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="text-sm md:text-lg text-white/70 mb-4">
+              Customer Services
+            </h3>
+            <ul className="space-y-2 text-xs md:text-sm">
               <li>
                 <button
                   onClick={() => handleButtonClick("profile")}
@@ -160,8 +182,10 @@ const Footer = () => {
 
           {/* Our Information */}
           <div>
-            <h3 className="text-lg text-white/70 mb-4">Our Information</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="text-sm md:text-lg text-white/70 mb-4">
+              Our Information
+            </h3>
+            <ul className="space-y-2 text-xs md:text-sm">
               <li>
                 <a
                   href={`${baseUrl}/page/privacy-policy`}
@@ -183,8 +207,10 @@ const Footer = () => {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-lg text-white/70 mb-4">Contact Information</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="text-sm md:text-lg text-white/70 mb-4">
+              Contact Information
+            </h3>
+            <ul className="space-y-2 text-xs md:text-sm">
               {/* <li>
                 <button onClick={() => (window.location.href = "tel:+911234567890")} className="hover:text-gray-200">
                   +91-1234567890
@@ -228,20 +254,25 @@ const Footer = () => {
         </div>
 
         <div className="flex flex-col gap-3 mt-4">
-          <p className="text-sm md:text-base">Safe & Secure Payment</p>
+          <p className="text-xs md:text-sm md:text-base">
+            Safe & Secure Payment
+          </p>
           <div className="flex flex-wrap gap-2 text-4xl sm:text-5xl">
             <button
               aria-label="Mastercard"
-              className="h-7 bg-white rounded p-1"
+              className="h-5 md:h-7 bg-white rounded p-1"
             >
               <img src={MasterCard} alt="Mastercard" className="h-full" />
             </button>
-            <button aria-label="Visa" className="h-7 bg-white rounded p-1">
+            <button
+              aria-label="Visa"
+              className="h-5 md:h-7 bg-white rounded p-1"
+            >
               <img src={VisaCard} alt="Visa" className="h-full" />
             </button>
             <button
               aria-label="American Express"
-              className="h-7 bg-white rounded p-1"
+              className="h-5 md:h-7 bg-white rounded p-1"
             >
               <img
                 src={AmericanExpress}
@@ -249,19 +280,25 @@ const Footer = () => {
                 className="h-full"
               />
             </button>
-            <button aria-label="RuPay" className="h-7 bg-white rounded p-1">
+            <button
+              aria-label="RuPay"
+              className="h-5 md:h-7 bg-white rounded p-1"
+            >
               <img src={RupayCard} alt="RuPay" className="h-full" />
             </button>
-            <button aria-label="UPI" className="h-7 bg-white rounded p-1">
+            <button
+              aria-label="UPI"
+              className="h-5 md:h-7 bg-white rounded p-1"
+            >
               <img src={UPI} alt="UPI" className="h-full" />
             </button>
           </div>
         </div>
 
         {/* Copyright */}
-        <div className="mt-8 pt-6 border-t border-white/20">
+        <div className="mt-4 md:mt-8 pt-2 md:pt-6 border-t border-white/20">
           <div className="flex flex-col md:flex-row justify-between md:justify-center items-center">
-            <p className="text-sm text-white text-center md:text-left mb-2 md:mb-0">
+            <p className="text-[10px] leading-4 md:text-sm text-white text-center md:text-left mb-2 md:mb-0">
               ©️ 2024 Ierada. All Rights Reserved.
             </p>
           </div>

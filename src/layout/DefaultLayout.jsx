@@ -16,6 +16,7 @@ const DefaultLayout = ({ children, footerData }) => {
   const [userType, setUserType] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   const urlType = location.pathname.split("/")[1];
 
@@ -126,6 +127,7 @@ const DefaultLayout = ({ children, footerData }) => {
             <HeaderComponent
               sidebarOpen={sidebarOpen}
               setSidebarOpen={setSidebarOpen}
+              {...(isWebsitePage && { setHeaderHeight })}
             >
               {!isWebsitePage && (
                 <button
@@ -149,11 +151,12 @@ const DefaultLayout = ({ children, footerData }) => {
             <div
               className={`${
                 isWebsitePage
-                  ? "mt-16 pt-4 md:pt-20"
+                  ? "pt-4 md:pt-20"
                   : isSigninPage
                   ? ""
                   : "mx-auto max-w-screen-2xl"
               }`}
+              style={isWebsitePage ? { marginTop: `${headerHeight}px` } : {}}
             >
               {children}
             </div>
