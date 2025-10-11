@@ -25,7 +25,7 @@ const CategoryGrid = ({ data }) => {
   return (
     <section className="px-4 sm:px-6 md:px-8 lg:px-16 space-y-4 md:space-y-6">
       <div className="text-center pb-8">
-        <div className="w-full flex justify-center items-center md:py-2 gap-4 md:gap-8">
+        <div className="w-full flex justify-center items-center gap-4 md:gap-8">
           {left_decor && (
             <img
               src={left_decor}
@@ -67,7 +67,7 @@ const CategoryGrid = ({ data }) => {
               )
             }
           >
-            <div className="w-16 md:w-24 lg:w-32 h-16 md:h-24 lg:h-32 rounded-full overflow-hidden shadow-md flex items-center justify-center">
+            <div className="w-14 md:w-20 lg:w-28 h-14 md:h-20 lg:h-28 rounded-full overflow-hidden shadow-md flex items-center justify-center">
               <img
                 src={category.image}
                 // src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
@@ -75,7 +75,7 @@ const CategoryGrid = ({ data }) => {
                 className="w-50 h-50 object-contain"
               />
             </div>
-            <p className="mt-2 sm:mt-3 text-[10px] leading-4 sm:text-sm md:text-base font-medium text-gray-800 text-center">
+            <p className="mt-2 sm:mt-3 text-[10px] leading-4 sm:text-sm font-medium text-gray-800 text-center">
               {category.title.toUpperCase()}
             </p>
           </div>

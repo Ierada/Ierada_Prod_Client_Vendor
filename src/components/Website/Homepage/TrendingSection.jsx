@@ -74,7 +74,7 @@ const TrendingSection = ({ data }) => {
 
   return (
     <section className="px-4 md:px-8 lg:px-16 space-y-4">
-      <div className="w-full flex justify-center items-center py-6 gap-3 sm:gap-4 md:gap-6">
+      <div className="w-full flex justify-center items-center gap-3 sm:gap-4 md:gap-6">
         {left_decor && (
           <img
             src={left_decor}

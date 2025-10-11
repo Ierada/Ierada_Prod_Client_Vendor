@@ -89,7 +89,7 @@ const BaseProductSlider = ({
   return (
     <section className="px-4 sm:px-6 md:px-8 lg:px-16 space-y-4">
       {title && (
-        <div className="w-full flex justify-center items-center py-6 gap-3 sm:gap-4 md:gap-6">
+        <div className="w-full flex justify-center items-center gap-3 sm:gap-4 md:gap-6">
           {left_decor && (
             <img
               src={left_decor}
@@ -286,7 +286,7 @@ export const PopularProductsSlider = ({ data }) => {
   return (
     <div>
       <div className="text-center pb-8">
-        <div className="w-full flex justify-center items-center md:py-2 gap-4 md:gap-8">
+        <div className="w-full flex justify-center items-center gap-4 md:gap-8">
           {left_decor && (
             <img
               src={left_decor}
@@ -405,7 +405,7 @@ export const OfferProductCollection = ({ data }) => {
   return (
     <div>
       <div className="text-center pb-8">
-        <div className="w-full flex justify-center items-center md:py-2 gap-4 md:gap-8">
+        <div className="w-full flex justify-center items-center gap-4 md:gap-8">
           {left_decor && (
             <img
               src={left_decor}
@@ -566,7 +566,7 @@ export const ProductCollectionSlider = ({ data }) => {
   return (
     <>
       <div className="text-center pb-8">
-        <div className="w-full flex justify-center items-center md:py-2 gap-4 md:gap-8">
+        <div className="w-full flex justify-center items-center gap-4 md:gap-8">
           {left_decor && (
             <img
               src={left_decor}
@@ -685,7 +685,7 @@ export const FeaturedCollectionSlider = ({ data }) => {
   return (
     <div>
       <div className="text-center pb-8">
-        <div className="w-full flex justify-center items-center md:py-2 gap-4 md:gap-8">
+        <div className="w-full flex justify-center items-center gap-4 md:gap-8">
           {left_decor && (
             <img
               src={left_decor}

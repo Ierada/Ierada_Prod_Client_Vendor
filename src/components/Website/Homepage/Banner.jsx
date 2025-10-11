@@ -25,7 +25,7 @@ const Banner = ({ data }) => {
     <section className="relative w-full -mt-6 md:mt-0 lg:mt-0 overflow-hidden">
       <div
         onClick={() => handleNavigation(bannerData)}
-        className="relative cursor-pointer w-full h-[300px] sm:h-[400px] md:h-[400px] lg:h-auto"
+        className="relative cursor-pointer w-full h-[100px] sm:h-[200px] md:h-[300px]"
       >
         {/* Responsive Image */}
         <picture>
@@ -34,7 +34,8 @@ const Banner = ({ data }) => {
             srcSet={bannerData?.mobile_image_url || bannerData?.file_url}
           />
           <img
-            src={bannerData?.file_url}
+            // src={bannerData?.file_url}
+            src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2370&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             alt={bannerData?.title || "Banner image"}
             className="w-full h-full object-cover"
           />

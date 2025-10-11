@@ -29,6 +29,7 @@ module.exports = {
       italiana: ["Italiana", "serif"],
       poppins: ["Poppins", "serif"],
       lato: ["lato", "sans-serif"],
+      pacifico: ["Pacifico", "cursive"],
     },
     screens: {
       "2xsm": "375px",

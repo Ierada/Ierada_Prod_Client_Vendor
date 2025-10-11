@@ -127,7 +127,7 @@ const AllProductsSection = () => {
 
   return (
     <section className="py-6 px-3 sm:px-4 md:px-6 lg:px-8" ref={sectionRef}>
-      <div className="w-full flex justify-center items-center py-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6 mb-6">
+      <div className="w-full flex justify-center items-center gap-2 sm:gap-3 md:gap-4 lg:gap-6 mb-6">
         {left_decor && (
           <img
             src={left_decor}

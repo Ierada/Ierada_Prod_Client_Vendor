@@ -11,8 +11,8 @@ const ThemeSection = ({ data }) => {
 
   return (
     <section className="px-4 sm:px-6 md:px-8 lg:px-16 space-y-4 md:space-y-6">
-      <div className="text-center pb-8">
-        <div className="w-full flex justify-center items-center md:py-2 gap-4 md:gap-8">
+      <div className="text-center pb-5">
+        <div className="w-full flex justify-center items-center gap-4 md:gap-8">
           {left_decor && (
             <img
               src={left_decor}
@@ -53,20 +53,21 @@ const ThemeSection = ({ data }) => {
                 navigate(`${config.VITE_BASE_WEBSITE_URL}/theme/${theme.slug}`)
               }
             >
-              <div className="w-full aspect-[4/3] overflow-hidden">
+              <div className="relative w-full aspect-[4/3] overflow-hidden">
                 <img
                   src={theme.image || "/assets/placeholder-theme.jpg"}
+                  // src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   alt={`Image of ${theme.title}`}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 />
-              </div>
-              <div className="p-3 text-left">
-                <h4 className="text-base sm:text-lg font-bold text-black capitalize">
-                  {theme.title}
-                </h4>
-                <button className="mt-2 text-primary-100 text-sm font-medium hover:underline flex items-center">
-                  Learn more <span className="ml-1">&rarr;</span>
-                </button>
+                <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
+                  <h4 className="text-base sm:text-lg font-bold text-black capitalize">
+                    {theme.title}
+                  </h4>
+                  <button className="mt-2 text-primary-100 text-sm font-medium hover:underline flex items-center">
+                    Learn more <span className="ml-1">&rarr;</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))}

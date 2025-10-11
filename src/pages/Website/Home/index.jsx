@@ -98,7 +98,7 @@ const Home = () => {
   };
 
   return (
-    <main className="min-h-screen bg-[#FFFFFF] space-y-5 sm:space-y-7 md:space-y-10 text-[black] px-2 md:px-0 mb-10">
+    <main className="min-h-screen bg-[#FFFFFF] space-y-4 sm:space-y-5 md:space-y-6 text-[black] px-2 md:px-0 mb-10">
       {sections?.map((section) => renderSection(section))}
     </main>
   );

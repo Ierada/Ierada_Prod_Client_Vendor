@@ -1010,7 +1010,7 @@ const Header = ({ setHeaderHeight }) => {
       </div>
 
       {showOfferBar && (
-        <div className="bg-button-gradient text-white text-[10px] leading-4 md:text-base text-center py-1 md:py-2 flex flex-col md:flex-row justify-center items-center relative">
+        <div className="bg-button-gradient text-white text-[10px] leading-4 md:text-xs text-center py-1 flex flex-col md:flex-row justify-center items-center relative">
           <span>{floatingOffer?.header_text}</span>
           <Link
             to={floatingOffer?.link_url}
@@ -1022,7 +1022,7 @@ const Header = ({ setHeaderHeight }) => {
             onClick={() => setShowOfferBar(false)}
             className="absolute right-2 md:right-4 text-white"
           >
-            <X className="h-2 md:h-4 w-2 md:w-4" />
+            <X className="h-2 md:h-3 w-2 md:w-3" />
           </button>
         </div>
       )}

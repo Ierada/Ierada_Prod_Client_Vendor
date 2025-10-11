@@ -41,7 +41,7 @@ const DealOfTheDay = ({ data }) => {
     <section className="py-6 md:py-10 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center pb-8">
-          <div className="w-full flex justify-center items-center md:py-2 gap-4 md:gap-8">
+          <div className="w-full flex justify-center items-center gap-4 md:gap-8">
             {left_decor && (
               <img
                 src={left_decor}
@@ -71,7 +71,7 @@ const DealOfTheDay = ({ data }) => {
           </p>
         </div>
 
-        <div className="relative w-full h-[200px] sm:h-[300px] md:h-[400px] overflow-hidden">
+        <div className="relative w-full h-[150px] sm:h-[250px] md:h-[350px] overflow-hidden">
           <img
             src={item.image}
             alt={item.title}

@@ -126,7 +126,7 @@ const DynamicBanner = ({ data }) => {
   return (
     <section className="relative w-full overflow-hidden">
       <div className="text-center pb-8">
-        <div className="w-full flex justify-center items-center md:py-2 gap-4 md:gap-8">
+        <div className="w-full flex justify-center items-center gap-4 md:gap-8">
           {left_decor && (
             <img
               src={left_decor}
@@ -214,18 +214,19 @@ const DynamicBanner = ({ data }) => {
                   />
                   <img
                     src={banner.file_url}
+                    // src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt={banner.title || `Banner ${banner.id}`}
                     className="w-full h-full object-cover"
                   />
                 </picture>
-                <div className="absolute inset-0 flex items-center justify-center sm:justify-end px-2 sm:px-4 md:px-6 lg:px-8">
-                  <div className="text-center sm:text-right flex flex-col items-center sm:items-end text-white space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6 max-w-[90%] sm:max-w-[280px] md:max-w-[300px] lg:max-w-[320px]">
+                <div className="absolute inset-0 flex items-center justify-center px-2 sm:px-4">
+                  <div className="text-center sm:text-right font-pacifico flex flex-col items-center sm:items-end text-white space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6">
                     <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
                       {banner.title}
                     </h2>
-                    <p className="text-xs sm:text-sm md:text-base lg:text-lg font-light">
+                    {/* <p className="text-xs sm:text-sm md:text-base lg:text-lg font-light">
                       {banner.subtitle}
-                    </p>
+                    </p> */}
                   </div>
                 </div>
               </div>
