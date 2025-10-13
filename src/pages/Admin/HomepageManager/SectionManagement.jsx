@@ -705,6 +705,13 @@ const SectionManagement = () => {
               }}
               className="w-full px-4 py-2 border rounded-md"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Recommended: 400x600 pixels (2:3 aspect ratio) at 72 DPI for
+              optimal display in the right-side banner (1/3 width, full height
+              matching 2-row theme grid). Images will be cropped to fit with
+              object-cover scaling. Adjust based on expected number of themes
+              (e.g., taller for more rows).
+            </p>
             {formData.image && (
               <div className="mt-4 relative">
                 <img

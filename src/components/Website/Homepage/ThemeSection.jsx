@@ -17,20 +17,22 @@ const ThemeSection = ({ data }) => {
             <img
               src={left_decor}
               alt="Left Decoration"
-              className="h-2 md:h-4 lg:h-6 w-[50vh] hidden md:block"
+              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
             />
           )}
-          <h2 className="text-lg sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
+          <h2 className="w-full text-lg sm:text-2xl md:text-3xl font-bold flex justify-center gap-2 capitalize">
             <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
               {data?.title?.split(" ")[0]}
             </span>
-            <span>{data?.title?.split(" ")?.slice(1)?.join(" ")}</span>
+            <span className="">
+              {data?.title?.split(" ")?.slice(1)?.join(" ")}
+            </span>
           </h2>
           {right_decor && (
             <img
               src={right_decor}
               alt="Right Decoration"
-              className="h-2 md:h-4 lg:h-6 w-[50vh] hidden md:block"
+              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
             />
           )}
         </div>
@@ -55,8 +57,8 @@ const ThemeSection = ({ data }) => {
             >
               <div className="relative w-full aspect-[4/3] overflow-hidden">
                 <img
-                  src={theme.image || "/assets/placeholder-theme.jpg"}
-                  // src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                  // src={theme.image || "/assets/placeholder-theme.jpg"}
+                  src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   alt={`Image of ${theme.title}`}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 />

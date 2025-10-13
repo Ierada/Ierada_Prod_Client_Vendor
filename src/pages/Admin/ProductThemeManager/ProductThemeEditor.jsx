@@ -483,6 +483,11 @@ const ProductThemeEditor = () => {
               {error.image && (
                 <p className="text-red-500 text-xs mt-1">{error.image}</p>
               )}
+              <p className="text-xs text-gray-500 mt-1">
+                Recommended: 1200x900 pixels (4:3 aspect ratio) at 72 DPI for
+                optimal display in the theme grid cards. Images will be cropped
+                to fit the 4:3 ratio with object-cover scaling.
+              </p>
               {previewImage && (
                 <img
                   src={previewImage}

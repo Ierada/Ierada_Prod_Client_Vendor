@@ -13,14 +13,43 @@ import SignInModal from "../../../components/Website/SigninModal";
 import left_decor from "/assets/heading_decoration/heading_decoration_left.svg";
 import right_decor from "/assets/heading_decoration/heading_decoration_right.svg";
 import ProductCard from "../../../components/Website/ProductCard";
+import config from "../../../config/config";
+import { useNavigate } from "react-router";
 
 const RecentlyViewed = ({ data }) => {
   const browsing_history = data ? data.items : [];
+  const navigate = useNavigate();
   const { user, setTriggerHeaderCounts } = useAppContext();
   const [wishlists, setWishlists] = useState([]);
   const [wishlistedItems, setWishlistedItems] = useState(new Set());
   const [likedItems, setLikedItems] = useState(new Set());
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [currentSlidesToShow, setCurrentSlidesToShow] = useState(5);
+
+  const getSlidesToShow = (width) => {
+    if (width < 480) return 2;
+    if (width < 768) return 2;
+    if (width < 1024) return 3;
+    if (width < 1280) return 4;
+    return 5;
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setCurrentSlidesToShow(getSlidesToShow(window.innerWidth));
+    };
+
+    handleResize(); // Initial calculation
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      window.dispatchEvent(new Event("resize"));
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const fetchWishlist = useCallback(async () => {
     if (user) {
@@ -72,13 +101,15 @@ const RecentlyViewed = ({ data }) => {
     fetchLikes();
   };
 
+  const shouldLoop = browsing_history.length > currentSlidesToShow;
+
   const settings = {
     dots: false,
-    infinite: true,
+    infinite: shouldLoop,
     speed: 500,
     slidesToShow: 5,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: shouldLoop,
     autoplaySpeed: 3000,
     arrows: false,
     pauseOnHover: true,
@@ -118,20 +149,22 @@ const RecentlyViewed = ({ data }) => {
             <img
               src={left_decor}
               alt="Left Decoration"
-              className="h-2 md:h-4 lg:h-6 w-[50vh] hidden md:block"
+              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
             />
           )}
-          <h2 className="text-lg sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
+          <h2 className="w-full text-lg sm:text-2xl md:text-3xl font-bold flex justify-center gap-2 capitalize">
             <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
               {data?.title?.split(" ")[0]}
             </span>
-            <span>{data?.title?.split(" ")?.slice(1)?.join(" ")}</span>
+            <span className="">
+              {data?.title?.split(" ")?.slice(1)?.join(" ")}
+            </span>
           </h2>
           {right_decor && (
             <img
               src={right_decor}
               alt="Right Decoration"
-              className="h-2 md:h-4 lg:h-6 w-[50vh] hidden md:block"
+              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
             />
           )}
         </div>
@@ -143,7 +176,7 @@ const RecentlyViewed = ({ data }) => {
         </p>
       </div>
 
-      {browsing_history?.length > 0 ? (
+      {browsing_history?.length < 0 ? (
         <Slider {...settings}>
           {browsing_history.map((item) => (
             <div key={item.id} className="px-2">
@@ -160,8 +193,16 @@ const RecentlyViewed = ({ data }) => {
           ))}
         </Slider>
       ) : (
-        <div className="text-center py-6">
+        <div className="text-center">
           <p className="text-gray-500">You haven't viewed any products yet.</p>
+          <button
+            onClick={() =>
+              navigate(`${config.VITE_BASE_WEBSITE_URL}/collection/all`)
+            }
+            className="bg-button-gradient text-white px-4 py-2 rounded-md mt-4 inline-block text-blue-500 hover:underline"
+          >
+            Shop Now
+          </button>
         </div>
       )}
       <SignInModal

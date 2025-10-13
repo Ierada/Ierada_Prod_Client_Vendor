@@ -127,25 +127,27 @@ const AllProductsSection = () => {
 
   return (
     <section className="py-6 px-3 sm:px-4 md:px-6 lg:px-8" ref={sectionRef}>
-      <div className="w-full flex justify-center items-center gap-2 sm:gap-3 md:gap-4 lg:gap-6 mb-6">
+      <div className="w-full flex justify-center items-center gap-4 md:gap-8">
         {left_decor && (
           <img
             src={left_decor}
             alt="Left Decoration"
-            className="h-2 md:h-4 lg:h-6 w-[50vh] hidden md:block"
+            className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
           />
         )}
-        <h2 className="text-lg sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
+        <h2 className="w-full text-lg sm:text-2xl md:text-3xl font-bold flex justify-center gap-2 capitalize">
           <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
-            Customized
+            {data?.title?.split(" ")[0]}
           </span>
-          <span>Products For You</span>
+          <span className="">
+            {data?.title?.split(" ")?.slice(1)?.join(" ")}
+          </span>
         </h2>
         {right_decor && (
           <img
             src={right_decor}
             alt="Right Decoration"
-            className="h-2 md:h-4 lg:h-6 w-[50vh] hidden md:block"
+            className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
           />
         )}
       </div>
