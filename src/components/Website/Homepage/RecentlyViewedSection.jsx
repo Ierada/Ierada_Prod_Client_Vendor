@@ -176,7 +176,7 @@ const RecentlyViewed = ({ data }) => {
         </p>
       </div>
 
-      {browsing_history?.length < 0 ? (
+      {browsing_history?.length > 0 ? (
         <Slider {...settings}>
           {browsing_history.map((item) => (
             <div key={item.id} className="px-2">

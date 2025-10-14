@@ -25,7 +25,7 @@ const Banner = ({ data }) => {
     <section className="relative w-full -mt-6 md:mt-0 lg:mt-0 overflow-hidden">
       <div
         onClick={() => handleNavigation(bannerData)}
-        className="relative cursor-pointer w-full h-[100px] sm:h-[200px] md:h-[300px]"
+        className="relative cursor-pointer w-full h-[100px] sm:h-[200px] md:h-[270px]"
       >
         {/* Responsive Image */}
         <picture>

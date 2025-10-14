@@ -293,6 +293,24 @@ const sectionTypeConfigs = {
       ),
     }),
   },
+  theme_category_banners: {
+    title: "Theme Category Banners (New)",
+    description:
+      "Select multiple banners to display (up to 4 per page on large screens)",
+    multiSelect: true,
+    singleSelect: false,
+    fetchApi: () => getBannersByType("image"),
+    renderOption: (item) => ({
+      title: item.title,
+      media: (
+        <img
+          src={item.file_url || defaultImg}
+          className="w-20 h-20 object-cover rounded"
+          alt={item.title}
+        />
+      ),
+    }),
+  },
   seo_content: {
     title: "SEO Content (New)",
     description: "Add rich text content for SEO purposes",
@@ -1090,14 +1108,15 @@ const SectionManagement = () => {
                 </p>
               </div>
             )}
-            {formData.type === "dynamicbanner" && (
-              <div className="p-4 bg-gray-50 rounded-lg mb-4">
-                <p className="text-gray-600 font-medium">
-                  Note: Select multiple banners (up to 4 will be displayed per
-                  page on large screens).
-                </p>
-              </div>
-            )}
+            {formData.type === "dynamicbanner" ||
+              (formData.type === "theme_category_banners" && (
+                <div className="p-4 bg-gray-50 rounded-lg mb-4">
+                  <p className="text-gray-600 font-medium">
+                    Note: Select multiple banners (up to 4 will be displayed per
+                    page on large screens).
+                  </p>
+                </div>
+              ))}
             {renderContentSelector()}
           </div>
 

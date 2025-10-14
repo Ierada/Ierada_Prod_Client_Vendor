@@ -21,14 +21,19 @@ const BaseProductSlider = ({
   products,
   renderProduct,
   title,
+  subtitle,
+  description,
+  headerContainerClass = "",
   showArrows = true,
 }) => {
   const sliderRef = useRef(null);
+  const textRef = useRef(null);
   const [visibleItems, setVisibleItems] = useState(3);
   const [itemWidth, setItemWidth] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [decorWidth, setDecorWidth] = useState(100);
 
   // Dynamically set the number of visible items based on screen width
   useEffect(() => {
@@ -39,7 +44,6 @@ const BaseProductSlider = ({
         if (firstItem) {
           const itemWidth = firstItem.clientWidth + 16; // Include margin/gap
           setItemWidth(itemWidth);
-          //setVisibleItems(Math.floor(containerWidth / itemWidth));
           setVisibleItems(Math.max(1, Math.round(containerWidth / itemWidth)));
         }
       }
@@ -49,6 +53,41 @@ const BaseProductSlider = ({
     window.addEventListener("resize", updateVisibleItems);
     return () => window.removeEventListener("resize", updateVisibleItems);
   }, [products]);
+
+  // Dynamic decor width based on text length
+  useEffect(() => {
+    const updateWidth = () => {
+      if (textRef.current && title) {
+        const originalWs = textRef.current.style.whiteSpace;
+        textRef.current.style.whiteSpace = "nowrap";
+        requestAnimationFrame(() => {
+          const textWidth = textRef.current.scrollWidth;
+          textRef.current.style.whiteSpace = originalWs;
+          const container = textRef.current.parentElement;
+          if (container) {
+            const containerWidth = container.clientWidth;
+            const gap = window.innerWidth >= 768 ? 32 : 16;
+            const sideWidth = Math.max(
+              50,
+              (containerWidth - textWidth - gap) / 2
+            );
+            setDecorWidth(sideWidth);
+          }
+        });
+      }
+    };
+
+    if (title) {
+      // Initial calculation after render
+      setTimeout(updateWidth, 0);
+    }
+
+    const handleResize = () => {
+      if (title) updateWidth();
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [title]);
 
   const handlePrevClick = () => {
     if (sliderRef.current) {
@@ -88,32 +127,47 @@ const BaseProductSlider = ({
   };
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 px-4 sm:px-6 md:px-8 lg:px-16">
       {title && (
-        <div className="w-full flex justify-center items-center gap-4 md:gap-8">
+        <div
+          className={`w-full flex items-center gap-4 justify-center ${headerContainerClass}`}
+        >
           {left_decor && (
             <img
               src={left_decor}
               alt="Left Decoration"
-              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
+              className="h-2 md:h-4 lg:h-auto hidden md:block"
+              style={{ width: `${decorWidth}px` }}
             />
           )}
-          <h2 className="w-full text-lg sm:text-2xl md:text-3xl font-bold flex justify-center gap-2 capitalize">
-            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
-              {data?.title?.split(" ")[0]}
+          <h2
+            ref={textRef}
+            className="text-lg sm:text-2xl md:text-3xl font-bold flex justify-center gap-2 capitalize whitespace-nowrap"
+          >
+            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent">
+              {title?.split(" ")[0]}
             </span>
-            <span className="">
-              {data?.title?.split(" ")?.slice(1)?.join(" ")}
-            </span>
+            <span className="">{title?.split(" ")?.slice(1)?.join(" ")}</span>
           </h2>
           {right_decor && (
             <img
               src={right_decor}
               alt="Right Decoration"
-              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
+              className="h-2 md:h-4 lg:h-auto hidden md:block"
+              style={{ width: `${decorWidth}px` }}
             />
           )}
         </div>
+      )}
+      {subtitle && (
+        <h3 className="text-xs sm:text-lg md:text-xl md:font-semibold text-black-100 mt-2">
+          {subtitle}
+        </h3>
+      )}
+      {description && (
+        <p className="text-[10px] leading-4 sm:text-base text-gray-600 mt-1">
+          {description}
+        </p>
       )}
       <div className="relative">
         <div
@@ -270,7 +324,7 @@ export const PopularProductsSlider = ({ data }) => {
   const renderProduct = (product) => (
     <div
       key={product.id}
-      className="flex-none w-[219px] sm:w-[219px] md:w-[219px] lg:w-[219px] my-1"
+      className="flex-none w-[219px] sm:w-[219px] md:w-[219px] lg:w-[219px]"
     >
       <ProductCard
         product={product}
@@ -287,45 +341,19 @@ export const PopularProductsSlider = ({ data }) => {
   );
 
   return (
-    <div className="px-4 sm:px-6 md:px-8 lg:px-16">
-      <div className="text-center pb-8">
-        <div className="w-full flex justify-center items-center gap-4 md:gap-8">
-          {left_decor && (
-            <img
-              src={left_decor}
-              alt="Left Decoration"
-              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
-            />
-          )}
-          <h2 className="w-full text-lg sm:text-2xl md:text-3xl font-bold flex justify-center gap-2 capitalize">
-            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
-              {data?.title?.split(" ")[0]}
-            </span>
-            <span className="">
-              {data?.title?.split(" ")?.slice(1)?.join(" ")}
-            </span>
-          </h2>
-          {right_decor && (
-            <img
-              src={right_decor}
-              alt="Right Decoration"
-              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
-            />
-          )}
-        </div>
-        <h3 className="text-xs sm:text-lg md:text-xl md:font-semibold text-black-100 mt-2">
-          {data?.subtitle}
-        </h3>
-        <p className="text-[10px] leading-4 sm:text-base text-gray-600 mt-1">
-          {data?.description}
-        </p>
-      </div>
-      <BaseProductSlider products={data.items} renderProduct={renderProduct} />
+    <>
+      <BaseProductSlider
+        products={data.items}
+        renderProduct={renderProduct}
+        title={data?.title}
+        subtitle={data?.subtitle}
+        description={data?.description}
+      />
       <SignInModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
       />
-    </div>
+    </>
   );
 };
 
@@ -408,45 +436,19 @@ export const OfferProductCollection = ({ data }) => {
   );
 
   return (
-    <div>
-      <div className="text-center pb-8 px-4 sm:px-6 md:px-8 lg:px-16">
-        <div className="w-full flex justify-center items-center gap-4 md:gap-8">
-          {left_decor && (
-            <img
-              src={left_decor}
-              alt="Left Decoration"
-              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
-            />
-          )}
-          <h2 className="w-full text-lg sm:text-2xl md:text-3xl font-bold flex justify-center gap-2 capitalize">
-            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
-              {data?.title?.split(" ")[0]}
-            </span>
-            <span className="">
-              {data?.title?.split(" ")?.slice(1)?.join(" ")}
-            </span>
-          </h2>
-          {right_decor && (
-            <img
-              src={right_decor}
-              alt="Right Decoration"
-              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
-            />
-          )}
-        </div>
-        <h3 className="text-xs sm:text-lg md:text-xl md:font-semibold text-black-100 mt-2">
-          {data?.subtitle}
-        </h3>
-        <p className="text-[10px] leading-4 sm:text-base text-gray-600 mt-1">
-          {data?.description}
-        </p>
-      </div>
-      <BaseProductSlider products={data.items} renderProduct={renderProduct} />
+    <>
+      <BaseProductSlider
+        products={data.items}
+        renderProduct={renderProduct}
+        title={data?.title}
+        subtitle={data?.subtitle}
+        description={data?.description}
+      />
       <SignInModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
       />
-    </div>
+    </>
   );
 };
 
@@ -572,39 +574,14 @@ export const ProductCollectionSlider = ({ data }) => {
 
   return (
     <>
-      <div className="text-center pb-8 px-4 sm:px-6 md:px-8 lg:px-16">
-        <div className="w-full flex justify-center items-center gap-4 md:gap-8">
-          {left_decor && (
-            <img
-              src={left_decor}
-              alt="Left Decoration"
-              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
-            />
-          )}
-          <h2 className="w-full text-lg sm:text-2xl md:text-3xl font-bold flex justify-center gap-2 capitalize">
-            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
-              {data?.title?.split(" ")[0]}
-            </span>
-            <span className="">
-              {data?.title?.split(" ")?.slice(1)?.join(" ")}
-            </span>
-          </h2>
-          {right_decor && (
-            <img
-              src={right_decor}
-              alt="Right Decoration"
-              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
-            />
-          )}
-        </div>
-        <h3 className="text-xs sm:text-lg md:text-xl md:font-semibold text-black-100 mt-2">
-          {data?.subtitle}
-        </h3>
-        <p className="text-[10px] leading-4 sm:text-base text-gray-600 mt-1">
-          {data?.description}
-        </p>
-      </div>
-      <BaseProductSlider products={data.items} renderProduct={renderProduct} />
+      <BaseProductSlider
+        products={data.items}
+        renderProduct={renderProduct}
+        title={data?.title}
+        subtitle={data?.subtitle}
+        description={data?.description}
+        headerContainerClass="max-w-screen-2xl"
+      />
       <SignInModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
@@ -692,44 +669,18 @@ export const FeaturedCollectionSlider = ({ data }) => {
   );
 
   return (
-    <div>
-      <div className="text-center pb-8 px-4 sm:px-6 md:px-8 lg:px-16">
-        <div className="w-full flex justify-center items-center gap-4 md:gap-8">
-          {left_decor && (
-            <img
-              src={left_decor}
-              alt="Left Decoration"
-              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
-            />
-          )}
-          <h2 className="w-full text-lg sm:text-2xl md:text-3xl font-bold flex justify-center gap-2 capitalize">
-            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
-              {data?.title?.split(" ")[0]}
-            </span>
-            <span className="">
-              {data?.title?.split(" ")?.slice(1)?.join(" ")}
-            </span>
-          </h2>
-          {right_decor && (
-            <img
-              src={right_decor}
-              alt="Right Decoration"
-              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
-            />
-          )}
-        </div>
-        <h3 className="text-xs sm:text-lg md:text-xl md:font-semibold text-black-100 mt-2">
-          {data?.subtitle}
-        </h3>
-        <p className="text-[10px] leading-4 sm:text-base text-gray-600 mt-1">
-          {data?.description}
-        </p>
-      </div>
-      <BaseProductSlider products={data.items} renderProduct={renderProduct} />
+    <>
+      <BaseProductSlider
+        products={data.items}
+        renderProduct={renderProduct}
+        title={data?.title}
+        subtitle={data?.subtitle}
+        description={data?.description}
+      />
       <SignInModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
       />
-    </div>
+    </>
   );
 };

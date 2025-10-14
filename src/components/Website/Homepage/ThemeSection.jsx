@@ -57,8 +57,8 @@ const ThemeSection = ({ data }) => {
             >
               <div className="relative w-full aspect-[4/3] overflow-hidden">
                 <img
-                  // src={theme.image || "/assets/placeholder-theme.jpg"}
-                  src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                  src={theme.image || "/assets/placeholder-theme.jpg"}
+                  // src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   alt={`Image of ${theme.title}`}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 />
@@ -66,7 +66,7 @@ const ThemeSection = ({ data }) => {
                   <h4 className="text-base sm:text-lg font-bold text-black capitalize">
                     {theme.title}
                   </h4>
-                  <button className="mt-2 text-primary-100 text-sm font-medium hover:underline flex items-center">
+                  <button className="mt-2 bg-button-gradient text-white text-sm font-medium hover:underline flex items-center rounded-lg py-1 px-4">
                     Learn more <span className="ml-1">&rarr;</span>
                   </button>
                 </div>

@@ -26,6 +26,7 @@ import RecentlyViewed from "../../../components/Website/Homepage/RecentlyViewedS
 import DealOfTheDay from "../../../components/Website/Homepage/DealOfTheDay";
 import SeoContent from "../../../components/Website/Homepage/SEOContent";
 import ThemeSection from "../../../components/Website/Homepage/ThemeSection";
+import ThemeCategoryBanner from "../../../components/Website/Homepage/ThemeCategoryBanner";
 
 const Home = () => {
   const [sections, setSections] = useState([]);
@@ -80,6 +81,8 @@ const Home = () => {
         return <AllProductsSection key={section.id} />;
       case "dynamicbanner":
         return <DynamicBanner key={section.id} data={section} />;
+      case "theme_category_banners":
+        return <ThemeCategoryBanner key={section.id} data={section} />;
       case "recently_viewed":
         return <RecentlyViewed key={section.id} data={section} />;
       case "category_grid":
@@ -87,7 +90,7 @@ const Home = () => {
       case "deal_of_the_day":
         return <DealOfTheDay key={section.id} data={section} />;
       case "personalized_products":
-        return <PopularProductsSlider key={section.id} data={section} />;
+        return <ProductCollectionSlider key={section.id} data={section} />;
       case "seo_content":
         return <SeoContent key={section.id} data={section} />;
       case "theme_section":

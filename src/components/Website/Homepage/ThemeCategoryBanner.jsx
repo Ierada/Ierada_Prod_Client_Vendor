@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRightIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import Slider from "react-slick";
 import config from "../../../config/config";
 import "slick-carousel/slick/slick.css";
@@ -8,7 +8,7 @@ import "slick-carousel/slick/slick-theme.css";
 import left_decor from "/assets/heading_decoration/heading_decoration_left.svg";
 import right_decor from "/assets/heading_decoration/heading_decoration_right.svg";
 
-const DynamicBanner = ({ data }) => {
+const ThemeCategoryBanner = ({ data }) => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -160,84 +160,87 @@ const DynamicBanner = ({ data }) => {
 
       {isSlider ? (
         // Slider Layout with react-slick
-        <div className="w-full" style={{ height: "400px" }}>
-          <Slider {...slickSettings}>
-            {data.items.map((banner) => (
-              <div key={banner.id} className="px-2">
-                <div
-                  className="relative w-full h-full cursor-pointer"
-                  style={{ height: "350px" }}
-                  onClick={() => handleNavigation(banner)}
-                >
-                  <picture>
-                    <source
-                      media="(max-width: 767px)"
-                      srcSet={banner.mobile_image_url || banner.file_url}
-                    />
-                    <img
-                      src={banner.file_url}
-                      alt={banner.title || `Banner ${banner.id}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </picture>
-                  {/* <div className="absolute inset-0 flex items-center justify-center sm:justify-end px-2 sm:px-4 md:px-6 lg:px-8">
-                    <div className="text-center sm:text-right flex flex-col items-center sm:items-end text-white space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6 max-w-[90%] sm:max-w-[280px] md:max-w-[300px] lg:max-w-[320px]">
-                      <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
-                        {banner.title}
-                      </h2>
-                      <p className="text-xs sm:text-sm md:text-base lg:text-lg font-light">
-                        {banner.subtitle}
-                      </p>
-                    </div>
-                  </div> */}
+        <Slider {...slickSettings}>
+          {data.items.map((banner) => (
+            <div
+              key={banner.id}
+              className="relative w-full h-full cursor-pointer"
+              //   onClick={() => handleNavigation(banner)}
+            >
+              <picture>
+                <source
+                  media="(max-width: 767px)"
+                  srcSet={banner.mobile_image_url || banner.file_url}
+                />
+                <img
+                  //   src={banner.file_url}
+                  src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                  alt={banner.title || `Banner ${banner.id}`}
+                  className="h-[350px] w-full object-cover"
+                />
+              </picture>
+              <div className="p-3 text-left">
+                <div className="flex flex-col gap-2">
+                  <h2 className="text-sm lg:text-xl font-bold">
+                    {banner.title}
+                  </h2>
+                  <button
+                    className="flex items-center gap-2 text-xs md:text-sm underline"
+                    onClick={() => handleNavigation(banner)}
+                  >
+                    Learn More
+                    <ArrowRightIcon className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-            ))}
-          </Slider>
-        </div>
+            </div>
+          ))}
+        </Slider>
       ) : (
         // Grid Layout
-        <div className="w-full" style={{ height: "350px" }}>
-          <div
-            className={`grid ${getGridClasses(
-              totalBanners
-            )} gap-4 w-full h-full`}
-          >
-            {data.items.map((banner) => (
-              <div
-                key={banner.id}
-                className="relative w-full h-full cursor-pointer"
-                onClick={() => handleNavigation(banner)}
-              >
-                <picture>
-                  <source
-                    media="(max-width: 767px)"
-                    srcSet={banner.mobile_image_url || banner.file_url}
-                  />
-                  <img
-                    src={banner.file_url}
-                    // src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                    alt={banner.title || `Banner ${banner.id}`}
-                    className="w-full h-full object-cover"
-                  />
-                </picture>
-                {/* <div className="absolute inset-0 flex items-center justify-center px-2 sm:px-4">
-                  <div className="text-center sm:text-right font-pacifico flex flex-col items-center sm:items-end text-white space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6">
-                    <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
-                      {banner.title}
-                    </h2>
-                    <p className="text-xs sm:text-sm md:text-base lg:text-lg font-light">
-                      {banner.subtitle}
-                    </p>
-                  </div>
-                </div> */}
+        <div
+          className={`grid ${getGridClasses(
+            totalBanners
+          )} gap-4 w-full h-full py-2`}
+        >
+          {data.items.map((banner) => (
+            <div
+              key={banner.id}
+              className="rounded-2xl overflow-hidden bg-white border border-orange-200 shadow-sm hover:shadow-md transition-shadow"
+              //   onClick={() => handleNavigation(banner)}
+            >
+              <picture>
+                <source
+                  media="(max-width: 767px)"
+                  srcSet={banner.mobile_image_url || banner.file_url}
+                />
+                <img
+                  // src={banner.file_url}
+                  src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                  alt={banner.title || `Banner ${banner.id}`}
+                  className="h-[350px] w-full object-cover"
+                />
+              </picture>
+              <div className="p-3 text-left">
+                <div className="flex flex-col gap-2">
+                  <h2 className="text-sm lg:text-xl font-bold">
+                    {banner.title}
+                  </h2>
+                  <button
+                    className="flex items-center gap-2 text-xs md:text-sm underline"
+                    onClick={() => handleNavigation(banner)}
+                  >
+                    Learn More
+                    <ArrowRightIcon className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       )}
     </section>
   );
 };
 
-export default DynamicBanner;
+export default ThemeCategoryBanner;

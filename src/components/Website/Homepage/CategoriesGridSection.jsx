@@ -58,7 +58,7 @@ const CategoryGrid = ({ data }) => {
       </div>
 
       {/* <div className="space-y-4 md:space-y-6"> */}
-      <div className="flex flex-wrap justify-center gap-6 sm:gap-14 md:gap-20">
+      <div className="flex flex-wrap justify-center gap-6 sm:gap-14 md:gap-16">
         {data?.items?.map((category) => (
           <div
             key={category.id}

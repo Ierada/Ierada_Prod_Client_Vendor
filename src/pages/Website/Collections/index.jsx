@@ -28,19 +28,11 @@ import { getWishlist } from "../../../services/api.wishlist";
 import { IoMdArrowUp } from "react-icons/io";
 import { FaStar, FaRegStar } from "react-icons/fa";
 import { Range, getTrackBackground } from "react-range";
-import CommonTopBanner from "../../../components/Website/CommonTopBanner";
-import common_top_banner from "/assets/banners/Commen-top-banner.png";
+// import CommonTopBanner from "../../../components/Website/CommonTopBanner";
 import debounce from "lodash/debounce";
 import { Loader2 } from "lucide-react";
 import { getUserLikes } from "../../../services/api.likes";
 import ProductCard from "../../../components/Website/ProductCard";
-
-const bannerData = [
-  {
-    id: 1,
-    image: common_top_banner,
-  },
-];
 
 // Helper function to compare arrays
 const arraysEqual = (a, b) => {
@@ -1526,8 +1518,8 @@ const CollectionsPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen mt-10 bg-white" ref={pageTopRef}>
-      <CommonTopBanner data={bannerData} />
+    <div className="min-h-screen bg-white" ref={pageTopRef}>
+      {/* <CommonTopBanner data={bannerData} /> */}
 
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl md:text-3xl font-semibold text-center mb-8">
@@ -1558,9 +1550,10 @@ const CollectionsPage = () => {
 
         <ActiveFiltersSection />
 
-        <div className="flex flex-col md:flex-row items-start gap-6">
+        {/* <div className="flex flex-col md:flex-row items-start gap-6"> */}
+        <div className="flex flex-col md:flex-row items-start gap-6 min-h-screen -mt-8 md:-mt-0">
           <div className="hidden md:block w-64 flex-shrink-0 self-start">
-            <div className="sticky top-24 p-4 rounded-lg shadow-sm">
+            <div className="sticky top-24 p-4 rounded-lg shadow-sm bg-white z-10">
               <h2 className="text-lg font-semibold mb-4">Filter Item</h2>
 
               {renderCategoryFilters()}
@@ -1611,9 +1604,10 @@ const CollectionsPage = () => {
                               <input
                                 type="checkbox"
                                 id={`color-${color.id}`}
-                                checked={collectionData.colors.includes(
-                                  color.id
-                                )}
+                                // checked={collectionData.colors.includes(
+                                //   color.id
+                                // )}
+                                checked={filters.colors.includes(color.id)}
                                 onChange={() => {
                                   handleFilterChange("colors", color.id);
                                 }}
@@ -1621,7 +1615,10 @@ const CollectionsPage = () => {
                               />
                               <div
                                 className="mr-2 w-5 h-5 rounded-full border border-black-900"
-                                style={{ backgroundColor: color.name }}
+                                // style={{ backgroundColor: color.name }}
+                                style={{
+                                  backgroundColor: color.code || color.name,
+                                }}
                               ></div>
                               <label
                                 htmlFor={`color-${color.id}`}
@@ -1914,7 +1911,10 @@ const CollectionsPage = () => {
             </div>
           </div>
 
-          <div className="flex-1" ref={sectionRef}>
+          <div
+            className="flex-1 min-h-0 overflow-y-auto max-h-screen"
+            ref={sectionRef}
+          >
             <div className="hidden md:flex justify-between items-center mb-6">
               <p className="text-gray-600">
                 {paginationData.totalItems} Products found

@@ -144,7 +144,7 @@ const ProductCard = ({
 
         <div className="py-4 relative">
           <div className="flex justify-between mb-1">
-            <h3 className="font-poppins text-[8px] leading-4 md:text-sm truncate text-[#3F0D0C]">
+            <h3 className="font-poppins text-[8px] leading-4 md:text-sm line-clamp-3 min-h-[4rem] text-[#3F0D0C]">
               {product.name}
             </h3>
             <button
