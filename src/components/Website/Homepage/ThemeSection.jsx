@@ -63,11 +63,11 @@ const ThemeSection = ({ data }) => {
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
-                  <h4 className="text-base sm:text-lg font-bold text-black capitalize">
+                  <h4 className="text-base sm:text-lg font-bold text-black capitalize bg-button-gradient bg-clip-text text-transparent">
                     {theme.title}
                   </h4>
                   <button className="mt-2 bg-button-gradient text-white text-sm font-medium hover:underline flex items-center rounded-lg py-1 px-4">
-                    Learn more <span className="ml-1">&rarr;</span>
+                    Explore more <span className="ml-1">&rarr;</span>
                   </button>
                 </div>
               </div>

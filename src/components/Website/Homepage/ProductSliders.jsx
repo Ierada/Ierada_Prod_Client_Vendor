@@ -23,7 +23,6 @@ const BaseProductSlider = ({
   title,
   subtitle,
   description,
-  headerContainerClass = "",
   showArrows = true,
 }) => {
   const sliderRef = useRef(null);
@@ -127,11 +126,9 @@ const BaseProductSlider = ({
   };
 
   return (
-    <section className="space-y-4 px-4 sm:px-6 md:px-8 lg:px-16">
+    <section className="space-y-4 px-4 sm:px-6 md:px-8 lg:px-16 text-center">
       {title && (
-        <div
-          className={`w-full flex items-center gap-4 justify-center ${headerContainerClass}`}
-        >
+        <div className={`w-full flex items-center gap-4 justify-center`}>
           {left_decor && (
             <img
               src={left_decor}
@@ -580,7 +577,6 @@ export const ProductCollectionSlider = ({ data }) => {
         title={data?.title}
         subtitle={data?.subtitle}
         description={data?.description}
-        headerContainerClass="max-w-screen-2xl"
       />
       <SignInModal
         isOpen={showLoginModal}
