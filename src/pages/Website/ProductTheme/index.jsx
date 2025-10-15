@@ -26,6 +26,7 @@ import RecentlyViewed from "../../../components/Website/Homepage/RecentlyViewedS
 import DealOfTheDay from "../../../components/Website/Homepage/DealOfTheDay";
 import SeoContent from "../../../components/Website/Homepage/SEOContent";
 import { useParams } from "react-router";
+import ThemeCategoryBanner from "../../../components/Website/Homepage/ThemeCategoryBanner";
 
 const ProductThemePage = () => {
   const { slug } = useParams();
@@ -83,6 +84,8 @@ const ProductThemePage = () => {
         return <AllProductsSection key={section.id} />;
       case "dynamicbanner":
         return <DynamicBanner key={section.id} data={section} />;
+      case "theme_category_banners":
+        return <ThemeCategoryBanner key={section.id} data={section} />;
       case "recently_viewed":
         return <RecentlyViewed key={section.id} data={section} />;
       case "category_grid":
