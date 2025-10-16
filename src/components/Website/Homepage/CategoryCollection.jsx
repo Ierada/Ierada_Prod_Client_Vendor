@@ -152,7 +152,7 @@ const CategoryCollection = ({ data }) => {
   };
 
   return (
-    <section className="px-4 sm:px-6 md:px-8 lg:px-16 space-y-4">
+    <section className="px-4 sm:px-6 md:px-8 lg:px-24 space-y-4">
       {data?.title && (
         <div className="w-full flex justify-center items-center gap-3 sm:gap-4 md:gap-6">
           {left_decor && (

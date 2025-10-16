@@ -10,7 +10,7 @@ const ThemeSection = ({ data }) => {
   const bannerImage = data?.banner_image || "";
 
   return (
-    <section className="px-4 sm:px-6 md:px-8 lg:px-16 space-y-4 md:space-y-6">
+    <section className="px-4 sm:px-6 md:px-8 lg:px-24 space-y-4 md:space-y-6">
       <div className="text-center pb-5">
         <div className="w-full flex justify-center items-center gap-4 md:gap-8">
           {left_decor && (

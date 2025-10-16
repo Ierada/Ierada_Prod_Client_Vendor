@@ -73,7 +73,7 @@ const DealOfTheDay = ({ data }) => {
           </p>
         </div>
 
-        <div className="relative w-full h-[150px] sm:h-[250px] md:h-[350px] overflow-hidden">
+        <div className="relative w-full h-[50px] sm:h-[150px] md:h-[250px] overflow-hidden">
           <img
             src={item.image}
             alt={item.title}

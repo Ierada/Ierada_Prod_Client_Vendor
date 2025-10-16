@@ -97,7 +97,7 @@ const ProductCard = ({
     <motion.div className="group overflow-hidden transition-shadow duration-300">
       <div className="block cursor-pointer" onClick={handleCardClick}>
         <div className="relative">
-          <div className="relative aspect-[512/682] w-full overflow-hidden rounded-lg">
+          <div className="relative aspect-[400/533] w-full overflow-hidden rounded-lg">
             {(product.media && product.media.length > 0) || product.image ? (
               <img
                 src={

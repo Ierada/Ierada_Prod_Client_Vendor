@@ -8,7 +8,7 @@ const SubCategoryCollection = ({ data }) => {
   const navigate = useNavigate();
 
   return (
-    <section className="px-4 md:px-8 lg:px-16 space-y-4">
+    <section className="px-4 md:px-8 lg:px-24 space-y-4">
       <div className="w-full flex justify-center items-center gap-4 md:gap-8">
         {left_decor && (
           <img

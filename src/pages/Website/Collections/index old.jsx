@@ -767,7 +767,7 @@ const CollectionsPage = () => {
     //           key={index}
     //           className="border rounded-md overflow-hidden bg-gray-100 animate-pulse"
     //         >
-    //           <div className="aspect-[512/682] w-full bg-gray-200" />
+    //           <div className="aspect-[400/533] w-full bg-gray-200" />
     //           <div className="p-4 space-y-2">
     //             <div className="h-4 bg-gray-200 rounded w-3/4" />
     //             <div className="h-4 bg-gray-200 rounded w-1/2" />
@@ -826,7 +826,7 @@ const CollectionsPage = () => {
             >
               <div className="relative">
                 <div
-                  className="relative aspect-[512/682] w-full overflow-hidden cursor-pointer"
+                  className="relative aspect-[400/533] w-full overflow-hidden cursor-pointer"
                   onClick={() => navigate(`/product/${product.slug}`)}
                 >
                   {product.media && product.media.length > 0 ? (

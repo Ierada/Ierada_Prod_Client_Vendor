@@ -124,7 +124,7 @@ const DynamicBanner = ({ data }) => {
   };
 
   return (
-    <section className="relative w-full overflow-hidden px-4 sm:px-6 md:px-8 lg:px-16">
+    <section className="relative w-full overflow-hidden px-4 sm:px-6 md:px-8 lg:px-24">
       <div className="text-center pb-8">
         <div className="w-full flex justify-center items-center gap-4 md:gap-8">
           {left_decor && (
@@ -160,13 +160,13 @@ const DynamicBanner = ({ data }) => {
 
       {isSlider ? (
         // Slider Layout with react-slick
-        <div className="w-full" style={{ height: "400px" }}>
+        <div className="w-full" style={{ height: "300px" }}>
           <Slider {...slickSettings}>
             {data.items.map((banner) => (
               <div key={banner.id} className="px-2">
                 <div
                   className="relative w-full h-full cursor-pointer"
-                  style={{ height: "350px" }}
+                  style={{ height: "250px" }}
                   onClick={() => handleNavigation(banner)}
                 >
                   <picture>
@@ -197,7 +197,7 @@ const DynamicBanner = ({ data }) => {
         </div>
       ) : (
         // Grid Layout
-        <div className="w-full" style={{ height: "350px" }}>
+        <div className="w-full" style={{ height: "250px" }}>
           <div
             className={`grid ${getGridClasses(
               totalBanners

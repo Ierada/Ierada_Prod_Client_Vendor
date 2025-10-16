@@ -23,14 +23,14 @@ const CategoryGrid = ({ data }) => {
   }
 
   return (
-    <section className="px-4 sm:px-6 md:px-8 lg:px-16 space-y-4 md:space-y-6">
+    <section className="px-4 sm:px-6 md:px-8 lg:px-24 space-y-4 md:space-y-6">
       <div className="text-center pb-8">
         <div className="w-full flex justify-center items-center gap-4 md:gap-8">
           {left_decor && (
             <img
               src={left_decor}
               alt="Left Decoration"
-              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
+              className="h-2 sm:h-3 md:h-4 lg:h-auto w-full hidden md:block"
             />
           )}
           <h2 className="w-full text-lg sm:text-2xl md:text-3xl font-bold flex justify-center gap-2 capitalize">
@@ -45,7 +45,7 @@ const CategoryGrid = ({ data }) => {
             <img
               src={right_decor}
               alt="Right Decoration"
-              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
+              className="h-2 sm:h-3 md:h-4 lg:h-auto w-full hidden md:block"
             />
           )}
         </div>
@@ -69,7 +69,7 @@ const CategoryGrid = ({ data }) => {
               )
             }
           >
-            <div className="w-14 md:w-20 lg:w-28 h-14 md:h-20 lg:h-28 rounded-full overflow-hidden shadow-md flex items-center justify-center">
+            <div className="w-14 md:w-20 lg:w-24 h-14 md:h-20 lg:h-24 rounded-full overflow-hidden shadow-md flex items-center justify-center">
               <img
                 src={category.image}
                 // src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"

@@ -40,7 +40,7 @@ const CategoryDropdown = ({
   const subcategories = category.subcategory || [];
 
   return (
-    <div className="absolute left-1/2 transform -translate-x-1/2 top-full bg-white text-gray-800 shadow-2xl z-50 border border-primary-100 rounded-lg w-[90vw] max-h-[90vh] overflow-hidden">
+    <div className="absolute left-1/2 transform -translate-x-1/2 top-full bg-white text-gray-800 shadow-2xl z-50 border border-primary-100 rounded-lg w-[90vw] max-h-[20vh] overflow-scroll">
       <div className="flex h-full">
         {/* Categories List */}
         <div className="flex-1 overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">

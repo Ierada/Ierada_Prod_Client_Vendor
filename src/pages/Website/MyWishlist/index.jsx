@@ -310,7 +310,7 @@ const Wishlist = () => {
                       <img
                         src={item?.Product?.images[0]}
                         alt={item?.Product?.name}
-                        className="w-full aspect-[512/682] object-contain"
+                        className="w-full aspect-[400/533] object-contain"
                         onClick={() =>
                           navigate(
                             `${config.VITE_BASE_WEBSITE_URL}/product/${item?.Product?.slug}`

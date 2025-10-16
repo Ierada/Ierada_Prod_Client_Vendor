@@ -126,7 +126,7 @@ const BaseProductSlider = ({
   };
 
   return (
-    <section className="space-y-4 px-4 sm:px-6 md:px-8 lg:px-16 text-center">
+    <section className="space-y-4 px-4 sm:px-6 md:px-8 lg:px-24 text-center">
       {title && (
         <div className={`w-full flex items-center gap-4 justify-center`}>
           {left_decor && (
@@ -474,7 +474,7 @@ export const OfferSlider = ({ data }) => {
               "https://via.placeholder.com/512x682?text=Offer+Image"
             }
             alt={item.title}
-            className="max-w-[219px] aspect-[512/682] sm:w-[219px] sm:h-[291px] object-contain rounded"
+            className="max-w-[219px] aspect-[400/533] sm:w-[219px] sm:h-[291px] object-contain rounded"
           />
           <h3 className="text-lg font-bold mt-2 text-center">{item.title}</h3>
           <p className="text-sm text-gray-700 text-center">

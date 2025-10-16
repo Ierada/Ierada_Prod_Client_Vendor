@@ -124,7 +124,7 @@ const ThemeCategoryBanner = ({ data }) => {
   };
 
   return (
-    <section className="relative w-full overflow-hidden px-4 sm:px-6 md:px-8 lg:px-16">
+    <section className="relative w-full overflow-hidden px-4 sm:px-6 md:px-8 lg:px-24">
       <div className="text-center pb-8">
         <div className="w-full flex justify-center items-center gap-4 md:gap-8">
           {left_decor && (
@@ -176,7 +176,7 @@ const ThemeCategoryBanner = ({ data }) => {
                   src={banner.file_url}
                   //   src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   alt={banner.title || `Banner ${banner.id}`}
-                  className="h-[350px] w-full object-cover"
+                  className="h-[250px] w-full object-cover"
                 />
               </picture>
               <div className="p-3 text-left">
@@ -218,7 +218,7 @@ const ThemeCategoryBanner = ({ data }) => {
                   src={banner.file_url}
                   //   src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   alt={banner.title || `Banner ${banner.id}`}
-                  className="h-[350px] w-full object-cover"
+                  className="h-[250px] w-full object-cover"
                 />
               </picture>
               <div className="p-3 text-left">
