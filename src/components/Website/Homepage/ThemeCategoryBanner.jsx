@@ -124,8 +124,8 @@ const ThemeCategoryBanner = ({ data }) => {
   };
 
   return (
-    <section className="relative w-full overflow-hidden px-4 sm:px-6 md:px-8 lg:px-24">
-      <div className="text-center pb-8">
+    <section className="relative w-full overflow-hidden max-w-6xl mx-auto">
+      <div className="text-center md:pb-8">
         <div className="w-full flex justify-center items-center gap-4 md:gap-8">
           {left_decor && (
             <img

@@ -7,7 +7,7 @@ const SubcategoryGrid = ({ data }) => {
   const navigate = useNavigate();
 
   return (
-    <section className="px-4 md:px-8 lg:px-24">
+    <section className="max-w-6xl mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {data?.slice(0, 3).map((subcategory) => (
           <div key={subcategory.id} className="space-y-4">

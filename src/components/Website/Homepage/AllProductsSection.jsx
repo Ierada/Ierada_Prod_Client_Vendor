@@ -126,7 +126,7 @@ const AllProductsSection = () => {
   }, [fetchProducts, hasMore, loading]);
 
   return (
-    <section className="py-6 px-3 sm:px-4 md:px-6 lg:px-8" ref={sectionRef}>
+    <section className="py-6 max-w-6xl mx-auto" ref={sectionRef}>
       <div className="w-full flex justify-center items-center gap-4 md:gap-8">
         {left_decor && (
           <img

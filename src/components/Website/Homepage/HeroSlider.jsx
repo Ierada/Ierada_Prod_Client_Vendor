@@ -50,7 +50,7 @@ const HeroSlider = ({ data }) => {
 
   return (
     <section
-      className="relative w-full overflow-hidden aspect-[16/9] md:aspect-[16/3.5]"
+      className="relative w-full overflow-hidden aspect-[16/9] md:aspect-[16/3.5] max-w-6xl mx-auto"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >

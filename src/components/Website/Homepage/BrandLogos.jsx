@@ -47,13 +47,13 @@ const BrandLogos = ({ title, items }) => {
   };
 
   // Mouse & Touch Dragging Events
-  const handleMouseDown = e => {
+  const handleMouseDown = (e) => {
     setIsDragging(true);
     setStartX(e.pageX - sliderRef.current.offsetLeft);
     setScrollLeft(sliderRef.current.scrollLeft);
   };
 
-  const handleMouseMove = e => {
+  const handleMouseMove = (e) => {
     if (!isDragging) return;
     e.preventDefault();
     const x = e.pageX - sliderRef.current.offsetLeft;
@@ -66,49 +66,49 @@ const BrandLogos = ({ title, items }) => {
   };
 
   return (
-    <section className='px-4 md:px-8 lg:px-16 space-y-4'>
+    <section className="max-w-6xl mx-auto space-y-4">
       {title && (
-        <div className='text-center py-6'>
-          <h2 className='text-2xl md:text-3xl lg:text-4xl font-semibold'>
+        <div className="text-center py-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold">
             {title}
           </h2>
         </div>
       )}
-      <div className='relative'>
+      <div className="relative">
         <div
           ref={sliderRef}
-          className='flex overflow-x-auto gap-4 scroll-smooth no-scrollbar cursor-pointer select-none'
+          className="flex overflow-x-auto gap-4 scroll-smooth no-scrollbar cursor-pointer select-none"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
           {items?.map((logo, index) => (
-            <div key={index} className='flex-shrink-0'>
+            <div key={index} className="flex-shrink-0">
               <img
                 src={logo.image}
                 alt={`Brand ${index}`}
-                className='h-25 md:h-30 lg:h-45 w-auto object-contain mx-auto'
+                className="h-25 md:h-30 lg:h-45 w-auto object-contain mx-auto"
               />
             </div>
           ))}
         </div>
 
         {items?.length > visibleItems && (
-          <div className='absolute inset-y-0 left-0 right-0 flex items-center justify-between pointer-events-none'>
+          <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between pointer-events-none">
             <button
               onClick={handlePrevClick}
-              className='p-2 rounded-full bg-white shadow-md hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 pointer-events-auto ml-2'
-              aria-label='Previous'
+              className="p-2 rounded-full bg-white shadow-md hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 pointer-events-auto ml-2"
+              aria-label="Previous"
             >
-              <ChevronLeft className='w-6 h-6 text-gray-700' />
+              <ChevronLeft className="w-6 h-6 text-gray-700" />
             </button>
             <button
               onClick={handleNextClick}
-              className='p-2 rounded-full bg-white shadow-md hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 pointer-events-auto mr-2'
-              aria-label='Next'
+              className="p-2 rounded-full bg-white shadow-md hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 pointer-events-auto mr-2"
+              aria-label="Next"
             >
-              <ChevronRight className='w-6 h-6 text-gray-700' />
+              <ChevronRight className="w-6 h-6 text-gray-700" />
             </button>
           </div>
         )}

@@ -43,7 +43,7 @@ const VideoSection = ({ data }) => {
   }, [lastMouseMove]);
 
   return (
-    <section className="relative w-full h-[70vh] sm:h-[80vh] flex justify-center items-center overflow-hidden">
+    <section className="relative w-full h-[70vh] sm:h-[80vh] flex justify-center items-center overflow-hidden max-w-6xl mx-auto">
       {videoData?.file_url ? (
         <>
           {/* Video Background */}

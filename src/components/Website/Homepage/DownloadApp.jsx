@@ -14,7 +14,7 @@ import apple_store from "/assets/download_app/apple_store.svg";
 
 const DownloadApp = () => {
   return (
-    <main className="px-4 md:px-8 lg:px-16 flex flex-col md:flex-row items-center justify-between gap-5 lg:gap-8">
+    <main className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5 lg:gap-8">
       <div className="text-left md:text-left md:w-[40%] space-y-4 text-[black] ">
         <h2 className="text-4xl text-center mb-4 font-italiana relative inline-block">
           <span>Unlock the Future of Fusion</span>

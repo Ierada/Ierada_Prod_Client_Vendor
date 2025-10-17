@@ -23,8 +23,8 @@ const CategoryGrid = ({ data }) => {
   }
 
   return (
-    <section className="px-4 sm:px-6 md:px-8 lg:px-24 space-y-4 md:space-y-6">
-      <div className="text-center pb-8">
+    <section className="max-w-6xl mx-auto space-y-4 md:space-y-6">
+      <div className="text-center md:pb-8">
         <div className="w-full flex justify-center items-center gap-4 md:gap-8">
           {left_decor && (
             <img
@@ -58,7 +58,7 @@ const CategoryGrid = ({ data }) => {
       </div>
 
       {/* <div className="space-y-4 md:space-y-6"> */}
-      <div className="flex flex-wrap justify-center gap-6 sm:gap-14 md:gap-16">
+      <div className="flex flex-wrap justify-center gap-3 sm:gap-6 md:gap-10">
         {data?.items?.map((category) => (
           <div
             key={category.id}

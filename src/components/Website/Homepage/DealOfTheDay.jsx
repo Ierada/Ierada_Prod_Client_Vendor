@@ -38,9 +38,9 @@ const DealOfTheDay = ({ data }) => {
   }, [item.endDate]);
 
   return (
-    <section className="py-6 md:py-10 bg-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center pb-8">
+    <section className="py-6 md:py-10 bg-white max-w-6xl mx-auto">
+      <div className="container mx-auto">
+        <div className="text-center md:pb-8">
           <div className="w-full flex justify-center items-center gap-4 md:gap-8">
             {left_decor && (
               <img

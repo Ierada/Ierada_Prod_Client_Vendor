@@ -22,7 +22,7 @@ const Banner = ({ data }) => {
   };
 
   return (
-    <section className="relative w-full -mt-6 md:mt-0 lg:mt-0 overflow-hidden">
+    <section className="relative w-full overflow-hidden max-w-6xl mx-auto">
       <div
         onClick={() => handleNavigation(bannerData)}
         className="relative cursor-pointer w-full h-[100px] sm:h-[150px] md:h-[200px]"

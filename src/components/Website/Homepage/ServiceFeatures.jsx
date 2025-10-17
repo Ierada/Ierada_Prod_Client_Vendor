@@ -28,7 +28,7 @@ const ServiceFeatures = () => {
   ];
 
   return (
-    <section className="flex flex-wrap justify-between gap-8 text-[black] px-4 md:px-8 lg:px-16">
+    <section className="flex flex-wrap justify-between gap-8 text-[black] max-w-6xl mx-auto">
       {features.map((feature, index) => (
         <div key={index} className="flex items-center space-x-4 max-w-xs">
           <div className="w-16 h-16 p-4 text-gray-700 bg-white rounded-full flex items-center justify-center">

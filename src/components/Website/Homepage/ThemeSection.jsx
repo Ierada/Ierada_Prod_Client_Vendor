@@ -10,8 +10,8 @@ const ThemeSection = ({ data }) => {
   const bannerImage = data?.banner_image || "";
 
   return (
-    <section className="px-4 sm:px-6 md:px-8 lg:px-24 space-y-4 md:space-y-6">
-      <div className="text-center pb-5">
+    <section className="max-w-6xl mx-auto space-y-4 md:space-y-6">
+      <div className="text-center">
         <div className="w-full flex justify-center items-center gap-4 md:gap-8">
           {left_decor && (
             <img
@@ -46,30 +46,28 @@ const ThemeSection = ({ data }) => {
 
       <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         {/* Left side: Theme grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 md:gap-6 w-full md:w-2/3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 w-full md:w-1/2">
           {themes.map((theme) => (
             <div
               key={theme.id}
-              className="rounded-2xl overflow-hidden bg-white border border-orange-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+              className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-white border border-orange-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
               onClick={() =>
                 navigate(`${config.VITE_BASE_WEBSITE_URL}/theme/${theme.slug}`)
               }
             >
-              <div className="relative w-full aspect-[4/3] overflow-hidden">
-                <img
-                  src={theme.image || "/assets/placeholder-theme.jpg"}
-                  // src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                  alt={`Image of ${theme.title}`}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
-                  <h4 className="text-base sm:text-lg font-bold text-black capitalize bg-button-gradient bg-clip-text text-transparent">
-                    {theme.title}
-                  </h4>
-                  <button className="mt-2 bg-button-gradient text-white text-sm font-medium hover:underline flex items-center rounded-lg py-1 px-4">
-                    Explore more <span className="ml-1">&rarr;</span>
-                  </button>
-                </div>
+              <img
+                src={theme.image || "/assets/placeholder-theme.jpg"}
+                // src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                alt={`Image of ${theme.title}`}
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
+                <h4 className="text-base sm:text-lg font-bold text-black capitalize bg-button-gradient bg-clip-text text-transparent">
+                  {theme.title}
+                </h4>
+                <button className="mt-2 bg-button-gradient text-white text-sm font-medium hover:underline flex items-center rounded-lg py-1 px-4">
+                  Explore more <span className="ml-1">&rarr;</span>
+                </button>
               </div>
             </div>
           ))}
@@ -77,14 +75,16 @@ const ThemeSection = ({ data }) => {
 
         {/* Right side: Banner */}
         {bannerImage && (
-          <div className="w-full md:w-1/3">
-            <div className="rounded-2xl overflow-hidden bg-orange-100 h-full flex items-center justify-center">
-              <img
-                src={bannerImage}
-                alt="Section Banner"
-                className="w-full h-full object-cover"
-              />
-            </div>
+          <div className="w-full md:w-1/2">
+            <div
+              className="rounded-2xl overflow-hidden w-full aspect-[4/3] md:aspect-auto md:h-full flex items-center justify-center"
+              style={{
+                backgroundImage: `url(${bannerImage})`,
+                // backgroundImage: `ur[](https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1320&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            ></div>
           </div>
         )}
       </div>
