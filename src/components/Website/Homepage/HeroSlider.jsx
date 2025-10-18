@@ -111,7 +111,7 @@ const HeroSlider = ({ data }) => {
                     src={slide.file_url}
                     // src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2370&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt={slide.title}
-                    className="absolute inset-0 w-full h-full object-contain"
+                    className="absolute inset-0 w-full h-full"
                   />
                 </picture>
                 <div className="absolute inset-0 bg-black bg-opacity-20" />

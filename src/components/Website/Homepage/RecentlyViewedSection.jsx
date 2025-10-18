@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -19,12 +19,14 @@ import { useNavigate } from "react-router";
 const RecentlyViewed = ({ data }) => {
   const browsing_history = data ? data.items : [];
   const navigate = useNavigate();
+  const textRef = useRef(null);
   const { user, setTriggerHeaderCounts } = useAppContext();
   const [wishlists, setWishlists] = useState([]);
   const [wishlistedItems, setWishlistedItems] = useState(new Set());
   const [likedItems, setLikedItems] = useState(new Set());
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [currentSlidesToShow, setCurrentSlidesToShow] = useState(5);
+  const [decorWidth, setDecorWidth] = useState(100);
 
   const getSlidesToShow = (width) => {
     if (width < 480) return 2;
@@ -101,6 +103,41 @@ const RecentlyViewed = ({ data }) => {
     fetchLikes();
   };
 
+  // Dynamic decor width based on text length
+  useEffect(() => {
+    const updateWidth = () => {
+      if (textRef.current && data?.title) {
+        const originalWs = textRef.current.style.whiteSpace;
+        textRef.current.style.whiteSpace = "nowrap";
+        requestAnimationFrame(() => {
+          const textWidth = textRef.current.scrollWidth;
+          textRef.current.style.whiteSpace = originalWs;
+          const container = textRef.current.parentElement;
+          if (container) {
+            const containerWidth = container.clientWidth;
+            const gap = window.innerWidth >= 768 ? 32 : 16;
+            const sideWidth = Math.max(
+              50,
+              (containerWidth - textWidth - gap) / 2
+            );
+            setDecorWidth(sideWidth);
+          }
+        });
+      }
+    };
+
+    if (data?.title) {
+      // Initial calculation after render
+      setTimeout(updateWidth, 0);
+    }
+
+    const handleResize = () => {
+      if (data?.title) updateWidth();
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [data?.title]);
+
   const shouldLoop = browsing_history.length > currentSlidesToShow;
 
   const settings = {
@@ -149,11 +186,15 @@ const RecentlyViewed = ({ data }) => {
             <img
               src={left_decor}
               alt="Left Decoration"
-              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
+              className="h-2 md:h-4 lg:h-auto hidden md:block"
+              style={{ width: `${decorWidth}px` }}
             />
           )}
-          <h2 className="w-full text-lg sm:text-2xl md:text-3xl font-bold flex justify-center gap-2 capitalize">
-            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
+          <h2
+            ref={textRef}
+            className="text-lg sm:text-2xl md:text-3xl font-bold flex justify-center gap-2 capitalize whitespace-nowrap"
+          >
+            <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent">
               {data?.title?.split(" ")[0]}
             </span>
             <span className="">
@@ -164,7 +205,8 @@ const RecentlyViewed = ({ data }) => {
             <img
               src={right_decor}
               alt="Right Decoration"
-              className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
+              className="h-2 md:h-4 lg:h-auto hidden md:block"
+              style={{ width: `${decorWidth}px` }}
             />
           )}
         </div>
