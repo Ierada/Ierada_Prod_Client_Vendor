@@ -135,13 +135,11 @@ const AllProductsSection = () => {
             className="h-2 md:h-4 lg:h-auto w-full hidden md:block"
           />
         )}
-        <h2 className="w-full text-lg sm:text-2xl md:text-3xl font-bold flex justify-center gap-2 capitalize">
+        <h2 className="text-lg sm:text-2xl md:text-3xl font-bold flex gap-2 capitalize">
           <span className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent ">
-            {data?.title?.split(" ")[0]}
+            Customized
           </span>
-          <span className="">
-            {data?.title?.split(" ")?.slice(1)?.join(" ")}
-          </span>
+          <span>Products For You</span>
         </h2>
         {right_decor && (
           <img
