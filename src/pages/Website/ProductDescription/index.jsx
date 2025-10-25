@@ -20,7 +20,12 @@ import {
   FaShareAlt,
   FaWhatsapp,
 } from "react-icons/fa";
-import { MdStar, MdStarBorder, MdStarHalf } from "react-icons/md";
+import {
+  MdOutlineCalendarMonth,
+  MdStar,
+  MdStarBorder,
+  MdStarHalf,
+} from "react-icons/md";
 import {
   IoIosArrowDown,
   IoIosArrowUp,
@@ -28,6 +33,7 @@ import {
   IoMdCheckmarkCircleOutline,
   IoIosArrowBack,
   IoIosArrowForward,
+  IoMdInformationCircle,
 } from "react-icons/io";
 import { IoArrowForward, IoShareSocialOutline } from "react-icons/io5";
 import { CiLocationOn } from "react-icons/ci";
@@ -572,7 +578,7 @@ export default function ProductPage() {
       <main className="mb-10 mx-4 lg:mx-20 xl:mx-24 mt-4">
         <section className="md:mt-10">
           {/* Enhanced Breadcrumb */}
-          <nav aria-label="Breadcrumb" className="my-6">
+          {/* <nav aria-label="Breadcrumb" className="my-6">
             <ol className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
               <li>
                 <button
@@ -626,7 +632,7 @@ export default function ProductPage() {
                 {productData?.name}
               </li>
             </ol>
-          </nav>
+          </nav> */}
 
           <div className="flex flex-col lg:flex-row lg:justify-between gap-8 py-4">
             {/* Product Images Section */}
@@ -637,6 +643,7 @@ export default function ProductPage() {
                 <div className="relative flex md:flex-col gap-2 order-2 md:order-1">
                   <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto md:h-[600px] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 rounded">
                     {mediaList?.map((media, index) => (
+                      // Need to add a border of gradient to the side image boxes.
                       <button
                         key={index}
                         onClick={() => setActiveMediaIndex(index)}
@@ -674,6 +681,7 @@ export default function ProductPage() {
                 {/* Main Media with Side Zoom */}
                 <div className="w-full order-1 md:order-2 relative flex">
                   {/* Main Image Container */}
+                  {/* Need to add a border of gradient to the side image boxes. */}
                   <div
                     className="w-full h-[500px] md:h-[600px] bg-gray-50 rounded-xl overflow-hidden cursor-pointer shadow-sm border border-gray-200"
                     onClick={() => setShowMediaModal(true)}
@@ -687,7 +695,7 @@ export default function ProductPage() {
                         <video
                           src={mediaList[activeMediaIndex]?.url}
                           controls
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 flex items-center justify-center">
                           <FaRegPlayCircle className="text-white text-4xl bg-black bg-opacity-40 rounded-full p-2" />
@@ -764,13 +772,14 @@ export default function ProductPage() {
               </div>
 
               {/* Product specifications section */}
-              <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+              {/* <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100"> */}
+              <div>
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-bold text-gray-800">
+                  <h3 className="text-xl font-semibold text-[#000000]">
                     Product Specifications
                   </h3>
                   <button
-                    className="text-blue-600 hover:text-blue-800 font-medium flex items-center"
+                    className="text-[#000000] hover:text-blue-800 font-medium flex items-center"
                     onClick={scrollToTabSection}
                   >
                     Read More
@@ -779,28 +788,24 @@ export default function ProductPage() {
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse">
-                    <thead className="bg-gray-50">
+                    {/* <thead className="bg-gray-50"> */}
+                    <thead>
                       <tr>
-                        <th className="px-4 py-3 border-b font-medium text-left text-gray-700">
+                        <th className="px-4 py-3 border-b font-medium text-left text-[#000000]">
                           Feature
                         </th>
-                        <th className="px-4 py-3 border-b font-medium text-left text-gray-700">
+                        <th className="px-4 py-3 border-b font-medium text-left text-[#000000]">
                           Description
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       {productData?.specifications?.map((feature, index) => (
-                        <tr
-                          key={index}
-                          className={
-                            index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                          }
-                        >
-                          <td className="px-4 py-3 border-b text-gray-600">
+                        <tr key={index}>
+                          <td className="px-4 py-3 text-gray-500">
                             {feature.feature}
                           </td>
-                          <td className="px-4 py-3 border-b text-gray-800">
+                          <td className="px-4 py-3 text-[#000000]">
                             {feature.specification}
                           </td>
                         </tr>
@@ -816,10 +821,12 @@ export default function ProductPage() {
               <div className="flex flex-col gap-6">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h1 className="text-2xl md:text-2xl font-lato font-bold text-gray-900 mb-1">
+                    <h1 className="text-2xl md:text-2xl font-lato font-bold text-gray-900 ">
                       {productData?.name}
                     </h1>
-                    <div className="flex items-center gap-3">
+                    {/* Uncomment it later */}
+                    {/* This is the code for rating filter */}
+                    {/* <div className="flex items-center gap-3">
                       <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-full">
                         <StarRating
                           rating={
@@ -848,7 +855,7 @@ export default function ProductPage() {
                           </span>
                         </div>
                       )}
-                    </div>
+                    </div> */}
                   </div>
                   <div className="relative">
                     <button
@@ -912,15 +919,15 @@ export default function ProductPage() {
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <div className="flex items-baseline gap-4">
-                    <span className="text-2xl md:text-3xl font-bold text-gray-900">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl md:text-3xl text-gray-900">
                       ₹{currentPrice.discounted}
                     </span>
-                    <span className="text-lg text-gray-500 line-through">
+                    <span className="text-sm text-[#000000] line-through">
                       ₹{currentPrice.original}
                     </span>
-                    <span className="text-lg font-bold text-red-600">
-                      {currentPrice.discount}% OFF
+                    <span className="text-sm bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent">
+                      ({currentPrice.discount}% OFF)
                     </span>
                   </div>
                   <span className="text-sm text-gray-500">
@@ -928,7 +935,7 @@ export default function ProductPage() {
                   </span>
                 </div>
 
-                {productData?.user?.shop_name && (
+                {/* {productData?.user?.shop_name && (
                   <div className="flex gap-3 items-center">
                     {productData?.user?.avatar && (
                       <img
@@ -944,9 +951,9 @@ export default function ProductPage() {
                       </p>
                     </div>
                   </div>
-                )}
+                )} */}
 
-                {productData?.fabric?.name && (
+                {/* {productData?.fabric?.name && (
                   <div className="flex gap-2 items-center">
                     <span className="text-gray-700">Fabric:</span>
                     <button
@@ -961,7 +968,7 @@ export default function ProductPage() {
                       {productData?.fabric?.name}
                     </button>
                   </div>
-                )}
+                )} */}
               </div>
 
               {/* Variations Section */}
@@ -995,7 +1002,7 @@ export default function ProductPage() {
                           disabled={
                             !variation.sizes.some((size) => size.stock > 0)
                           }
-                          className={`relative w-12 h-12 md:w-16 md:h-16 rounded-full border-2 flex items-center justify-center
+                          className={`relative w-10 h-10 md:h-12 w-12 rounded-md border-2 flex items-center justify-center
                           ${
                             selectedVariation?.id === variation.id
                               ? "ring-2 ring-blue-500 ring-offset-2 border-black"
@@ -1008,7 +1015,7 @@ export default function ProductPage() {
                           title={variation.color_name}
                         >
                           <div
-                            className="w-10 h-10 md:w-14 md:h-14 rounded-full"
+                            className="w-10 h-10 md:w-12 h-12 rounded-md"
                             style={{ backgroundColor: variation.color_code }}
                           />
                           {selectedVariation?.id === variation.id && (
@@ -1025,23 +1032,25 @@ export default function ProductPage() {
                       <p className="font-medium text-gray-800">Select Size</p>
                       <div className="flex flex-wrap gap-3">
                         {selectedVariation?.sizes?.map((size, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSizeSelect(size)}
-                            disabled={size.stock === 0}
-                            className={`px-4 py-2 min-w-[50px] border rounded-lg text-sm font-medium transition-all duration-200
+                          <div className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] p-[0.7px] rounded-lg">
+                            <button
+                              key={index}
+                              onClick={() => handleSizeSelect(size)}
+                              disabled={size.stock === 0}
+                              className={`p-2 min-w-[50px] rounded-lg text-md font-medium transition-all duration-200 border-none
                             ${
                               selectedSize?.size_id === size.size_id
-                                ? "bg-black text-white border-black"
-                                : "border-gray-300 text-gray-700 hover:border-gray-500 hover:bg-gray-50"
+                                ? "bg-gradient-to-r from-[#FFB700] to-[#FF3B00] text-white"
+                                : "bg-white text-gray-900 hover:border-gray-500 hover:bg-gradient-to-r from-[#FFB700] to-[#FF3B00]"
                             } ${
                               size.stock === 0
                                 ? "opacity-50 cursor-not-allowed"
                                 : ""
                             }`}
-                          >
-                            {size.size_name}
-                          </button>
+                            >
+                              {size.size_name}
+                            </button>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -1050,8 +1059,10 @@ export default function ProductPage() {
               )}
 
               {/* Delivery Options */}
-              <div className="bg-gray-50 p-4 rounded-xl">
-                <h3 className="text-lg font-bold mb-3">Delivery Options</h3>
+              <>
+                <h3 className="text-lg text-gray-900 font-bold">
+                  Delivery Options
+                </h3>
 
                 <div className="relative w-full">
                   <label htmlFor="pincode-input" className="sr-only">
@@ -1059,7 +1070,7 @@ export default function ProductPage() {
                   </label>
 
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <CiLocationOn className="text-gray-500 text-xl" />
+                    <CiLocationOn className="text-gray-900 text-xl" />
                   </div>
 
                   <input
@@ -1069,17 +1080,18 @@ export default function ProductPage() {
                     value={pinCode}
                     onChange={handlePincodeInputChange}
                     maxLength={6}
-                    className="w-full py-3 pl-10 pr-24 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-3 pl-10 pr-24 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
 
                   <button
                     onClick={handlePincodeCheck}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 px-5 py-2 text-sm text-gray-800 hover:text-black underline rounded-full focus:outline-none"
+                    // className="absolute right-1 top-1/2 -translate-y-1/2 px-5 py-2 text-sm text-gray-800 hover:text-black rounded-full focus:outline-none"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 px-5 py-2 text-sm bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent hover:text-md focus:outline-none"
                   >
                     Check
                   </button>
                 </div>
-              </div>
+              </>
 
               {/* Offers */}
               <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
@@ -1096,20 +1108,12 @@ export default function ProductPage() {
                 </ul>
               </div>
 
-              {/* Return Policy */}
-              <div className="flex items-center gap-3 bg-blue-50 p-3 rounded-lg">
-                <FaCalendarAlt className="text-blue-500 text-xl flex-shrink-0" />
-                <span className="text-gray-700">
-                  14 days easy return or exchange
-                </span>
-              </div>
-
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={handleWishlistToggle}
                   disabled={wishlistLoading || productData.stock === 0}
-                  className={`flex items-center justify-center p-3 border border-gray-300 text-2xl transition-colors
+                  className={`flex items-center justify-center p-3 border border-gray-300 rounded-lg text-2xl transition-colors
                   ${wishlistLoading ? "opacity-70" : "hover:bg-gray-100"}
                   ${isWishlisted ? "text-red-500" : "text-gray-600"}`}
                   aria-label={
@@ -1125,36 +1129,38 @@ export default function ProductPage() {
                   )}
                 </button>
                 <div className="flex-1 flex-col sm:flex-row gap-3 hidden sm:flex">
-                  <button
-                    onClick={() => handleAddToCart("add")}
-                    disabled={addingToCart || productData.stock === 0}
-                    className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 border border-black text-base md:text-lg font-medium transition-colors
+                  <div className="flex-1 bg-gradient-to-r from-[#FFB700] to-[#FF3B00] p-[1px] rounded-lg">
+                    <button
+                      onClick={() => handleAddToCart("add")}
+                      disabled={addingToCart || productData.stock === 0}
+                      className={`uppercase w-full flex items-center justify-center gap-2 px-6 py-3 border-none rounded-lg text-base md:text-lg font-bold transition-colors
                     ${
                       addingToCart || productData.stock === 0
                         ? "bg-gray-100 text-gray-400 border-gray-300"
-                        : "bg-white text-black hover:bg-gray-50"
+                        : "bg-white"
                     }`}
-                  >
-                    {addingToCart ? (
-                      "Adding to Cart..."
-                    ) : (
-                      <>
-                        Add to Cart <IoMdArrowForward />
-                      </>
-                    )}
-                  </button>
+                    >
+                      {addingToCart ? (
+                        "Adding to Cart..."
+                      ) : (
+                        <div className="bg-gradient-to-r from-[#FFB700] to-[#FF3B00] bg-clip-text text-transparent">
+                          Add to Cart
+                        </div>
+                      )}
+                    </button>
+                  </div>
 
                   <button
                     onClick={() => handleAddToCart("buy")}
                     disabled={addingToCart || productData.stock === 0}
-                    className={`flex-1 items-center justify-center gap-2 px-6 py-3 text-base md:text-lg font-medium text-white transition-colors
+                    className={`uppercase flex-1 items-center justify-center gap-2 px-6 py-3 text-base rounded-lg md:text-lg font-bold text-white transition-colors
                     ${
                       addingToCart || productData.stock === 0
                         ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-[#f47954] hover:bg-[#e66843]"
+                        : "bg-gradient-to-r from-[#FFB700] to-[#FF3B00] text-white"
                     } hidden sm:flex`}
                   >
-                    Buy Now <IoMdArrowForward />
+                    Buy Now
                   </button>
                 </div>
 
@@ -1180,9 +1186,10 @@ export default function ProductPage() {
                 </div>
               </div>
               {productData.stock < 10 && productData.stock !== 0 ? (
-                <div className="bg-red-50 border border-red-100 p-3 rounded-lg">
-                  <p className="text-red-600 text-center font-medium">
-                    Hurry! Only {productData.stock} left in stock
+                <div className="flex items-center ">
+                  <IoMdInformationCircle className="text-[#FF7B00] mr-2 text-md" />
+                  <p className="text-gray-900 font-medium">
+                    only {productData.stock} left.
                   </p>
                 </div>
               ) : productData.stock === 0 ? (
@@ -1192,6 +1199,14 @@ export default function ProductPage() {
                   </p>
                 </div>
               ) : null}
+
+              {/* Return Policy */}
+              <div className="flex items-center gap-3 bg-blue-100 p-3 rounded-lg">
+                <MdOutlineCalendarMonth className="text-gray-900 text-xl flex-shrink-0" />
+                <span className="text-gray-900">
+                  14 days easy return or exchange
+                </span>
+              </div>
             </div>
           </div>
         </section>
