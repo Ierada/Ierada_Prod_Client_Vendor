@@ -7,7 +7,7 @@ export const getHeaderCategories = async () => {
     if (res.data.status === 1) {
       // notifyOnSuccess(res.data.message);
     } else {
-      notifyOnFail(res.data.message);
+      // notifyOnFail(res.data.message);
     }
 
     return res.data;
@@ -25,7 +25,7 @@ export const getHeaderCartWishlistNotificationCount = async (userId) => {
       // notifyOnSuccess(res.data.message);
       return res.data;
     } else {
-      notifyOnFail(res.data.message);
+      // notifyOnFail(res.data.message);
     }
   } catch (error) {
     notifyOnFail("Error reaching the server");

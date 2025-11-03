@@ -707,9 +707,9 @@ const CheckoutPage = () => {
   return (
     <main>
       {/* Header and Address Sections */}
-      <section>
+      {/* <section>
         <CommonTopBanner bannerData={bannerData} />
-      </section>
+      </section> */}
       <section className="mb-9">
         <div className="text-center my-10 text-[#000000]">
           <h1 className="text-2xl lg:text-4xl font-semibold mb-2 font-Playfair">

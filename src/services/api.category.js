@@ -227,3 +227,25 @@ export const exportCategoriesCSV = async () => {
     console.error(error);
   }
 };
+
+export const getSubCategoriesByCategoryId = async (id) => {
+  try {
+    const res = await apiClient.get(`/subcategory/getByCatId/${id}`);
+    return res.data;
+  } catch (error) {
+    notifyOnFail("Error reaching the server");
+    console.log(error);
+    return error.response || error;
+  }
+};
+
+export const getInnerSubCategoriesBySubCategoryId = async (id) => {
+  try {
+    const res = await apiClient.get(`/innersubcategory/getBySubCatId/${id}`);
+    return res.data;
+  } catch (error) {
+    notifyOnFail("Error reaching the server");
+    console.log(error);
+    return error.response || error;
+  }
+};

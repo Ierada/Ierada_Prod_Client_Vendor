@@ -52,7 +52,8 @@ const ContactUs = () => {
   useEffect(() => {
     if (showPuzzle) {
       const puzzleTypes = Object.values(PUZZLE_TYPES);
-      const randomType = puzzleTypes[Math.floor(Math.random() * puzzleTypes.length)];
+      const randomType =
+        puzzleTypes[Math.floor(Math.random() * puzzleTypes.length)];
       setPuzzleType(randomType);
 
       switch (randomType) {
@@ -101,7 +102,7 @@ const ContactUs = () => {
 
   const handleImageSelect = (id, category) => {
     if (selectedImages.includes(id)) {
-      setSelectedImages(selectedImages.filter(imgId => imgId !== id));
+      setSelectedImages(selectedImages.filter((imgId) => imgId !== id));
     } else {
       setSelectedImages([...selectedImages, id]);
     }
@@ -112,29 +113,31 @@ const ContactUs = () => {
       case PUZZLE_TYPES.IMAGE_SELECT:
         // Check if all selected images are vehicles and all vehicles are selected
         const vehicleIds = sampleImages
-          .filter(img => img.category === "vehicle")
-          .map(img => img.id);
-        
-        const allVehiclesSelected = vehicleIds.every(id => 
+          .filter((img) => img.category === "vehicle")
+          .map((img) => img.id);
+
+        const allVehiclesSelected = vehicleIds.every((id) =>
           selectedImages.includes(id)
         );
-        const onlyVehiclesSelected = selectedImages.every(id => 
+        const onlyVehiclesSelected = selectedImages.every((id) =>
           vehicleIds.includes(id)
         );
-        
+
         if (!allVehiclesSelected || !onlyVehiclesSelected) {
-          setPuzzleError("Please select all images with vehicles and nothing else.");
+          setPuzzleError(
+            "Please select all images with vehicles and nothing else."
+          );
           return false;
         }
         break;
-        
+
       case PUZZLE_TYPES.SLIDER:
         if (Math.abs(sliderValue - targetSliderValue) > 5) {
           setPuzzleError("Please slide to the exact position.");
           return false;
         }
         break;
-        
+
       case PUZZLE_TYPES.CHECKBOX:
         // For checkbox, we just need to know it was checked
         if (!puzzleSolved) {
@@ -142,12 +145,12 @@ const ContactUs = () => {
           return false;
         }
         break;
-        
+
       default:
         setPuzzleError("Please complete the puzzle.");
         return false;
     }
-    
+
     setPuzzleError("");
     return true;
   };
@@ -184,20 +187,20 @@ const ContactUs = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    
+
     // First validate the form
     const newError = validate();
     if (Object.keys(newError).length > 0) {
       setError(newError);
       return;
     }
-    
+
     // If form is valid, show the puzzle
     if (!puzzleSolved) {
       setShowPuzzle(true);
       return;
     }
-    
+
     // If puzzle is already solved, submit the form
     submitForm();
   };
@@ -208,13 +211,17 @@ const ContactUs = () => {
         return (
           <div className="grid grid-cols-2 gap-4 mb-4">
             {sampleImages.map((image) => (
-              <div 
+              <div
                 key={image.id}
-                className={`relative border-2 ${selectedImages.includes(image.id) ? 'border-blue-500' : 'border-gray-200'}`}
+                className={`relative border-2 ${
+                  selectedImages.includes(image.id)
+                    ? "border-blue-500"
+                    : "border-gray-200"
+                }`}
                 onClick={() => handleImageSelect(image.id, image.category)}
               >
-                <img 
-                  src={image.src} 
+                <img
+                  src={image.src}
                   alt={`Puzzle image ${image.id}`}
                   className="w-full h-auto"
                 />
@@ -227,7 +234,7 @@ const ContactUs = () => {
             ))}
           </div>
         );
-        
+
       case PUZZLE_TYPES.SLIDER:
         return (
           <div className="mb-4">
@@ -244,7 +251,7 @@ const ContactUs = () => {
             </div>
           </div>
         );
-        
+
       case PUZZLE_TYPES.CHECKBOX:
         return (
           <div className="flex items-center mb-4">
@@ -260,7 +267,7 @@ const ContactUs = () => {
             </label>
           </div>
         );
-        
+
       default:
         return null;
     }
@@ -268,9 +275,9 @@ const ContactUs = () => {
 
   return (
     <main>
-      <section className="h-[300px]">
+      {/* <section className="h-[300px]">
         <CommonTopBanner bannerData={bannerData} />
-      </section>
+      </section> */}
       <section>
         <div className="min-h-screen flex flex-col mb-6 items-center bg-white">
           {/* Header Section */}
@@ -291,18 +298,22 @@ const ContactUs = () => {
             <p className="text-[#484848]  mb-6 font-Lato font-normal">
               Help us with these details so that we can help you
             </p>
-            
+
             {/* Puzzle Modal */}
             {showPuzzle && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div className="bg-white p-6 rounded-lg max-w-md w-full">
-                  <h3 className="text-xl font-semibold mb-4">Complete this verification:</h3>
+                  <h3 className="text-xl font-semibold mb-4">
+                    Complete this verification:
+                  </h3>
                   <p className="text-lg mb-4">{puzzleChallenge}</p>
-                  
+
                   {renderPuzzle()}
-                  
-                  {puzzleError && <p className="text-red-500 mb-4">{puzzleError}</p>}
-                  
+
+                  {puzzleError && (
+                    <p className="text-red-500 mb-4">{puzzleError}</p>
+                  )}
+
                   <div className="flex justify-end space-x-4">
                     <button
                       onClick={() => {
@@ -325,7 +336,7 @@ const ContactUs = () => {
                 </div>
               </div>
             )}
-            
+
             <form className="space-y-6" onSubmit={handleFormSubmit}>
               {/* Name and Email */}
               <div className="flex flex-col lg:flex-row gap-6">

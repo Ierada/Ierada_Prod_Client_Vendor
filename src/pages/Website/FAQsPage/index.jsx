@@ -14,9 +14,9 @@ const bannerData = [
 export default function FAQsPage() {
   return (
     <main>
-      <section className="h-[300px]">
+      {/* <section className="h-[300px]">
         <CommonTopBanner bannerData={bannerData} />
-      </section>
+      </section> */}
       <section>
         <FAQs />
       </section>

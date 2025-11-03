@@ -1204,7 +1204,7 @@ export default function ProductPage() {
               <div className="flex items-center gap-3 bg-blue-100 p-3 rounded-lg">
                 <MdOutlineCalendarMonth className="text-gray-900 text-xl flex-shrink-0" />
                 <span className="text-gray-900">
-                  14 days easy return or exchange
+                  7 days easy return or exchange
                 </span>
               </div>
             </div>
@@ -1334,7 +1334,7 @@ export default function ProductPage() {
                   {reviews.length} reviews for this product
                 </p>
               </div>
-              {Cookies.get(`${config.BRAND_NAME}CustomerToken`) && (
+              {/* {Cookies.get(`${config.BRAND_NAME}CustomerToken`) && (
                 <button
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   onClick={() => setIsReviewModalOpen(true)}
@@ -1342,7 +1342,7 @@ export default function ProductPage() {
                   <PencilLine size={18} />
                   <span>Leave a Review</span>
                 </button>
-              )}
+              )} */}
             </div>
 
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">

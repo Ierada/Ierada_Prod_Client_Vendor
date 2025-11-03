@@ -192,7 +192,7 @@ const Wallet = () => {
 
   return (
     <main>
-      <CommonTopBanner bannerData={bannerData} />
+      {/* <CommonTopBanner bannerData={bannerData} /> */}
       <section className="w-full">
         <div className="text-center my-10 text-[#000000]">
           <h1 className="text-2xl lg:text-4xl font-semibold mb-2 font-Playfair">

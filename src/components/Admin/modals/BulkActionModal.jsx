@@ -3,8 +3,7 @@ import React from "react";
 const BulkActionModal = ({
   isOpen,
   onClose,
-  onPublish,
-  onHide,
+  onAction,
   selectedCount,
   isProcessing,
 }) => {
@@ -47,13 +46,13 @@ const BulkActionModal = ({
             Cancel
           </button>
           <button
-            onClick={onPublish}
+            onClick={() => onAction("Published")}
             className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
           >
             {isProcessing ? "Processing..." : "Publish"}
           </button>
           <button
-            onClick={onHide}
+            onClick={() => onAction("Hidden")}
             className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
           >
             {isProcessing ? "Processing..." : "Hide"}

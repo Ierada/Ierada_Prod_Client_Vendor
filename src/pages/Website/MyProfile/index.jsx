@@ -220,7 +220,7 @@ const ProfilePage = () => {
       last_name: data.customerDetails.last_name || "",
       email: data.email || "",
       birthday: data.customerDetails.birthday
-      ? formatDateForCalander(data.customerDetails.birthday)
+        ? formatDateForCalander(data.customerDetails.birthday)
         : "",
       phone: data.phone || "",
       gender: data.customerDetails.gender || "",
@@ -233,9 +233,9 @@ const ProfilePage = () => {
     };
 
     setFormData(updatedData);
-  setEditableFields(updatedData);
-  setImage(data.customerDetails.avatar || userDefaultImage);
-  calculateCompletionPercentage({ ...updatedData });
+    setEditableFields(updatedData);
+    setImage(data.customerDetails.avatar || userDefaultImage);
+    calculateCompletionPercentage({ ...updatedData });
   };
 
   useEffect(() => {
@@ -348,23 +348,23 @@ const ProfilePage = () => {
     if (
       editableFields.birthday === "Invalid date" ||
       !editableFields.birthday.trim()
-    ) 
-    // {
-    //   validationErrors.birthday = "Birthday is required";
-    // }
+    )
+      if (
+        editableFields.marital_status === "married" &&
+        (!editableFields.marital_anniversary ||
+          editableFields.marital_anniversary === "Invalid date")
+      )
+        // {
+        //   validationErrors.birthday = "Birthday is required";
+        // }
 
-    if (
-      editableFields.marital_status === "married" &&
-      (!editableFields.marital_anniversary ||
-        editableFields.marital_anniversary === "Invalid date")
-    ) 
-    // {
-    //   validationErrors.marital_anniversary = "Marital Anniversary is required";
-    // }
+        if (!image) {
+          // {
+          //   validationErrors.marital_anniversary = "Marital Anniversary is required";
+          // }
 
-    if (!image) {
-      validationErrors.image = "Profile image is required";
-    }
+          validationErrors.image = "Profile image is required";
+        }
 
     if (editableFields.email.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -427,7 +427,7 @@ const ProfilePage = () => {
   return (
     <>
       <main>
-        <CommonTopBanner bannerData={bannerData} />
+        {/* <CommonTopBanner bannerData={bannerData} /> */}
 
         <section className="w-full">
           <div className="text-center my-10 text-[#000000]">
@@ -551,25 +551,27 @@ const ProfilePage = () => {
                 })}
                 {isEditMode && (
                   <>
-                   <div className="relative w-full">
-  <input
-    type="date"
-    name="birthday"
-    id="birthday"
-    value={editableFields.birthday || ""}
-    onChange={handleInputChange}
-    className="peer block w-full px-3 py-3 border border-gray-300 shadow-sm focus:outline-none focus:ring-black focus:border-black sm:text-sm"
-  />
-  <label
-    htmlFor="birthday"
-    className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-4 peer-focus:scale-75"
-  >
-    BIRTHDAY
-  </label>
-  {errors.birthday && (
-    <span className="text-sm text-red-500">{errors.birthday}</span>
-  )}
-</div>
+                    <div className="relative w-full">
+                      <input
+                        type="date"
+                        name="birthday"
+                        id="birthday"
+                        value={editableFields.birthday || ""}
+                        onChange={handleInputChange}
+                        className="peer block w-full px-3 py-3 border border-gray-300 shadow-sm focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+                      />
+                      <label
+                        htmlFor="birthday"
+                        className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-4 peer-focus:scale-75"
+                      >
+                        BIRTHDAY
+                      </label>
+                      {errors.birthday && (
+                        <span className="text-sm text-red-500">
+                          {errors.birthday}
+                        </span>
+                      )}
+                    </div>
                     <div className="relative w-full">
                       <select
                         name="gender"

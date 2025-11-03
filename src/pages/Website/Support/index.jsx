@@ -144,7 +144,7 @@ const Support = () => {
 
   return (
     <main className="min-h-screen pb-20">
-      <CommonTopBanner bannerData={bannerData} />
+      {/* <CommonTopBanner bannerData={bannerData} /> */}
 
       <section className="w-full">
         <div className="text-center my-10 text-[#000000]">

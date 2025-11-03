@@ -21,6 +21,7 @@ import {
   Plus,
   ChevronsLeft,
   ChevronsRight,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ProductModal from "../../../components/Vendor/Models/ProductModal";
@@ -31,6 +32,7 @@ import {
   updateProductVisibility,
   updateBulkProductVisibility,
   deleteProduct,
+  bulkDeleteProducts,
 } from "../../../services/api.product";
 import config from "../../../config/config";
 import {
@@ -105,6 +107,193 @@ const NumberInput = ({ label, value, onChange }) => {
   );
 };
 
+const BulkCustomDeleteModal = ({
+  isOpen,
+  onClose,
+  initialCustomIds = [],
+  onRefetch,
+}) => {
+  const [customIds, setCustomIds] = useState(initialCustomIds);
+  const [inputValue, setInputValue] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [invalidIds, setInvalidIds] = useState([]);
+
+  // Reset state when opening
+  useEffect(() => {
+    if (isOpen) {
+      setCustomIds(initialCustomIds);
+      setInputValue("");
+      setError("");
+      setSuccessMessage("");
+      setInvalidIds([]);
+      setIsDeleting(false);
+    }
+  }, [isOpen, initialCustomIds]);
+
+  const addCustomId = (e) => {
+    if (e.key === "Enter" && inputValue.trim()) {
+      const trimmed = inputValue.trim();
+      if (!customIds.includes(trimmed)) {
+        setCustomIds([...customIds, trimmed]);
+      }
+      setInputValue("");
+      setError("");
+    }
+  };
+
+  const removeCustomId = (idToRemove) => {
+    setCustomIds(customIds.filter((id) => id !== idToRemove));
+    // Clear invalid if removed
+    setInvalidIds((prev) => prev.filter((id) => id !== idToRemove));
+  };
+
+  const handleDelete = async () => {
+    if (customIds.length === 0) {
+      setError("Please enter at least one custom ID");
+      return;
+    }
+    setIsDeleting(true);
+    setError("");
+    setSuccessMessage("");
+    try {
+      // Assume bulkDeleteProducts now accepts { customIds }
+      const response = await bulkDeleteProducts({ customIds });
+      if (response.status === 1) {
+        setSuccessMessage(
+          `Successfully deleted ${response.deletedCount} product(s)`
+        );
+        if (response.invalid && response.invalid.length > 0) {
+          setInvalidIds(response.invalid);
+          // Keep modal open to show invalid
+        } else {
+          onClose();
+          onRefetch();
+        }
+      } else {
+        setError(response.message || "Failed to delete products");
+      }
+    } catch (err) {
+      console.error("Bulk delete error:", err);
+      setError(
+        err.response?.data?.message || "Something went wrong. Please try again."
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (successMessage) {
+      onRefetch(); // Refetch if deletion was partially successful
+    }
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">
+            Bulk Delete Products by Product ID
+          </h3>
+          <button
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {successMessage && (
+          <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-md">
+            {successMessage}
+          </div>
+        )}
+
+        {invalidIds.length > 0 && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+            <p className="font-medium">Invalid Product IDs (not found):</p>
+            <ul className="list-disc list-inside mt-1">
+              {invalidIds.map((id) => (
+                <li key={id}>{id}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+            {error}
+          </div>
+        )}
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Enter Product ID
+          </label>
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={addCustomId}
+            placeholder="Type a custom ID and press Enter to add"
+            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isDeleting}
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Added Product IDs ({customIds.length})
+          </label>
+          <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto border border-gray-200 p-2 rounded-md bg-gray-50">
+            {customIds.length > 0 ? (
+              customIds.map((id) => (
+                <div
+                  key={id}
+                  className="bg-blue-100 px-2 py-1 rounded-md flex items-center gap-1 text-sm"
+                >
+                  {id}
+                  <button
+                    onClick={() => removeCustomId(id)}
+                    className="text-red-500 hover:text-red-700 ml-1"
+                    disabled={isDeleting}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm">No custom IDs added yet</p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 pt-4 border-t">
+          <button
+            onClick={handleClose}
+            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
+            disabled={isDeleting}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting || customIds.length === 0}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isDeleting ? "Deleting..." : "Delete Products"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Product = () => {
   const [products, setProducts] = useState([]);
   const [displayedData, setDisplayedData] = useState([]);
@@ -112,7 +301,10 @@ const Product = () => {
   const [modalMode, setModalMode] = useState("view");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isBulkCustomDeleteModalOpen, setIsBulkCustomDeleteModalOpen] =
+    useState(false);
   const [isDeletingProduct, setIsDeletingProduct] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
@@ -143,6 +335,7 @@ const Product = () => {
   const csvLinkRef = React.useRef();
   const [csvDataAll, setCsvDataAll] = useState({ headers: [], data: [] });
   const csvLinkAllRef = React.useRef();
+  const [bulkDeleteCustomIds, setBulkDeleteCustomIds] = useState([]);
   const limitOptions = [5, 10, 25, 50, 100];
   const navigate = useNavigate();
 
@@ -166,8 +359,9 @@ const Product = () => {
 
       const response = await getAllProducts(queryParams.toString());
 
-      setProducts(response?.data || []);
-      setDisplayedData(response?.data || []);
+      const data = response?.data?.filter((item) => item && item.id) || [];
+      setProducts(data);
+      setDisplayedData(data);
       setPagination({
         page: response.pagination.page,
         limit: response.pagination.limit,
@@ -176,7 +370,7 @@ const Product = () => {
       });
 
       // Prepare CSV data for current page
-      prepareCsvData(response?.data || [], false);
+      prepareCsvData(data, false);
 
       // Set category options
       if (response.filters && response.filters.categories) {
@@ -286,11 +480,12 @@ const Product = () => {
     debouncedFetchProducts(1, filters, searchTerm, pagination.limit);
   }, [searchTerm, filters, pagination.limit, debouncedFetchProducts]);
 
-  // Handle bulk visibility update (unchanged)
+  // Handle bulk visibility update (fixed with table.getSelectedRowModel)
   const handleBulkVisibilityUpdate = async (newVisibility) => {
     setIsProcessingBulkAction(true);
     try {
-      const selectedIds = Object.keys(rowSelection).map(Number);
+      const selectedRows = table.getSelectedRowModel().rows;
+      const selectedIds = selectedRows.map((row) => row.original.id);
 
       if (selectedIds.length === 0) {
         notifyOnFail("Please select at least one product");
@@ -328,7 +523,77 @@ const Product = () => {
     }
   };
 
-  const selectedRowCount = Object.keys(rowSelection).length;
+  const handleBulkCustomDeleteRefetch = useCallback(() => {
+    fetchProducts(pagination.page, filters, searchTerm, pagination.limit);
+    setRowSelection({});
+  }, [pagination.page, filters, searchTerm, pagination.limit]);
+
+  const openBulkCustomDeleteModal = () => {
+    const selectedRows = table.getSelectedRowModel().rows;
+    const selectedCustomIds = selectedRows
+      .map((row) => row.original.custom_id)
+      .filter(Boolean);
+    setBulkDeleteCustomIds(selectedCustomIds);
+    setIsBulkCustomDeleteModalOpen(true);
+  };
+
+  const handleStatusToggle = useCallback(
+    async (id) => {
+      if (!id) return;
+      try {
+        const product = displayedData.find((p) => p.id === id);
+        if (!product) {
+          console.error("Error: Product not found.");
+          return;
+        }
+
+        const updatedStatus =
+          product.visibility === "Published" ? "Hidden" : "Published";
+
+        const response = await updateProductVisibility(id, {
+          visibility: updatedStatus,
+        });
+
+        if (response.status === 1) {
+          notifyOnSuccess(`Status updated to ${updatedStatus}`);
+
+          const updateVisibility = (list) =>
+            list.map((p) =>
+              p.id === id ? { ...p, visibility: updatedStatus } : p
+            );
+
+          setProducts((prevProducts) => updateVisibility(prevProducts));
+          setDisplayedData((prevData) => updateVisibility(prevData));
+        } else {
+          notifyOnFail(response.message || "Failed to update the status.");
+        }
+      } catch (error) {
+        console.error(
+          "Error updating status:",
+          error.response?.data || error.message
+        );
+        notifyOnFail("Something went wrong. Please try again.");
+      }
+    },
+    [displayedData]
+  );
+
+  const openModal = useCallback((product, mode = "view") => {
+    if (!product) return;
+    setSelectedProduct(product);
+    setModalMode(mode);
+    setShowModal(true);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setShowModal(false);
+  }, []);
+
+  const openDeleteModal = useCallback((product) => {
+    if (!product) return;
+    setSelectedProduct(product);
+    setIsDeleteModalOpen(true);
+  }, []);
 
   const columns = useMemo(
     () => [
@@ -360,20 +625,21 @@ const Product = () => {
       },
       {
         header: "SL",
-        cell: ({ row }) => row.index + 1,
+        cell: ({ row }) =>
+          (pagination.page - 1) * pagination.limit + row.index + 1,
       },
       {
         header: "Product ID",
-        accessorKey: "id",
+        accessorKey: "custom_id",
       },
       {
         header: "Product Photo",
         accessorKey: "image",
         cell: ({ row }) =>
-          row.original.image ? (
+          row.original?.image ? (
             <img
               src={row.original.image}
-              alt={row.original.name}
+              alt={row.original.name || "Product"}
               className="w-16 h-16 object-cover rounded"
             />
           ) : (
@@ -385,63 +651,72 @@ const Product = () => {
       {
         header: "Product Name",
         accessorKey: "name",
-        cell: ({ row }) => <p>{row.original.name}</p>,
+        cell: ({ row }) => <p>{row.original?.name || "N/A"}</p>,
       },
       {
         header: "Vendor",
         accessorKey: "vendor_name",
-        cell: ({ row }) => <p>{row.original.vendor_name || "N/A"}</p>,
+        cell: ({ row }) => <p>{row.original?.vendor_name || "N/A"}</p>,
       },
       {
         header: "Category",
         accessorKey: "category",
-        cell: ({ row }) => <p>{row.original.category || "N/A"}</p>,
+        cell: ({ row }) => <p>{row.original?.category || "N/A"}</p>,
       },
       {
         header: "Sub Category",
         accessorKey: "sub_category",
-        cell: ({ row }) => <p>{row.original.sub_category || "N/A"}</p>,
+        cell: ({ row }) => <p>{row.original?.sub_category || "N/A"}</p>,
       },
       {
         header: "MRP",
         accessorKey: "original_price",
         cell: ({ row }) => (
-          <span>₹{row.original.original_price?.toLocaleString("en-IN")}</span>
+          <span>
+            ₹{row.original?.original_price?.toLocaleString("en-IN") || "0"}
+          </span>
         ),
       },
       {
         header: "Shipping Charges",
         accessorKey: "shipping_charge",
+        cell: ({ row }) => <span>{row.original?.shipping_charge || "0"}</span>,
       },
       {
         header: "Discount Price",
         accessorKey: "discount_price",
+        cell: ({ row }) => <span>{row.original?.discount_price || "0"}</span>,
       },
       {
         header: "Status",
         accessorKey: "visibility",
         cell: ({ row }) => (
           <button
-            onClick={() => handleStatusToggle(row.original.id)}
+            onClick={() => handleStatusToggle(row.original?.id)}
             className={`px-2 py-1 rounded-md text-sm font-medium ${
-              row.original.visibility === "Published"
+              row.original?.visibility === "Published"
                 ? "bg-green-100 text-green-700"
                 : "bg-gray-100 text-gray-600"
             }`}
           >
-            {row.original.visibility}
+            {row.original?.visibility || "N/A"}
           </button>
         ),
       },
       {
         header: "Stock",
         accessorKey: "stock",
+        cell: ({ row }) => <span>{row.original?.stock || "0"}</span>,
       },
       {
         header: "Created At",
         accessorKey: "created_at",
         cell: ({ row }) => (
-          <span>{new Date(row.original.created_at).toLocaleString()}</span>
+          <span>
+            {row.original?.created_at
+              ? new Date(row.original.created_at).toLocaleString()
+              : "N/A"}
+          </span>
         ),
       },
       {
@@ -459,7 +734,7 @@ const Product = () => {
             <button
               onClick={() => {
                 navigate(
-                  `${config.VITE_BASE_ADMIN_URL}/product/edit/${row?.original.id}`
+                  `${config.VITE_BASE_ADMIN_URL}/product/edit/${row?.original?.id}`
                 );
               }}
               className="p-2 rounded-full text-[#5897F7] hover:bg-[#5897F7] hover:text-white transition-colors"
@@ -476,7 +751,14 @@ const Product = () => {
         ),
       },
     ],
-    []
+    [
+      pagination.page,
+      pagination.limit,
+      handleStatusToggle,
+      openModal,
+      openDeleteModal,
+      navigate,
+    ] // Added dependencies
   );
 
   const table = useReactTable({
@@ -491,6 +773,7 @@ const Product = () => {
         pageSize: pagination.limit,
       },
     },
+    getRowId: (row, index) => row.original?.id?.toString() || `row-${index}`,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
@@ -502,42 +785,7 @@ const Product = () => {
     pageCount: pagination.totalPages,
   });
 
-  const handleStatusToggle = async (id) => {
-    try {
-      const product = displayedData.find((p) => p.id === id);
-      if (!product) {
-        console.error("Error: Product not found.");
-        return;
-      }
-
-      const updatedStatus =
-        product.visibility === "Published" ? "Hidden" : "Published";
-
-      const response = await updateProductVisibility(id, {
-        visibility: updatedStatus,
-      });
-
-      if (response.status === 1) {
-        notifyOnSuccess(`Status updated to ${updatedStatus}`);
-
-        const updateVisibility = (list) =>
-          list.map((p) =>
-            p.id === id ? { ...p, visibility: updatedStatus } : p
-          );
-
-        setProducts((prevProducts) => updateVisibility(prevProducts));
-        setDisplayedData((prevData) => updateVisibility(prevData));
-      } else {
-        notifyOnFail(response.message || "Failed to update the status.");
-      }
-    } catch (error) {
-      console.error(
-        "Error updating status:",
-        error.response?.data || error.message
-      );
-      notifyOnFail("Something went wrong. Please try again.");
-    }
-  };
+  const selectedRowCount = table.getSelectedRowModel().rows.length;
 
   const handleExportCSV = () => {
     if (csvLinkRef.current && csvData.data && csvData.data.length > 0) {
@@ -561,7 +809,8 @@ const Product = () => {
       });
 
       const response = await getAllProducts(queryParams.toString());
-      prepareCsvData(response?.data || [], true);
+      const allData = response?.data?.filter((item) => item && item.id) || [];
+      prepareCsvData(allData, true);
 
       setTimeout(() => {
         if (csvLinkAllRef.current) {
@@ -574,20 +823,6 @@ const Product = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const openModal = (product) => {
-    setModalMode(product);
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-  };
-
-  const openDeleteModal = (product) => {
-    setSelectedProduct(product);
-    setIsDeleteModalOpen(true);
   };
 
   const handleDelete = async () => {
@@ -704,13 +939,23 @@ const Product = () => {
 
         <div className="flex gap-2">
           {selectedRowCount > 0 && (
-            <button
-              onClick={openBulkActionModal}
-              className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md flex items-center justify-center"
-            >
-              Update Status ({selectedRowCount})
-            </button>
+            <>
+              <button
+                onClick={openBulkActionModal}
+                className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md flex items-center justify-center"
+              >
+                Update Status ({selectedRowCount})
+              </button>
+            </>
           )}
+
+          <button
+            onClick={openBulkCustomDeleteModal}
+            className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md flex items-center justify-center"
+          >
+            Bulk Delete by Product ID
+            {selectedRowCount > 0 && ` (${selectedRowCount} selected)`}
+          </button>
 
           <button
             onClick={handleExportCSV}
@@ -804,7 +1049,9 @@ const Product = () => {
                   {table.getFlatHeaders().map((header) => (
                     <th
                       key={header.id}
-                      className="px-6 py-4 text-left text-sm font-medium text-[#333843]"
+                      className={`py-4 text-left text-sm font-medium text-[#333843] ${
+                        header.id === "select" ? "px-1" : "px-6"
+                      }`}
                       onClick={header.column.getToggleSortingHandler()}
                       style={{
                         cursor: header.column.getCanSort()
@@ -835,108 +1082,22 @@ const Product = () => {
                 </tr>
               </thead>
               <tbody className="bg-white">
-                {displayedData.length > 0 ? (
-                  displayedData.map((product, index) => (
-                    <tr key={product.id} className="border-b hover:bg-gray-50">
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        <div className="px-1">
-                          <input
-                            type="checkbox"
-                            checked={!!rowSelection[product.id]}
-                            onChange={() => {
-                              setRowSelection((prev) => ({
-                                ...prev,
-                                [product.id]: !prev[product.id],
-                              }));
-                            }}
-                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                          />
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        {(pagination.page - 1) * pagination.limit + index + 1}
-                      </td>
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        {product?.custom_id}
-                      </td>
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        {product.image ? (
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-16 h-16 object-cover rounded"
-                          />
-                        ) : (
-                          <div className="w-16 h-16 bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-400">No image</span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        {product.name}
-                      </td>
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        {product.vendor_name}
-                      </td>
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        {product.category || "N/A"}
-                      </td>
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        {product.sub_category || "N/A"}
-                      </td>
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        ₹{product.original_price?.toLocaleString("en-IN")}
-                      </td>
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        {product.shipping_charge}
-                      </td>
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        {product.discount_price}
-                      </td>
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        <button
-                          onClick={() => handleStatusToggle(product.id)}
-                          className={`px-2 py-1 rounded-md text-sm font-medium ${
-                            product.visibility === "Published"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-gray-100 text-gray-600"
+                {table.getRowModel().rows.length > 0 ? (
+                  table.getRowModel().rows.map((row) => (
+                    <tr key={row.id} className="border-b hover:bg-gray-50">
+                      {row.getVisibleCells().map((cell) => (
+                        <td
+                          key={cell.id}
+                          className={`py-4 text-[#1C2A53] text-sm ${
+                            cell.column.id === "select" ? "px-1" : "px-6"
                           }`}
                         >
-                          {product.visibility}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        {product.stock}
-                      </td>
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        {new Date(product.created_at).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 text-[#1C2A53] text-sm">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => openModal(product, "view")}
-                            className="p-2 rounded-full text-green-500 hover:bg-green-600 hover:text-white transition-colors"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              navigate(
-                                `${config.VITE_BASE_ADMIN_URL}/product/edit/${product.id}`
-                              );
-                            }}
-                            className="p-2 rounded-full text-[#5897F7] hover:bg-[#5897F7] hover:text-white transition-colors"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => openDeleteModal(product)}
-                            className="p-2 rounded-full text-[#FD7777] hover:bg-[#FD7777] hover:text-white transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </td>
+                      ))}
                     </tr>
                   ))
                 ) : (
@@ -1043,7 +1204,7 @@ const Product = () => {
         <ProductModal
           isOpen={showModal}
           onClose={closeModal}
-          product={modalMode}
+          product={selectedProduct}
         />
       )}
 
@@ -1054,6 +1215,13 @@ const Product = () => {
         title="Delete Product"
         message={`Are you sure you want to delete the product "${selectedProduct?.name}"? This action cannot be undone.`}
         isDeleting={isDeletingProduct}
+      />
+
+      <BulkCustomDeleteModal
+        isOpen={isBulkCustomDeleteModalOpen}
+        onClose={() => setIsBulkCustomDeleteModalOpen(false)}
+        initialCustomIds={bulkDeleteCustomIds}
+        onRefetch={handleBulkCustomDeleteRefetch}
       />
 
       <BulkActionModal

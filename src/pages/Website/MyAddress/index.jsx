@@ -6,7 +6,6 @@ import CommonTopBanner from "../../../components/Website/CommonTopBanner";
 import common_top_banner from "/assets/banners/Commen-top-banner.png";
 import { GoArrowRight } from "react-icons/go";
 
-
 const bannerData = [
   {
     id: 1,
@@ -17,7 +16,7 @@ const MyAddressPage = () => {
   return (
     <>
       <main className="">
-        <CommonTopBanner bannerData={bannerData} />
+        {/* <CommonTopBanner bannerData={bannerData} /> */}
 
         <section className="w-full ">
           <div className="text-center my-10 text-[#000000]">
@@ -31,7 +30,7 @@ const MyAddressPage = () => {
           <div className=" bg-white px-4  md:px-5 lg:px-20  flex flex-col md:flex-row gap-10">
             <div className="w-full md:w-1/3 lg:w-1/4">
               <AccountInfo activeSection="addresses" />
-            </div> 
+            </div>
             <div className="mt-10 md:w-4/5">
               <MyAddress />
             </div>

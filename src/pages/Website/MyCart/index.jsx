@@ -394,9 +394,9 @@ const CartPage = () => {
 
   return (
     <main className="bg-white min-h-screen">
-      <section>
+      {/* <section>
         <CommonTopBanner />
-      </section>
+      </section> */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
         <section className="mt-8 font-Lato text-gray-900">
           <div className="text-center my-8 sm:my-10">

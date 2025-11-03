@@ -19,7 +19,6 @@ apiClient.interceptors.request.use(
     const pathname = window.location ? window.location.pathname : "/";
     const role = getRoleFromPath(pathname);
     const userToken = getUserToken(role);
-    console.log(userToken, "userToken");
 
     const passwordToken = getCookie("passwordToken");
     if (userToken) {

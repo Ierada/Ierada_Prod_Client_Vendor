@@ -22,7 +22,6 @@ import {
 } from "../../services/api.header";
 import LocationModal from "./LocationModal";
 import { useAppContext } from "../../context/AppContext";
-import EmptyImg from "/assets/bg/empty-img.svg";
 import { getUserIdentifier } from "../../utils/userIdentifier";
 import { jwtDecode } from "jwt-decode";
 import { LiaHotjar } from "react-icons/lia";

@@ -17,7 +17,6 @@ const bannerData = [
 ];
 
 const OrderSuccessful = () => {
-  
   const { order_number } = useParams();
 
   const [orderData, setOrderData] = useState({
@@ -85,9 +84,9 @@ const OrderSuccessful = () => {
 
   return (
     <main>
-      <section>
+      {/* <section>
         <CommonTopBanner bannerData={bannerData} />
-      </section>
+      </section> */}
       <section>
         <div className="flex flex-col items-center justify-center lg:p-20 p-4   bg-white border-black md:max-w-3xl mx-auto">
           <AiOutlineCheckCircle className="text-green-500 text-6xl  " />

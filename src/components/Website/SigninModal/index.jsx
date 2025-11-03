@@ -307,7 +307,11 @@ const AuthModal = ({ onClose, isOpen, mode }) => {
               <div className="bg-white rounded-lg p-3 sm:p-4 shadow-lg space-y-3">
                 <div className="flex bg-white rounded-full space-x-2 p-1">
                   <button
-                    onClick={() => setInputType("phone")}
+                    onClick={() => {
+                      setInputType("phone");
+                      setOtp(["", "", "", ""]);
+                      setFormData((prev) => ({ ...prev, identifier: "" }));
+                    }}
                     className={`${
                       inputType === "phone"
                         ? "border border-orange-500 text-orange-500"
@@ -317,7 +321,11 @@ const AuthModal = ({ onClose, isOpen, mode }) => {
                     <IoCallOutline className="mr-1 sm:mr-2" /> Phone
                   </button>
                   <button
-                    onClick={() => setInputType("email")}
+                    onClick={() => {
+                      setInputType("email");
+                      setOtp(["", "", "", ""]);
+                      setFormData((prev) => ({ ...prev, identifier: "" }));
+                    }}
                     className={`${
                       inputType === "email"
                         ? "border border-orange-500 text-orange-500"
@@ -334,6 +342,11 @@ const AuthModal = ({ onClose, isOpen, mode }) => {
                   type={inputType === "phone" ? "tel" : "email"}
                   value={formData.identifier}
                   onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !isLoading) {
+                      handleContinue();
+                    }
+                  }}
                   className="w-full bg-white/80 rounded-lg px-3 sm:px-4 py-2 sm:py-3 placeholder-gray-400 focus:outline-none text-sm sm:text-base"
                   placeholder={`Enter your ${
                     inputType === "phone" ? "phone number" : "email"
@@ -360,11 +373,17 @@ const AuthModal = ({ onClose, isOpen, mode }) => {
               </div>
               <p className="text-center text-xs text-white">
                 By clicking Continue to join or sign in, you agree to Ierada's{" "}
-                <a href="#" className="underline">
-                  User Agreement
+                <a
+                  href={`${config.VITE_BASE_WEBSITE_URL}/page/terms-and-conditions`}
+                  className="underline"
+                >
+                  Terms and Conditions
                 </a>
                 , and{" "}
-                <a href="#" className="underline">
+                <a
+                  href={`${config.VITE_BASE_WEBSITE_URL}/page/privacy-policy`}
+                  className="underline"
+                >
                   Privacy Policy
                 </a>
                 .

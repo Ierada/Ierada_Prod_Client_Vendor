@@ -254,7 +254,7 @@ const Wishlist = () => {
   return (
     <>
       <main className="mb-20">
-        <CommonTopBanner bannerData={bannerData} />
+        {/* <CommonTopBanner bannerData={bannerData} /> */}
 
         <section className="w-full">
           <div className="text-center my-10 text-[#000000]">
