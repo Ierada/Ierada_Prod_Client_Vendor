@@ -1,0 +1,87 @@
+# Redirect all HTTP traffic for both root and www to HTTPS non-www
+server {
+    listen 80;
+    server_name internal-testing.ierada.com www.internal-testing.ierada.com;
+    return 301 https://internal-testing.ierada.com$request_uri;
+}
+
+# Redirect all HTTPS traffic for www → non-www
+server {
+    listen 443 ssl http2;
+    server_name www.internal-testing.ierada.com;
+
+    ssl_certificate     /etc/ssl/ierada/fullchain.crt;
+    ssl_certificate_key /etc/ssl/ierada/ierada.key;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+    return 301 https://internal-testing.ierada.com$request_uri;
+}
+
+# HTTPS frontend + API reverse proxy for canonical non-www host
+server {
+    listen 443 ssl http2;
+    server_name internal-testing.ierada.com;
+
+    # SSL certificates
+    ssl_certificate           /etc/ssl/ierada/fullchain.crt;
+    ssl_certificate_key       /etc/ssl/ierada/ierada.key;
+    ssl_protocols             TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+    # Security headers (optional, adjust as needed)
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+
+    # Limit client upload size
+    client_max_body_size 500m;
+
+    # Timeout settings
+    client_body_timeout 300s;
+    client_header_timeout 300s;
+    send_timeout 300s;
+    proxy_read_timeout 300s;
+    proxy_connect_timeout 300s;
+    proxy_send_timeout 300s;
+
+    
+    # Serve SPA
+    root   /usr/share/nginx/html;
+    index  index.html;
+
+    location / {
+        try_files $uri /index.html;
+    }
+
+    # Proxy API to backend container (Docker DNS)
+    location /api {
+        proxy_pass         http://backend-test:3000;
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade            $http_upgrade;
+        proxy_set_header   Connection         "upgrade";
+        proxy_set_header   Host               $host;
+        proxy_set_header   X-Real-IP          $remote_addr;
+        proxy_set_header   X-Forwarded-For    $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host   $host;
+        proxy_set_header   X-Forwarded-Proto  https;
+        proxy_redirect     off;
+
+        # API-specific proxy timeouts (bumped to 600s)
+        proxy_read_timeout 600s;
+        proxy_send_timeout 600s;
+        proxy_connect_timeout 600s;
+
+        # Buffers for large responses
+        proxy_buffers 16 16k;
+        proxy_buffer_size 32k;
+
+        # Stream uploads directly instead of buffering
+        proxy_request_buffering off;
+        client_body_timeout 600s;
+    }
+    access_log /var/log/nginx/ierada_access.log;
+    error_log  /var/log/nginx/ierada_error.log;
+}
+
