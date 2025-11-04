@@ -133,6 +133,7 @@ import ThemeSectionManager from "../pages/Admin/ProductThemeManager/ThemeSection
 import ThemeSectionEditor from "../pages/Admin/ProductThemeManager/ThemeSectionEditor.jsx";
 import ProductThemePage from "../pages/Website/ProductTheme/index.jsx";
 import AdminVendorForm from "../pages/Admin/Vendor/addVendor.jsx";
+import ShiftProducts from "../pages/Admin/Product/ShiftProducts.jsx";
 
 // Permission mapping for routes
 const routePermissions = {
@@ -519,6 +520,11 @@ const ProjectRoutes = () => {
               path: `product/bulk`,
               element: <ProductFilesManager />,
               permissionPath: "product/bulk",
+            },
+            {
+              path: `product/shift`,
+              element: <ShiftProducts />,
+              permissionPath: "product/shift",
             },
             {
               path: `blogs/add`,

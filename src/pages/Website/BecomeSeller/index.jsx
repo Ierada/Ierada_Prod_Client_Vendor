@@ -45,7 +45,7 @@ export default function BecomeSeller() {
             isImageLoaded ? "opacity-100" : "opacity-0"
           }`}
           onLoad={handleImageLoad}
-          onError={() => setIsImageLoaded(true)} // Handle error case to avoid infinite loading
+          onError={() => setIsImageLoaded(true)}
         />
       </section>
       <section className="px-4 md:px-20">
@@ -117,7 +117,11 @@ export default function BecomeSeller() {
         />
       </section>
       <section>
-        <BecomeSellerForm />
+        <BecomeSellerForm
+          seller_terms_condition_link={
+            settingsData?.seller_terms_condition_link
+          }
+        />
       </section>
       <section>
         <FAQs />

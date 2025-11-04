@@ -1201,12 +1201,36 @@ export default function ProductPage() {
               ) : null}
 
               {/* Return Policy */}
-              <div className="flex items-center gap-3 bg-blue-100 p-3 rounded-lg">
-                <MdOutlineCalendarMonth className="text-gray-900 text-xl flex-shrink-0" />
-                <span className="text-gray-900">
-                  7 days easy return or exchange
-                </span>
-              </div>
+              {productData?.subcategory?.is_returnable ? (
+                <div className="flex items-center gap-3 bg-blue-100 p-3 rounded-lg">
+                  <MdOutlineCalendarMonth className="text-gray-900 text-xl flex-shrink-0" />
+                  <span className="text-gray-900">
+                    {productData?.subcategory?.is_instant_return ? (
+                      <div>
+                        Instant returns available with{" "}
+                        <a
+                          href={`${productData?.product_return_policy_link}`}
+                          className="underline"
+                        >
+                          T&C
+                        </a>{" "}
+                        applys
+                      </div>
+                    ) : (
+                      <div>
+                        7 days easy return or exchange with{" "}
+                        <a
+                          href={`${productData?.product_return_policy_link}`}
+                          className="underline"
+                        >
+                          T&C
+                        </a>{" "}
+                        applys
+                      </div>
+                    )}
+                  </span>
+                </div>
+              ) : null}
             </div>
           </div>
         </section>

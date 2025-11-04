@@ -763,11 +763,11 @@ const Header = ({ setHeaderHeight }) => {
               to={baseUrl}
               className="flex-shrink-0 border-b-2 border-primary-100 rounded-lg py-1"
             >
-              <img src={logoWhite} alt="Logo" className="h-6 md:h-8 w-auto" />
+              <img src={logoWhite} alt="Logo" className="h-5 md:h-8 w-auto" />
             </Link>
             <>
               <button
-                className="text-primary-100 flex gap-1 items-center px-3 md:py-2 rounded-lg border shadow"
+                className="text-primary-100 flex gap-1 items-center px-2 md:px-3 md:py-2 rounded-lg border shadow"
                 onClick={openLocationModal}
               >
                 <MapPin className="h-2 md:h-4 w-2 md:w-4 text-gray-400" />
@@ -785,7 +785,7 @@ const Header = ({ setHeaderHeight }) => {
             </>
           </div>
 
-          {/* Search Bar */}
+          {/* Search Bar - Desktop */}
           <div
             ref={searchRef}
             className="relative hidden md:block flex-grow max-w-2xl"
@@ -800,7 +800,7 @@ const Header = ({ setHeaderHeight }) => {
                 placeholder="Search for items..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="bg-white text-gray-800 placeholder-gray-500 flex-grow outline-none border-none ring-0 focus:ring-0"
+                className="bg-white h-6 text-sm text-gray-800 placeholder-gray-500 flex-grow outline-none border-none ring-0 focus:ring-0"
               />
               <button
                 type="button"
@@ -861,45 +861,44 @@ const Header = ({ setHeaderHeight }) => {
           </button>
         </div>
 
-        {isMobileMenuOpen && (
-          <div className="md:hidden fixed top-14 left-0 right-0 bottom-0 bg-white shadow-lg z-50 overflow-hidden">
-            <div className="flex flex-col h-full">
-              <div className="px-4 py-2 border-b bg-white">
-                <div className="relative">
-                  <form
-                    onSubmit={handleSearchSubmit}
-                    className="flex items-center bg-gray-100 rounded-lg p-1"
-                  >
-                    <Search className="h-3 w-3 text-gray-500 mx-2" />
-                    <input
-                      type="text"
-                      placeholder="Search product"
-                      value={searchQuery}
-                      onChange={handleSearchChange}
-                      className="bg-transparent flex-grow outline-none border-none ring-0 focus:ring-0 h-7 text-xs"
-                    />
-                    <button
-                      type="button"
-                      onClick={toggleListening}
-                      className="text-gray-400"
-                    >
-                      <Mic
-                        className={`h-3 w-3 ${
-                          isListening ? "text-red-500" : "text-gray-400"
-                        }`}
-                      />
-                    </button>
-                  </form>
-                  {showSearchResults && (
-                    <SearchResults
-                      results={searchResults}
-                      onSelect={handleSearchSelect}
-                      searchResultsRef={searchResultsRef}
-                    />
-                  )}
-                </div>
-              </div>
+        {/* Search Bar - Mobile */}
+        <div
+          ref={searchRef}
+          className="relative md:hidden block flex-grow mt-2"
+        >
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex items-center gap-3 bg-white border border-primary-100 shadow-sm rounded-full px-4 py-1"
+          >
+            <Search className="h-3 w-3 text-gray-400 flex-shrink-0" />
+            <input
+              type="text"
+              placeholder="Search for items..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="bg-white h-5 text-xs text-gray-800 placeholder-gray-500 flex-grow outline-none border-none ring-0 focus:ring-0"
+            />
+            <button
+              type="button"
+              onClick={toggleListening}
+              className="text-gray-400"
+            >
+              <Mic className={`h-3 w-3 ${isListening ? "text-red-500" : ""}`} />
+            </button>
+          </form>
 
+          {showSearchResults && (
+            <SearchResults
+              results={searchResults}
+              onSelect={handleSearchSelect}
+              searchResultsRef={searchResultsRef}
+            />
+          )}
+        </div>
+
+        {isMobileMenuOpen && (
+          <div className="md:hidden fixed top-20 left-0 right-0 bottom-0 bg-white shadow-lg z-50 overflow-hidden">
+            <div className="flex flex-col h-full">
               <div
                 className="flex-1 overflow-y-auto py-2 px-4 text-sm"
                 style={{ height: "calc(100vh - 180px)" }}
@@ -965,7 +964,7 @@ const Header = ({ setHeaderHeight }) => {
         <div className="container mx-auto px-4">
           <div className="flex items-center md:justify-start xl:justify-start md:space-x-0 md:gap-2 xl:space-x-8 xl:py-3">
             <div className="overflow-x-auto whitespace-nowrap px-4">
-              <div className="flex items-center gap-6 py-3">
+              <div className="flex items-center gap-6 py-1">
                 <Link
                   to={`${baseUrl}/collection/all`}
                   className="flex items-center gap-1 text-primary-100 font-medium text-sm uppercase"

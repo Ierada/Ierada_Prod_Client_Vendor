@@ -44,11 +44,11 @@ export const getWishlist = async (userId) => {
     const res = await apiClient.get(`/wishlist/get/${userId}`);
 
     if (res.data.status === 1) {
-      return res.data;
     } else {
-      notifyOnFail(res.data.message);
+      // notifyOnFail(res.data.message);
       return null;
     }
+    return res.data;
   } catch (error) {
     notifyOnFail("Error reaching the server");
     console.log(error);

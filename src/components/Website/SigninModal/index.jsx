@@ -315,7 +315,7 @@ const AuthModal = ({ onClose, isOpen, mode }) => {
                     className={`${
                       inputType === "phone"
                         ? "border border-orange-500 text-orange-500"
-                        : "bg-gray-100"
+                        : "bg-gray-50 text-gray-600"
                     } flex items-center px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-medium text-sm sm:text-base`}
                   >
                     <IoCallOutline className="mr-1 sm:mr-2" /> Phone
@@ -329,7 +329,7 @@ const AuthModal = ({ onClose, isOpen, mode }) => {
                     className={`${
                       inputType === "email"
                         ? "border border-orange-500 text-orange-500"
-                        : "bg-gray-100"
+                        : "bg-gray-50 text-gray-600"
                     } flex items-center px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-medium text-sm sm:text-base`}
                   >
                     <IoMailOutline className="mr-1 sm:mr-2" /> Email
@@ -347,7 +347,7 @@ const AuthModal = ({ onClose, isOpen, mode }) => {
                       handleContinue();
                     }
                   }}
-                  className="w-full bg-white/80 rounded-lg px-3 sm:px-4 py-2 sm:py-3 placeholder-gray-400 focus:outline-none text-sm sm:text-base"
+                  className="w-full bg-white/80 rounded-lg px-3 sm:px-4 py-2 sm:py-3 placeholder-gray-400 focus:outline-none text-sm sm:text-base border border-gray-200 focus:border-orange-500 focus:ring-0"
                   placeholder={`Enter your ${
                     inputType === "phone" ? "phone number" : "email"
                   }`}

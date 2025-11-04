@@ -248,7 +248,7 @@ const CaptchaModal = memo(
   }
 );
 
-const BecomeSellerForm = () => {
+const BecomeSellerForm = ({ seller_terms_condition_link }) => {
   const [step, setStep] = useState("mobile");
   const [vendorTempId, setVendorTempId] = useState(uuidv4());
   const [mobileVerified, setMobileVerified] = useState(false);
@@ -873,6 +873,18 @@ const BecomeSellerForm = () => {
                 {errors.phone && (
                   <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
                 )}
+              </div>
+              <div className="text-xs text-gray-500 mt-2">
+                By proceeding, you agree to our{" "}
+                <a
+                  href={seller_terms_condition_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  Terms and Conditions
+                </a>
+                .
               </div>
               {!mobileVerified && (
                 <button

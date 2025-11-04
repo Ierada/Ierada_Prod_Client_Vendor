@@ -6,7 +6,6 @@ import React, {
   useMemo,
 } from "react";
 import {
-  Heart,
   ChevronDown,
   ChevronUp,
   FilterIcon,
@@ -28,7 +27,6 @@ import { getWishlist } from "../../../services/api.wishlist";
 import { IoMdArrowUp } from "react-icons/io";
 import { FaStar, FaRegStar } from "react-icons/fa";
 import { Range, getTrackBackground } from "react-range";
-// import CommonTopBanner from "../../../components/Website/CommonTopBanner";
 import debounce from "lodash/debounce";
 import { Loader2 } from "lucide-react";
 import { getUserLikes } from "../../../services/api.likes";
@@ -103,12 +101,7 @@ const CollectionsPage = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [showMobileSortModal, setShowMobileSortModal] = useState(false);
 
-  // Debounced price range handler
-  const debouncedPriceRangeChange = useRef(
-    debounce((values, updateFilters) => {
-      updateFilters(values);
-    }, 300)
-  ).current;
+  const initialFiltersSet = useRef(false);
 
   const fetchCollectionData = useCallback(
     async (
@@ -125,37 +118,6 @@ const CollectionsPage = () => {
           limit: itemsPerPage,
           sortBy: currentSortBy,
         };
-
-        // Only include non-empty filter arrays and other filter parameters
-        // if (filtersOverride.categories.length > 0) {
-        //   queryParams.categories = filtersOverride.categories.join(",");
-        // }
-        // if (filtersOverride.subcategories.length > 0) {
-        //   queryParams.subcategories = filtersOverride.subcategories.join(",");
-        // }
-        // if (filtersOverride.innersubcategories.length > 0) {
-        //   queryParams.innersubcategories =
-        //     filtersOverride.innersubcategories.join(",");
-        // }
-        // if (filtersOverride.fabric.length > 0) {
-        //   queryParams.fabric = filtersOverride.fabric.join(",");
-        // }
-        // if (filtersOverride.colors.length > 0) {
-        //   queryParams.colors = filtersOverride.colors.join(",");
-        // }
-        // if (filtersOverride.sizes.length > 0) {
-        //   queryParams.sizes = filtersOverride.sizes.join(",");
-        // }
-        // if (
-        //   filtersOverride.priceRange[0] !== 0 ||
-        //   filtersOverride.priceRange[1] !== 15000
-        // ) {
-        //   queryParams.minPrice = filtersOverride.priceRange[0];
-        //   queryParams.maxPrice = filtersOverride.priceRange[1];
-        // }
-        // if (filtersOverride.minRating !== null) {
-        //   queryParams.minRating = filtersOverride.minRating;
-        // }
 
         // Use a stable reference for filters to prevent unnecessary re-renders
         const filterParams = {
@@ -206,7 +168,6 @@ const CollectionsPage = () => {
                 isLoadMore && !response.data.isTrending && !prev?.isTrending
                   ? [...(prev.productData || []), ...response.data.productData]
                   : response.data.productData;
-              const uniqueProductIds = new Set(newProductData.map((p) => p.id));
               return {
                 ...prev,
                 productData: newProductData,
@@ -228,7 +189,7 @@ const CollectionsPage = () => {
               response.data.pagination.totalPages
           );
 
-          buildActiveFiltersFromState(response.data);
+          buildActiveFilters(filters, response.data);
         }
       } catch (error) {
         console.error("Error fetching collection data:", error);
@@ -288,6 +249,8 @@ const CollectionsPage = () => {
     setCollectionData(null); // Reset collection data
     setIsInitialLoading(true);
 
+    initialFiltersSet.current = false;
+
     // Call fetchCollectionData with reset filters
     fetchCollectionData(1, false, defaultFilters);
   }, [location.search, type, slug]);
@@ -330,10 +293,6 @@ const CollectionsPage = () => {
       const sectionRect = section.getBoundingClientRect();
       const windowHeight = window.innerHeight;
 
-      // Trigger fetch when scrolled to half of the section
-      // if (sectionRect.bottom <= windowHeight + windowHeight / 4) {
-      //   setCurrentPage((prev) => prev + 1);
-      // }
       if (sectionRect.bottom <= windowHeight + sectionRect.height / 2) {
         setCurrentPage((prev) => prev + 1);
       }
@@ -349,6 +308,50 @@ const CollectionsPage = () => {
       fetchCollectionData(currentPage, true);
     }
   }, [currentPage]);
+
+  useEffect(() => {
+    if (collectionData && !initialFiltersSet.current) {
+      const newFilters = { ...filters };
+      switch (type) {
+        case "category":
+          if (collectionData.categories?.length > 0) {
+            newFilters.categories = [collectionData.categories[0].id];
+          }
+          break;
+        case "subcategory":
+          if (collectionData.categories?.length > 0) {
+            newFilters.categories = [collectionData.categories[0].id];
+          }
+          if (collectionData.subcategories?.length > 0) {
+            newFilters.subcategories = [collectionData.subcategories[0].id];
+          }
+          break;
+        case "innersubcategory":
+          if (collectionData.categories?.length > 0) {
+            newFilters.categories = [collectionData.categories[0].id];
+          }
+          if (collectionData.subcategories?.length > 0) {
+            newFilters.subcategories = [collectionData.subcategories[0].id];
+          }
+          if (collectionData.innersubcategories?.length > 0) {
+            newFilters.innersubcategories = [
+              collectionData.innersubcategories[0].id,
+            ];
+          }
+          break;
+        case "fabric":
+          if (collectionData.fabric?.length > 0) {
+            newFilters.fabric = [collectionData.fabric[0].id];
+          }
+          break;
+        default:
+          break;
+      }
+      setFilters(newFilters);
+      setActiveFilters(buildActiveFilters(newFilters, collectionData));
+      initialFiltersSet.current = true;
+    }
+  }, [collectionData, type, slug]);
 
   const toggleFilterExpansion = useCallback((filterType) => {
     setExpandedFilters((prev) => ({
@@ -394,119 +397,94 @@ const CollectionsPage = () => {
     fetchLikes();
   }, [fetchLikes]);
 
-  const buildActiveFiltersFromState = useCallback(
-    (data) => {
-      if (!data) return;
-
-      const newActiveFilters = [];
-
-      filters.categories.forEach((catId) => {
-        const category = data.categories.find((c) => c.id === catId);
-        if (category) {
-          newActiveFilters.push({
-            type: "categories",
-            value: category.title,
-            original: catId,
-          });
-        }
-      });
-
-      filters.subcategories.forEach((subCatId) => {
-        const subcategory = data.subcategories.find((sc) => sc.id === subCatId);
-        if (subcategory) {
-          newActiveFilters.push({
-            type: "subcategories",
-            value: subcategory.title,
-            original: subCatId,
-          });
-        }
-      });
-
-      filters.colors.forEach((colorId) => {
-        const color = data.colors.find((c) => c.id === colorId);
-        if (color) {
-          newActiveFilters.push({
-            type: "colors",
-            value: color.name,
-            original: colorId,
-          });
-        }
-      });
-
-      filters.fabric.forEach((fabricId) => {
-        const fab = data.fabric.find((f) => f.id === fabricId);
-        if (fab) {
-          newActiveFilters.push({
-            type: "fabric",
-            value: fab.name,
-            original: fabricId,
-          });
-        }
-      });
-
-      if (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 15000) {
+  const buildActiveFilters = useCallback((filterState, data) => {
+    if (!data) return [];
+    const newActiveFilters = [];
+    filterState.categories.forEach((catId) => {
+      const category = data.categories.find((c) => c.id === catId);
+      if (category) {
         newActiveFilters.push({
-          type: "priceRange",
-          value: `₹${filters.priceRange[0]} - ₹${filters.priceRange[1]}`,
-          original: filters.priceRange,
+          type: "categories",
+          value: category.title,
+          original: catId,
         });
       }
-
-      if (filters.minRating !== null) {
+    });
+    filterState.subcategories.forEach((subCatId) => {
+      const subcategory = data.subcategories.find((sc) => sc.id === subCatId);
+      if (subcategory) {
         newActiveFilters.push({
-          type: "minRating",
-          value: `${filters.minRating} Stars & Above`,
-          original: filters.minRating,
+          type: "subcategories",
+          value: subcategory.title,
+          original: subCatId,
         });
       }
-
-      setActiveFilters(newActiveFilters);
-    },
-    [filters]
-  );
+    });
+    filterState.innersubcategories.forEach((innerSubCatId) => {
+      const innerSubcategory = data.innersubcategories.find(
+        (isc) => isc.id === innerSubCatId
+      );
+      if (innerSubcategory) {
+        newActiveFilters.push({
+          type: "innersubcategories",
+          value: innerSubcategory.title,
+          original: innerSubCatId,
+        });
+      }
+    });
+    filterState.colors.forEach((colorId) => {
+      const color = data.colors.find((c) => c.id === colorId);
+      if (color) {
+        newActiveFilters.push({
+          type: "colors",
+          value: color.name,
+          original: colorId,
+        });
+      }
+    });
+    filterState.fabric.forEach((fabricId) => {
+      const fab = data.fabric.find((f) => f.id === fabricId);
+      if (fab) {
+        newActiveFilters.push({
+          type: "fabric",
+          value: fab.name,
+          original: fabricId,
+        });
+      }
+    });
+    filterState.sizes.forEach((sizeId) => {
+      const size = data.sizes.find((s) => s.id === sizeId);
+      if (size) {
+        newActiveFilters.push({
+          type: "sizes",
+          value: size.name,
+          original: sizeId,
+        });
+      }
+    });
+    if (
+      filterState.priceRange[0] !== 0 ||
+      filterState.priceRange[1] !== 15000
+    ) {
+      newActiveFilters.push({
+        type: "priceRange",
+        value: `₹${filterState.priceRange[0]} - ₹${filterState.priceRange[1]}`,
+        original: filterState.priceRange,
+      });
+    }
+    if (filterState.minRating !== null) {
+      newActiveFilters.push({
+        type: "minRating",
+        value: `${filterState.minRating} Stars & Above`,
+        original: filterState.minRating,
+      });
+    }
+    return newActiveFilters;
+  }, []);
 
   const filteredProducts = useMemo(() => {
     return collectionData?.productData || [];
   }, [collectionData]);
-
-  const getFilterLabel = useCallback(
-    (type, value) => {
-      if (!collectionData) return value?.toString() || "";
-
-      try {
-        switch (type) {
-          case "categories":
-            return (
-              collectionData?.categories?.find((c) => c.id === value)?.title ||
-              "Category"
-            );
-          case "subcategories":
-            return (
-              collectionData?.subcategories?.find((s) => s.id === value)
-                ?.title || "Subcategory"
-            );
-          case "sizes":
-            return value?.toString() || "Size";
-          case "colors":
-            return (
-              collectionData?.colors?.find((c) => c.id === value)?.name ||
-              "Color"
-            );
-          case "fabric":
-            return (
-              collectionData?.fabric?.find((f) => f.id === value)?.name ||
-              "Fabric"
-            );
-          default:
-            return value?.toString() || "";
-        }
-      } catch (error) {
-        console.error(`Error getting filter label for ${type}:`, error);
-        return value?.toString() || "";
-      }
-    },
-    [collectionData]
-  );
 
   const debouncedFetchCollectionData = useRef(
     debounce((page, isLoadMore, filtersOverride, currentSortBy) => {
@@ -1519,13 +1497,7 @@ const CollectionsPage = () => {
 
   return (
     <div className="min-h-screen bg-white" ref={pageTopRef}>
-      {/* <CommonTopBanner data={bannerData} /> */}
-
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl md:text-3xl font-semibold text-center mb-8">
-          {collectionData?.collectionTitle || "Products"}
-        </h1>
-
         <div className="md:hidden flex justify-between mb-4">
           <button
             onClick={() =>

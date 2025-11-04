@@ -480,24 +480,46 @@ const AdminSetting = () => {
               </div>
 
               {/* Show All Products Toggle */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Show All Products Section in Homepage
-                </label>
-                <div className="flex items-center space-x-3">
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      {...register("show_all_products_section")}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#F47954] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#F47954]"></div>
-                    <span className="ml-3 text-sm font-medium text-gray-700">
-                      {settings?.show_all_products_section
-                        ? "Enabled"
-                        : "Disabled"}
-                    </span>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Show All Products Section in Homepage
                   </label>
+                  <div className="flex items-center space-x-3">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        {...register("show_all_products_section")}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#F47954] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#F47954]"></div>
+                      <span className="ml-3 text-sm font-medium text-gray-700">
+                        {settings?.show_all_products_section
+                          ? "Enabled"
+                          : "Disabled"}
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Seller Terms & Conditions Link
+                  </label>
+                  <input
+                    type="text"
+                    {...register("seller_terms_condition_link")}
+                    className="block w-full rounded-md border border-gray-300 p-3 bg-gray-50 focus:ring-2 focus:ring-[#F47954] focus:border-transparent transition-all duration-200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Product Return Policy Link
+                  </label>
+                  <input
+                    type="text"
+                    {...register("product_return_policy_link")}
+                    className="block w-full rounded-md border border-gray-300 p-3 bg-gray-50 focus:ring-2 focus:ring-[#F47954] focus:border-transparent transition-all duration-200"
+                  />
                 </div>
               </div>
 

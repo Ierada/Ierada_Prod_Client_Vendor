@@ -523,6 +523,19 @@ const SignIn = ({ role }) => {
                     </div>
                   </div>
 
+                  <div className="text-xs text-gray-600">
+                    By proceeding, you agree to our{" "}
+                    <a
+                      href={settingsData?.seller_terms_condition_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      Terms and Conditions
+                    </a>
+                    .
+                  </div>
+
                   <button
                     type="submit"
                     disabled={loading}

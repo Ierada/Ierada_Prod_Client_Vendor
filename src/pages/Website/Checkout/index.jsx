@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { ChevronRight } from "lucide-react";
-import MyAddress from "../../../components/Website/Addresses";
 import {
   getActiveShipment,
   getAllShipments,
@@ -9,8 +7,6 @@ import { getCart } from "../../../services/api.cart";
 import { useAppContext } from "../../../context/AppContext";
 import config from "../../../config/config";
 import { useNavigate } from "react-router-dom";
-import CommonTopBanner from "../../../components/Website/CommonTopBanner";
-import common_top_banner from "/assets/banners/Commen-top-banner.png";
 import CheckOutAddress from "../../../components/Website/CheckOutAddress";
 import OrderConfirmationModal from "../../../components/Website/OrderConfirmationModal";
 import { calculateReturnChargesAndGrandTotal } from "../MyCart";
@@ -21,15 +17,7 @@ import {
 } from "../../../services/api.order";
 import { getUserFromToken } from "../../../utils/auth";
 import { getBalance } from "../../../services/api.walletAndCoins";
-
 import { notifyOnFail } from "../../../utils/notification/toast";
-
-const bannerData = [
-  {
-    id: 1,
-    image: common_top_banner,
-  },
-];
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -107,6 +95,48 @@ const CheckoutPage = () => {
 
   const [errorMessage, setErrorMessage] = useState("");
   const [gstError, setGstError] = useState("");
+
+  const [isComingSoonModalOpen, setIsComingSoonModalOpen] = useState(false);
+
+  const ComingSoonModal = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 animate-fadeIn">
+        <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 transform transition-all animate-scaleIn shadow-xl">
+          <div className="text-center">
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4 animate-pulse">
+              <svg
+                className="h-8 w-8 text-yellow-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2 font-Playfair">
+              Coming Soon!
+            </h2>
+            <p className="text-gray-600 mb-6 text-sm font-Lato">
+              We're excited to launch soon. Stay tuned for the live experience!
+            </p>
+            <button
+              onClick={onClose}
+              className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-6 rounded-md transition-colors duration-200 w-full"
+            >
+              Go to Home →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const fetchWalletAndCoinsBalance = async () => {
     try {
@@ -389,6 +419,10 @@ const CheckoutPage = () => {
       return notifyOnFail("Please select a shipping address.");
     if (!billingAddress?.id)
       return notifyOnFail("Please select a billing address.");
+
+    // Show coming soon modal before starting any process
+    setIsComingSoonModalOpen(true);
+    return;
 
     setLoading(true);
 
@@ -706,10 +740,6 @@ const CheckoutPage = () => {
 
   return (
     <main>
-      {/* Header and Address Sections */}
-      {/* <section>
-        <CommonTopBanner bannerData={bannerData} />
-      </section> */}
       <section className="mb-9">
         <div className="text-center my-10 text-[#000000]">
           <h1 className="text-2xl lg:text-4xl font-semibold mb-2 font-Playfair">
@@ -957,6 +987,15 @@ const CheckoutPage = () => {
           navigate(`${config.VITE_BASE_WEBSITE_URL}/orders`);
         }}
         // amountSaved={discountedAmount}
+      />
+
+      {/* Coming Soon Modal */}
+      <ComingSoonModal
+        isOpen={isComingSoonModalOpen}
+        onClose={() => {
+          setIsComingSoonModalOpen(false);
+          navigate(`${config.VITE_BASE_WEBSITE_URL}/`);
+        }}
       />
     </main>
   );
