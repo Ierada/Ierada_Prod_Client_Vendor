@@ -198,10 +198,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
             permissionType: "bulk",
           },
           {
-            text: "Manage Size & Color",
+            text: "Size & Color",
             icon: List,
             path: "/size-color",
             permissionKey: "size_color",
+            permissionType: "view",
+          },
+          {
+            text: "Shift Products",
+            icon: List,
+            path: "/product/shift",
+            permissionKey: "shift",
             permissionType: "view",
           },
         ],
