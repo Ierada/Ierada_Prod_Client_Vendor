@@ -727,7 +727,11 @@ const Header = ({ setHeaderHeight }) => {
   }, [location.pathname, user, triggerHeaderCounts]);
 
   const handleSearchSelect = (product) => {
-    navigate(`${baseUrl}/product/${product.slug}`);
+    let url = `${baseUrl}/product/${product.slug}`;
+    if (product.variation_id) {
+      url += `?variation=${product.variation_id}`;
+    }
+    navigate(url);
     setSearchQuery("");
     setShowSearchResults(false);
   };

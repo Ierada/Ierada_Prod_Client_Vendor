@@ -38,7 +38,7 @@ import {
 import { IoArrowForward, IoShareSocialOutline } from "react-icons/io5";
 import { CiLocationOn } from "react-icons/ci";
 import { PencilLine } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { getProductBySlug } from "../../../services/api.product";
 import { addComboToCart, addToCart, buyNow } from "../../../services/api.cart";
 import {
@@ -73,6 +73,8 @@ import { Helmet } from "react-helmet-async";
 
 export default function ProductPage() {
   const { slug } = useParams();
+  const [searchParams] = useSearchParams();
+  const variationId = searchParams.get("variation");
   const { user, setTriggerHeaderCounts, setOrderSummary } = useAppContext();
 
   const [productData, setProductData] = useState(null);
@@ -165,7 +167,10 @@ export default function ProductPage() {
   useEffect(() => {
     const fetchProductData = async () => {
       try {
-        const response = await getProductBySlug(slug);
+        const response = await getProductBySlug(
+          slug,
+          variationId ? parseInt(variationId) : null
+        );
         if (response?.status === 1) {
           setProductData(response.data);
           trackProductView(response.data?.id);
@@ -199,6 +204,31 @@ export default function ProductPage() {
 
     fetchProductData();
   }, [slug, isProductPageUpdated]);
+
+  // pre-select specific variation if provided
+  useEffect(() => {
+    if (
+      productData &&
+      variationId &&
+      productData.is_variation &&
+      productData.variations
+    ) {
+      let targetGroup = null;
+      let targetSize = null;
+      for (const group of productData.variations) {
+        const size = group.sizes.find((s) => s.variation_id == variationId);
+        if (size) {
+          targetGroup = group;
+          targetSize = size;
+          break;
+        }
+      }
+      if (targetGroup && targetSize) {
+        setSelectedVariation(targetGroup);
+        setSelectedSize(targetSize);
+      }
+    }
+  }, [productData, variationId]);
 
   const trackProductView = async (product_id) => {
     const userId = getUserIdentifier();

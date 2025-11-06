@@ -137,7 +137,6 @@ const ShiftConfirmationModal = ({
   }, [targetCategory, targetSubCategory, targetInnerSubCategory]);
 
   const handleCategorySelect = (option) => {
-    console.log("Category Selected:", option);
     const value = option.value;
     setLocalCategory(value);
     setLocalSubCategory("");
@@ -246,10 +245,337 @@ const ShiftConfirmationModal = ({
   );
 };
 
+const BulkCustomShiftModal = ({
+  isOpen,
+  onClose,
+  initialCustomIds = [],
+  onRefetch,
+  categoryOptions,
+}) => {
+  const [customIds, setCustomIds] = useState(initialCustomIds);
+  const [inputValue, setInputValue] = useState("");
+  const [isShifting, setIsShifting] = useState(false);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [invalidIds, setInvalidIds] = useState([]);
+
+  // Target states
+  const [targetCategory, setTargetCategory] = useState("");
+  const [targetSubCategory, setTargetSubCategory] = useState("");
+  const [targetInnerSubCategory, setTargetInnerSubCategory] = useState("");
+  const [targetSubCategoryOptions, setTargetSubCategoryOptions] = useState([]);
+  const [targetInnerSubCategoryOptions, setTargetInnerSubCategoryOptions] =
+    useState([]);
+  const [loadingTargetSubCats, setLoadingTargetSubCats] = useState(false);
+  const [loadingTargetInnerSubCats, setLoadingTargetInnerSubCats] =
+    useState(false);
+
+  // Reset state when opening
+  useEffect(() => {
+    if (isOpen) {
+      setCustomIds(initialCustomIds);
+      setInputValue("");
+      setError("");
+      setSuccessMessage("");
+      setInvalidIds([]);
+      setIsShifting(false);
+      setTargetCategory("");
+      setTargetSubCategory("");
+      setTargetInnerSubCategory("");
+      setTargetSubCategoryOptions([]);
+      setTargetInnerSubCategoryOptions([]);
+    }
+  }, [isOpen, initialCustomIds]);
+
+  // Dynamic fetch target subcategories
+  const fetchTargetSubCategories = async (categoryId) => {
+    if (!categoryId) {
+      setTargetSubCategoryOptions([]);
+      setTargetInnerSubCategoryOptions([]);
+      return;
+    }
+    setLoadingTargetSubCats(true);
+    try {
+      const res = await getSubCategoriesByCategoryId(categoryId);
+      const subCats = res?.data || [];
+      setTargetSubCategoryOptions(
+        subCats.map((sub) => ({ value: sub.id, label: sub.title }))
+      );
+      setTargetSubCategory("");
+      setTargetInnerSubCategory("");
+    } catch (error) {
+      console.error("Error fetching target subcategories:", error);
+      setTargetSubCategoryOptions([]);
+      notifyOnFail("Failed to fetch subcategories");
+    } finally {
+      setLoadingTargetSubCats(false);
+    }
+  };
+
+  // Dynamic fetch target inner subcategories
+  const fetchTargetInnerSubCategories = async (subCategoryId) => {
+    if (!subCategoryId) {
+      setTargetInnerSubCategoryOptions([]);
+      return;
+    }
+    setLoadingTargetInnerSubCats(true);
+    try {
+      const res = await getInnerSubCategoriesBySubCategoryId(subCategoryId);
+      const innerSubCats = res?.data || [];
+      setTargetInnerSubCategoryOptions(
+        innerSubCats.map((inner) => ({ value: inner.id, label: inner.title }))
+      );
+      setTargetInnerSubCategory("");
+    } catch (error) {
+      console.error("Error fetching target inner subcategories:", error);
+      setTargetInnerSubCategoryOptions([]);
+      notifyOnFail("Failed to fetch inner subcategories");
+    } finally {
+      setLoadingTargetInnerSubCats(false);
+    }
+  };
+
+  // Effects for target fetches
+  useEffect(() => {
+    if (targetCategory) {
+      fetchTargetSubCategories(targetCategory);
+    }
+  }, [targetCategory]);
+
+  useEffect(() => {
+    if (targetSubCategory) {
+      fetchTargetInnerSubCategories(targetSubCategory);
+    }
+  }, [targetSubCategory]);
+
+  const addCustomId = (e) => {
+    if (e.key === "Enter" && inputValue.trim()) {
+      const trimmed = inputValue.trim();
+      if (!customIds.includes(trimmed)) {
+        setCustomIds([...customIds, trimmed]);
+      }
+      setInputValue("");
+      setError("");
+    }
+  };
+
+  const removeCustomId = (idToRemove) => {
+    setCustomIds(customIds.filter((id) => id !== idToRemove));
+    // Clear invalid if removed
+    setInvalidIds((prev) => prev.filter((id) => id !== idToRemove));
+  };
+
+  const handleTargetCategorySelect = (option) => {
+    const value = option.value;
+    setTargetCategory(value);
+    setTargetSubCategory("");
+    setTargetInnerSubCategory("");
+  };
+
+  const handleTargetSubCategorySelect = (option) => {
+    const value = option.value;
+    setTargetSubCategory(value);
+    setTargetInnerSubCategory("");
+  };
+
+  const handleTargetInnerSubCategorySelect = (option) => {
+    const value = option.value;
+    setTargetInnerSubCategory(value);
+  };
+
+  const handleShift = async () => {
+    if (customIds.length === 0) {
+      setError("Please enter at least one product ID");
+      return;
+    }
+    if (!targetCategory || !targetSubCategory || !targetInnerSubCategory) {
+      setError(
+        "Please select target category, subcategory, and inner subcategory"
+      );
+      return;
+    }
+    setIsShifting(true);
+    setError("");
+    setSuccessMessage("");
+    try {
+      const response = await shiftProducts({
+        customIds,
+        target_category_id: targetCategory,
+        target_sub_category_id: targetSubCategory,
+        target_inner_sub_category_id: targetInnerSubCategory,
+      });
+      if (response.status === 1) {
+        setSuccessMessage(
+          `Successfully shifted ${response.updatedCount} product(s)`
+        );
+        if (response.invalid && response.invalid.length > 0) {
+          setInvalidIds(response.invalid);
+          // Keep modal open to show invalid
+        } else {
+          onClose();
+          onRefetch();
+        }
+      } else {
+        setError(response.message || "Failed to shift products");
+      }
+    } catch (err) {
+      console.error("Bulk shift error:", err);
+      setError(
+        err.response?.data?.message || "Something went wrong. Please try again."
+      );
+    } finally {
+      setIsShifting(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (successMessage) {
+      onRefetch(); // Refetch if shift was partially successful
+    }
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">
+            Bulk Shift Products by Product ID
+          </h3>
+          <button
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {successMessage && (
+          <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-md">
+            {successMessage}
+          </div>
+        )}
+
+        {invalidIds.length > 0 && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+            <p className="font-medium">Invalid Product IDs (not found):</p>
+            <ul className="list-disc list-inside mt-1">
+              {invalidIds.map((id) => (
+                <li key={id}>{id}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+            {error}
+          </div>
+        )}
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Enter Product ID
+          </label>
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={addCustomId}
+            placeholder="Type a product ID and press Enter to add"
+            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isShifting}
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Added Product IDs ({customIds.length})
+          </label>
+          <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto border border-gray-200 p-2 rounded-md bg-gray-50">
+            {customIds.length > 0 ? (
+              customIds.map((id) => (
+                <div
+                  key={id}
+                  className="bg-blue-100 px-2 py-1 rounded-md flex items-center gap-1 text-sm"
+                >
+                  {id}
+                  <button
+                    onClick={() => removeCustomId(id)}
+                    className="text-red-500 hover:text-red-700 ml-1"
+                    disabled={isShifting}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm">No product IDs added yet</p>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-4 mb-4">
+          <FilterSelect
+            label="Target Category"
+            options={categoryOptions}
+            value={targetCategory}
+            onSelect={handleTargetCategorySelect}
+          />
+
+          <FilterSelect
+            label="Target Subcategory"
+            options={targetSubCategoryOptions}
+            value={targetSubCategory}
+            onSelect={handleTargetSubCategorySelect}
+            loading={loadingTargetSubCats}
+          />
+
+          <FilterSelect
+            label="Target Inner Subcategory"
+            options={targetInnerSubCategoryOptions}
+            value={targetInnerSubCategory}
+            onSelect={handleTargetInnerSubCategorySelect}
+            loading={loadingTargetInnerSubCats}
+          />
+        </div>
+
+        <div className="flex justify-end gap-3 pt-4 border-t">
+          <button
+            onClick={handleClose}
+            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
+            disabled={isShifting}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleShift}
+            disabled={
+              isShifting ||
+              customIds.length === 0 ||
+              !targetCategory ||
+              !targetSubCategory ||
+              !targetInnerSubCategory
+            }
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            <Package className="w-4 h-4 mr-2" />
+            {isShifting ? "Shifting..." : "Shift Products"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ShiftProducts = () => {
   const [products, setProducts] = useState([]);
   const [displayedData, setDisplayedData] = useState([]);
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
+  const [isBulkCustomShiftModalOpen, setIsBulkCustomShiftModalOpen] =
+    useState(false);
   const [isShifting, setIsShifting] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -289,6 +615,7 @@ const ShiftProducts = () => {
     useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rowSelection, setRowSelection] = useState({});
+  const [bulkShiftCustomIds, setBulkShiftCustomIds] = useState([]);
   const limitOptions = [5, 10, 25, 50, 100];
 
   // Fetch initial data
@@ -297,9 +624,7 @@ const ShiftProducts = () => {
       // Fetch categories
       const catRes = await getCategories();
       const categories = catRes?.data || [];
-      console.log(
-        categories?.map((cat) => ({ value: cat.id, label: cat.title }))
-      );
+
       setCategoryOptions(
         categories?.map((cat) => ({ value: cat.id, label: cat.title }))
       );
@@ -309,7 +634,13 @@ const ShiftProducts = () => {
 
       // Fetch vendors (reuse logic from product list)
       const vendorRes = await getAllvendors();
-      setVendorOptions(vendorRes?.data || []);
+
+      //   process vendor data to value and label
+      const processedVendors = vendorRes?.data?.map((vendor) => ({
+        value: vendor.id,
+        label: vendor.first_name + " " + vendor.last_name,
+      }));
+      setVendorOptions(processedVendors || []);
     } catch (error) {
       console.error("Error fetching initial data:", error);
       notifyOnFail("Failed to fetch initial data");
@@ -468,6 +799,20 @@ const ShiftProducts = () => {
     []
   );
 
+  const handleBulkCustomShiftRefetch = useCallback(() => {
+    fetchProducts(pagination.page, filters, searchTerm, pagination.limit);
+    setRowSelection({});
+  }, [pagination.page, filters, searchTerm, pagination.limit]);
+
+  const openBulkCustomShiftModal = () => {
+    const selectedRows = table.getSelectedRowModel().rows;
+    const selectedCustomIds = selectedRows
+      .map((row) => row.original.custom_id)
+      .filter(Boolean);
+    setBulkShiftCustomIds(selectedCustomIds);
+    setIsBulkCustomShiftModalOpen(true);
+  };
+
   // Effects
   useEffect(() => {
     fetchInitialData();
@@ -560,9 +905,6 @@ const ShiftProducts = () => {
       });
 
       if (response.status === 1) {
-        notifyOnSuccess(
-          `Successfully shifted ${response.updatedCount} product(s)`
-        );
         setRowSelection({});
         setTargetFilters({
           category_id: "",
@@ -772,14 +1114,25 @@ const ShiftProducts = () => {
           <Search className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-500 text-lg" />
         </div>
 
-        <button
-          onClick={() => setIsShiftModalOpen(true)}
-          disabled={selectedRowCount === 0}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Package className="mr-2 w-4 h-4" />
-          Shift Products ({selectedRowCount})
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsShiftModalOpen(true)}
+            disabled={selectedRowCount === 0}
+            className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Package className="mr-2 w-4 h-4" />
+            Shift Products ({selectedRowCount})
+          </button>
+
+          <button
+            onClick={openBulkCustomShiftModal}
+            className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md flex items-center justify-center"
+          >
+            <Package className="mr-2 w-4 h-4" />
+            Bulk Shift by Product ID
+            {selectedRowCount > 0 && ` (${selectedRowCount} selected)`}
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-md px-3 py-4 mb-5">
@@ -789,7 +1142,6 @@ const ShiftProducts = () => {
             options={categoryOptions}
             value={filters.category_id}
             onSelect={(option) => {
-              console.log(option);
               handleFilterChange("category_name", option);
             }}
           />
@@ -1013,6 +1365,14 @@ const ShiftProducts = () => {
         loadingSubCats={loadingTargetSubCats}
         loadingInnerSubCats={loadingTargetInnerSubCats}
         isShifting={isShifting}
+      />
+
+      <BulkCustomShiftModal
+        isOpen={isBulkCustomShiftModalOpen}
+        onClose={() => setIsBulkCustomShiftModalOpen(false)}
+        initialCustomIds={bulkShiftCustomIds}
+        onRefetch={handleBulkCustomShiftRefetch}
+        categoryOptions={categoryOptions}
       />
     </div>
   );

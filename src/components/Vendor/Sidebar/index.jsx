@@ -211,6 +211,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
             permissionKey: "shift",
             permissionType: "view",
           },
+          {
+            text: "Manage Likes",
+            icon: List,
+            path: "/product/likes",
+            permissionKey: "likes",
+            permissionType: "view",
+          },
         ],
       },
       {

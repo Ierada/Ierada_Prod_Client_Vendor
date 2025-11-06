@@ -18,9 +18,13 @@ export const getProductById = async (id) => {
   }
 };
 
-export const getProductBySlug = async (slug) => {
+export const getProductBySlug = async (slug, variationId = null) => {
   try {
-    const res = await apiClient.get(`/product/getProductBySlug/${slug}`);
+    let url = `/product/getProductBySlug/${slug}`;
+    if (variationId) {
+      url += `?variation_id=${variationId}`;
+    }
+    const res = await apiClient.get(url);
     if (res.data.status === 1) {
       // notifyOnSuccess(res.data.message);
       return res.data;
