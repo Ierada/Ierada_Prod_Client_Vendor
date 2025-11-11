@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
-import { vendorLogin, adminLogin } from "../../../services/api.auth";
+import { vendorLogin } from "../../../services/api.auth";
 import PasswordResetModal from "../../../components/Vendor/Models/PasswordResetModal";
 import config from "../../../config/config";
 import { useAppContext } from "../../../context/AppContext";
@@ -15,9 +15,7 @@ import { getSettings } from "../../../services/api.settings";
 
 const OtpInput = React.memo(
   ({ otp, handleOtpChange, handleOtpKeyDown, otpRefs }) => {
-    const handleFocus = (input) => {
-      input.select();
-    };
+    const handleFocus = (input) => {};
 
     return (
       <div className="flex justify-between gap-4">
@@ -58,7 +56,7 @@ const OtpTimer = React.memo(
   }
 );
 
-const TwoFAModal = ({ isOpen, onClose, formData, role, twoFactorType }) => {
+const TwoFAModal = ({ isOpen, onClose, formData, twoFactorType }) => {
   const [otp, setOtp] = useState(
     twoFactorType === "otp" || twoFactorType === ""
       ? ["", "", "", ""]
@@ -120,22 +118,16 @@ const TwoFAModal = ({ isOpen, onClose, formData, role, twoFactorType }) => {
 
       setIsLoading(true);
       try {
-        const loginFn = role === "vendor" ? vendorLogin : adminLogin;
-        const res = await loginFn({
+        const res = await vendorLogin({
           email: formData.email,
           password: formData.password,
           two_factor_code: code,
         });
 
         if (res.status === 1) {
-          setUserCookie(res.token, res.data, role);
+          setUserCookie(res.token, res.data, "vendor");
           setUser(res.data);
-          const decoded = jwtDecode(res.token);
-          navigate(
-            decoded.role === "vendor"
-              ? `${config.VITE_BASE_WEBSITE_URL}/vendor`
-              : `${config.VITE_BASE_WEBSITE_URL}/admin/dashboard`
-          );
+          navigate("/dashboard");
         } else {
           setErrors({ two_factor: res.message || "Invalid 2FA code" });
         }
@@ -148,7 +140,7 @@ const TwoFAModal = ({ isOpen, onClose, formData, role, twoFactorType }) => {
         setIsLoading(false);
       }
     },
-    [formData, role, setUser, navigate]
+    [formData, setUser, navigate]
   );
 
   const handleOtpChange = useCallback(
@@ -229,8 +221,7 @@ const TwoFAModal = ({ isOpen, onClose, formData, role, twoFactorType }) => {
     );
 
     try {
-      const loginFn = role === "vendor" ? vendorLogin : adminLogin;
-      const res = await loginFn({
+      const res = await vendorLogin({
         email: formData.email,
         password: formData.password,
       });
@@ -247,7 +238,7 @@ const TwoFAModal = ({ isOpen, onClose, formData, role, twoFactorType }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [formData, role, startOtpTimer, twoFactorType]);
+  }, [formData, startOtpTimer, twoFactorType]);
 
   useEffect(() => {
     if (isOpen && twoFactorType === "otp") {
@@ -328,7 +319,7 @@ const TwoFAModal = ({ isOpen, onClose, formData, role, twoFactorType }) => {
   );
 };
 
-const SignIn = ({ role }) => {
+const VendorSignIn = () => {
   const navigate = useNavigate();
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -361,12 +352,10 @@ const SignIn = ({ role }) => {
     }
   };
 
-  // fetch settings data
   useEffect(() => {
     fetchSettings();
   }, []);
 
-  // Handle image load
   const handleImageLoad = () => {
     setIsImageLoaded(true);
   };
@@ -382,21 +371,16 @@ const SignIn = ({ role }) => {
 
       try {
         setLoading(true);
-        const loginFn = role === "vendor" ? vendorLogin : adminLogin;
-        const res = await loginFn({
+        const res = await vendorLogin({
           email: formData.email,
           password: formData.password,
         });
 
         if (res.status === 1) {
-          setUserCookie(res.token, res.data, role);
+          setUserCookie(res.token, res.data, "vendor");
           setUser(res.data);
           const decoded = jwtDecode(res.token);
-          navigate(
-            decoded.role === "vendor"
-              ? `${config.VITE_BASE_WEBSITE_URL}/vendor`
-              : `${config.VITE_BASE_WEBSITE_URL}/admin/dashboard`
-          );
+          navigate("/dashboard");
         } else if (res.status === 2) {
           setTwoFactorType(res.two_factor_type || "otp");
           setShowTwoFAModal(true);
@@ -410,7 +394,7 @@ const SignIn = ({ role }) => {
         setLoading(false);
       }
     },
-    [formData, role, setUser, navigate]
+    [formData, setUser, navigate]
   );
 
   return (
@@ -418,24 +402,22 @@ const SignIn = ({ role }) => {
       <div className="container mx-auto flex min-h-screen items-center justify-center">
         <div className="w-full max-w-[1200px] bg-white shadow-xl">
           <div className="flex flex-col lg:flex-row lg:justify-center border">
-            {role === "vendor" && (
-              <div className="relative hidden w-full lg:block lg:w-1/2">
-                {!isImageLoaded && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
-                    <div className="w-16 h-16 border-4 border-t-4 border-gray-400 border-solid rounded-full animate-spin border-t-[#000000]"></div>
-                  </div>
-                )}
-                <img
-                  src={settingsData?.vendor_login_banner}
-                  alt="Vendor Login Banner"
-                  className={`w-full h-full ${
-                    isImageLoaded ? "opacity-100" : "opacity-0"
-                  }`}
-                  onLoad={handleImageLoad}
-                  onError={() => setIsImageLoaded(true)}
-                />
-              </div>
-            )}
+            <div className="relative hidden w-full lg:block lg:w-1/2">
+              {!isImageLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                  <div className="w-16 h-16 border-4 border-t-4 border-gray-400 border-solid rounded-full animate-spin border-t-[#000000]"></div>
+                </div>
+              )}
+              <img
+                src={settingsData?.vendor_login_banner}
+                alt="Vendor Login Banner"
+                className={`w-full h-full ${
+                  isImageLoaded ? "opacity-100" : "opacity-0"
+                }`}
+                onLoad={handleImageLoad}
+                onError={() => setIsImageLoaded(true)}
+              />
+            </div>
 
             <div className="w-full lg:w-1/2 p-20">
               <div className="max-w-md mx-auto">
@@ -552,18 +534,17 @@ const SignIn = ({ role }) => {
                       Forgot password?
                     </button>
 
-                    {role === "vendor" && (
-                      <button
-                        onClick={() =>
-                          navigate(
-                            `${config.VITE_BASE_WEBSITE_URL}/become-seller`
-                          )
-                        }
-                        className="text-sm font-medium text-[black] hover:text-[#6B705C]"
-                      >
-                        Sign-Up as a Selling Partner
-                      </button>
-                    )}
+                    <button
+                      onClick={() =>
+                        window.open(
+                          `${config.VITE_BASE_WEBSITE_URL}/become-seller`,
+                          "_blank"
+                        )
+                      }
+                      className="text-sm font-medium text-[black] hover:text-[#6B705C]"
+                    >
+                      Sign-Up as a Selling Partner
+                    </button>
                   </div>
                 </form>
               </div>
@@ -580,11 +561,10 @@ const SignIn = ({ role }) => {
         isOpen={showTwoFAModal}
         onClose={() => setShowTwoFAModal(false)}
         formData={formData}
-        role={role}
         twoFactorType={twoFactorType}
       />
     </div>
   );
 };
 
-export default SignIn;
+export default VendorSignIn;

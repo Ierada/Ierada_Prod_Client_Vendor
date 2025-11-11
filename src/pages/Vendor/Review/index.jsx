@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { PencilLine } from "lucide-react";
 import { MdStar, MdStarHalf, MdStarBorder } from "react-icons/md";
-import userDefaultImage from "/assets/common_images/avatar.jpeg";
-import AddReviewModal from "../../../components/Website/AddReviewModal";
+import userDefaultImage from "/assets/user/user-01.png";
 import { formatDate } from "../../../utils/date&Time/dateAndTimeFormatter";
 import { getReviewsByVendorId } from "../../../services/api.review";
 import { useAppContext } from "../../../context/AppContext";

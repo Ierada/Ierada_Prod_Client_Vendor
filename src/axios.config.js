@@ -3,8 +3,8 @@ import configure from "./config/config";
 import { getRoleFromPath, getUserToken } from "./utils/userIdentifier";
 
 const apiClient = axios.create({
-  // baseURL: import.meta.env.VITE_TEST_API_URL,
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_TEST_API_URL,
+  // baseURL: import.meta.env.VITE_API_URL,
 });
 
 apiClient.interceptors.request.use(
@@ -17,8 +17,7 @@ apiClient.interceptors.request.use(
     };
 
     const pathname = window.location ? window.location.pathname : "/";
-    const role = getRoleFromPath(pathname);
-    const userToken = getUserToken(role);
+    const userToken = getUserToken("vendor");
 
     const passwordToken = getCookie("passwordToken");
     if (userToken) {

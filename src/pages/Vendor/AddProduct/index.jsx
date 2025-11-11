@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CiImageOn, CiVideoOn } from "react-icons/ci";
-import { IoCloudUploadOutline } from "react-icons/io5";
 import { X, Plus, Eye } from "lucide-react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
@@ -21,7 +20,7 @@ import { getAllFabricsByStatus } from "../../../services/api.fabric";
 import slugify from "slugify";
 import advertisement from "/assets/banners/advertisement_banner.png";
 import config from "../../../config/config";
-import ImageGuidelinesModal from "../../../components/Admin/modals/ImageGuidelinesModal";
+import ImageGuidelinesModal from "../../../components/Vendor/Models/ImageGuidelinesModal";
 import { BsQuestionCircle } from "react-icons/bs";
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
@@ -29,7 +28,7 @@ import { getSettings } from "../../../services/api.settings";
 import { notifyOnFail } from "../../../utils/notification/toast";
 
 const AddEditProduct = () => {
-  const { id, vendorId } = useParams(); // Assuming id is for product and vendorId is for vendor  console.log("venderId",id)
+  const { id, vendorId } = useParams();
   const navigate = useNavigate();
   const isEditMode = !!id;
 

@@ -540,7 +540,7 @@ const Order = () => {
   }
 
   return (
-    <div className=" min-h-screen p-2 md:p-6">
+    <div className="min-h-screen p-2">
       <h1 className="text-3xl font-semibold text-txtPage font-satoshi mb-6">
         Order
       </h1>

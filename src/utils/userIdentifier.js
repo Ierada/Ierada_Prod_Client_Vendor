@@ -2,7 +2,7 @@ import Cookies from "js-cookie";
 import config from "../config/config";
 import { jwtDecode } from "jwt-decode";
 
-export const getUserIdentifier = (role = "customer") => {
+export const getUserIdentifier = (role = "vendor") => {
   const tokenKey = `${config.BRAND_NAME}${
     role.charAt(0).toUpperCase() + role.slice(1)
   }Token`;
@@ -47,7 +47,7 @@ export const getUserIdentifier = (role = "customer") => {
   return userId;
 };
 
-export const getUserToken = (role = "customer") => {
+export const getUserToken = (role = "vendor") => {
   const tokenKey = `${config.BRAND_NAME}${
     role.charAt(0).toUpperCase() + role.slice(1)
   }Token`;

@@ -11,8 +11,6 @@ const AppContext = createContext();
 export const useAppContext = () => useContext(AppContext);
 
 export function AppProvider({ children }) {
-  const { loggedIn } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [allCategories, setAllCategories] = useState([]);
   const [allDesigners, setAllDesigners] = useState([]);
@@ -33,24 +31,10 @@ export function AppProvider({ children }) {
   const location = useLocation();
 
   useEffect(() => {
-    const role = getRoleFromPath(location.pathname);
-    const key = getUserStorageKey(role);
+    const key = getUserStorageKey("vendor");
     const storedUser = JSON.parse(localStorage.getItem(key));
     setUser(storedUser || null);
   }, [location.pathname]);
-
-  useEffect(() => {
-    location.pathname !== "/checkout" &&
-      (localStorage.removeItem(`${config.BRAND_NAME}orderSummary`),
-      localStorage.removeItem(`${config.BRAND_NAME}checkoutStep`));
-  }, [location.pathname]);
-
-  useEffect(() => {
-    localStorage.setItem(
-      `${config.BRAND_NAME}orderSummary`,
-      JSON.stringify(orderSummary)
-    );
-  }, [orderSummary]);
 
   const handleProductUpdates = () => setProductsUpdated((prev) => !prev);
 
