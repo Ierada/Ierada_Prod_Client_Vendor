@@ -99,11 +99,8 @@ const Product = () => {
   };
 
   const getTotalStock = (variations) => {
-    return variations.reduce((total, variation) => {
-      return (
-        total +
-        variation.sizes.reduce((sizeTotal, size) => sizeTotal + size.stock, 0)
-      );
+    return variations?.variation_combinations?.reduce((total, variation) => {
+      return total + variation.stock;
     }, 0);
   };
 
@@ -175,13 +172,11 @@ const Product = () => {
         Cell: ({ row }) => (
           <div className="space-y-1">
             <p className="font-medium">
+              {formatPrice(row.original.discounted_price)}
+            </p>
+            <p className="text-sm text-gray-500 line-through">
               {formatPrice(row.original.original_price)}
             </p>
-            {row.original.discounted_price && (
-              <p className="text-sm text-gray-500 line-through">
-                {formatPrice(row.original.discounted_price)}
-              </p>
-            )}
           </div>
         ),
       },

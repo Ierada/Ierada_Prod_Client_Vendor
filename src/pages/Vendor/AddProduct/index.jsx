@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CiImageOn, CiVideoOn } from "react-icons/ci";
 import { X, Plus, Eye } from "lucide-react";
@@ -17,6 +17,7 @@ import {
   getInnerSubCategories,
 } from "../../../services/api.category";
 import { getAllFabricsByStatus } from "../../../services/api.fabric";
+import { getAllAttributes } from "../../../services/api.attribute";
 import slugify from "slugify";
 import advertisement from "/assets/banners/advertisement_banner.png";
 import config from "../../../config/config";
@@ -32,8 +33,10 @@ const AddEditProduct = () => {
   const navigate = useNavigate();
   const isEditMode = !!id;
 
+  const [variationMode, setVariationMode] = useState("color_size");
   const [categories, setCategories] = useState([]);
   const [fabrics, setFabrics] = useState([]);
+  const [attributes, setAttributes] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [innerSubCategories, setInnerSubCategories] = useState([]);
   const [colors, setColors] = useState([]);
@@ -96,6 +99,8 @@ const AddEditProduct = () => {
   const [variations, setVariations] = useState([
     {
       color_id: "",
+      attribute_id: "",
+      attribute_value: "",
       media: [],
       sizes: [
         {
@@ -109,76 +114,63 @@ const AddEditProduct = () => {
       ],
     },
   ]);
-  const [priceErrors, setPriceErrors] = useState({
-    main: "",
-    variations: variations.map(() => ({ sizes: [] })),
-  });
-
+  const [priceErrors, setPriceErrors] = useState({ main: "", variations: [] });
   const [previewModal, setPreviewModal] = useState({
     isOpen: false,
     url: "",
     type: "",
   });
 
+  // ====== DATA FETCHING ======
   useEffect(() => {
-    const getAllCategories = async () => {
-      const res = await getCategories();
-      const formattedCategory = res.data?.map((data) => ({
-        id: data.id,
-        name: data.title,
-        type: data.type,
-        hsn_code: data.hsn_code,
-        gst: data.gst,
-      }));
-      setCategories(formattedCategory);
-    };
+    const fetchData = async () => {
+      const [catRes, subRes, innerRes, colorRes, settingsRes, attrRes] =
+        await Promise.all([
+          getCategories(),
+          getSubCategories(),
+          getInnerSubCategories(),
+          getAllColors(),
+          getSettings(),
+          getAllAttributes(),
+        ]);
 
-    const getSubcategories = async () => {
-      const res = await getSubCategories();
-      const formattedCategory = res.data?.map((data) => ({
-        id: data.id,
-        name: data.title,
-        categoryId: data.cat_id,
-        hsn_code: data.hsn_code,
-        gst: data.gst,
-      }));
-      setSubCategories(formattedCategory);
-    };
-
-    const getInnerSubcategories = async () => {
-      const res = await getInnerSubCategories();
-      const formattedCategory = res.data?.map((data) => ({
-        id: data.id,
-        name: data.title,
-        subCategoryId: data.sub_cat_id,
-        hsn_code: data.hsn_code,
-        gst: data.gst,
-      }));
-      setInnerSubCategories(formattedCategory);
-    };
-
-    const getAllColorsData = async () => {
-      const res = await getAllColors();
-      if (res.status === 1) {
-        setColors(res.data);
-      }
-    };
-
-    const gePlatformFeefromSettings = async () => {
-      const res = await getSettings();
-      if (res.status === 1) {
+      setCategories(
+        catRes.data?.map((c) => ({
+          id: c.id,
+          name: c.title,
+          type: c.type,
+          hsn_code: c.hsn_code,
+          gst: c.gst,
+        })) || []
+      );
+      setSubCategories(
+        subRes.data?.map((c) => ({
+          id: c.id,
+          name: c.title,
+          categoryId: c.cat_id,
+          hsn_code: c.hsn_code,
+          gst: c.gst,
+        })) || []
+      );
+      setInnerSubCategories(
+        innerRes.data?.map((c) => ({
+          id: c.id,
+          name: c.title,
+          subCategoryId: c.sub_cat_id,
+          hsn_code: c.hsn_code,
+          gst: c.gst,
+        })) || []
+      );
+      setColors(colorRes.status === 1 ? colorRes.data : []);
+      setAttributes(attrRes.status === 1 ? attrRes.data : []);
+      if (settingsRes.status === 1) {
         setFormData((prev) => ({
           ...prev,
-          platform_fee: res.data.platform_fee,
+          platform_fee: settingsRes.data.platform_fee,
         }));
       }
     };
-
-    getAllCategories();
-    getSubcategories();
-    getInnerSubcategories();
-    getAllColorsData();
-    gePlatformFeefromSettings();
+    fetchData();
   }, []);
 
   // dynamic size fetching
@@ -323,80 +315,115 @@ const AddEditProduct = () => {
 
   const fetchProductData = async () => {
     try {
-      const response = await getProductById(id);
-      if (response.status === 1) {
-        const productData = response.data;
+      const res = await getProductById(id);
+      if (res.status !== 1) return;
 
-        let parsedTags = [];
-        if (productData.tags) {
-          try {
-            parsedTags =
-              typeof productData.tags === "string"
-                ? JSON.parse(productData.tags)
-                : productData.tags;
-          } catch (error) {
-            console.error("Error parsing tags:", error);
-          }
+      const p = res.data;
+
+      const parsedTags =
+        typeof p.tags === "string" ? JSON.parse(p.tags) : p.tags || [];
+      const parsedSpecs =
+        typeof p.specifications === "string"
+          ? JSON.parse(p.specifications)
+          : p.specifications || [];
+
+      setSpecifications(
+        parsedSpecs.length > 0
+          ? parsedSpecs
+          : [{ feature: "", specification: "" }]
+      );
+
+      const updatedFormData = {
+        ...p,
+        tags: parsedTags,
+        specifications: parsedSpecs,
+        category_id: p.category_id || "",
+      };
+
+      setTimeout(() => {
+        setFormData(updatedFormData);
+        if (p.variationMode) {
+          setVariationMode(p.variationMode);
         }
 
-        let parsedSpecifications = [];
-        if (productData.specifications) {
-          try {
-            parsedSpecifications =
-              typeof productData.specifications === "string"
-                ? JSON.parse(productData.specifications)
-                : productData.specifications;
-          } catch (error) {
-            console.error("Error parsing specifications:", error);
+        // transform variations
+        if (p.variations && p.variations.length > 0) {
+          let formattedVariations = [];
+
+          if (p.variationMode === "color_size") {
+            formattedVariations = p.variations.map((group) => ({
+              color_id: group.color_id?.toString(),
+              media: group.media || [],
+              sizes: group.sizes.map((size) => ({
+                size_id: size.size_id?.toString(),
+                stock: size.stock?.toString() || "",
+                original_price: size.original_price?.toString() || "",
+                discounted_price: size.discounted_price?.toString() || "",
+                sku: size.sku || "",
+                barcode: size.barcode || "",
+              })),
+            }));
+          } else if (p.variationMode === "custom") {
+            formattedVariations = p.variations.map((group) => ({
+              attribute_id: group.attribute_id?.toString() || "",
+              attribute_value: group.attribute_value || "",
+              media: group.media || [],
+              sizes: group.sizes.map((opt) => ({
+                stock: opt.stock?.toString() || "",
+                original_price: opt.original_price?.toString() || "",
+                discounted_price: opt.discounted_price?.toString() || "",
+                sku: opt.sku || "",
+                barcode: opt.barcode || "",
+              })),
+            }));
           }
+
+          setVariations(formattedVariations);
         }
 
-        setFormData((prev) => ({
-          ...prev,
-          category_id: productData.category_id,
-        }));
+        setDeletedMediaIds([]); // Reset deletes for new session
 
-        setTimeout(() => {
-          setFormData((prev) => ({
-            ...prev,
-            ...productData,
-            tags: parsedTags,
-            specifications: parsedSpecifications,
-            productFiles: productData.media.map((media) => ({
-              id: media.id, // Include media ID
-              url: media.url,
-              type: media.type,
-              preview: media.url,
-            })),
+        if (p.media) {
+          updatedFormData.productFiles = p.media.map((media) => ({
+            id: media.id,
+            url: media.url,
+            type: media.type,
+            preview: media.url,
           }));
-          setSpecifications(
-            parsedSpecifications.length > 0
-              ? parsedSpecifications
-              : [{ feature: "", specification: "" }]
-          );
-
-          if (productData.variations) {
-            const updatedVariations = productData.variations.map(
-              (variation) => ({
-                ...variation,
-                media: variation.media.map((media) => ({
-                  id: media.id, // Include media ID
-                  url: media.url,
-                  type: media.type,
-                  preview: media.url,
-                })),
-                sizes: variation.sizes || [],
-              })
-            );
-            setVariations(updatedVariations);
-          }
-        }, 0);
-      }
-    } catch (error) {
-      console.error("Error fetching product:", error);
+        }
+      }, 0);
+    } catch (err) {
+      console.error(err);
     }
   };
 
+  // ====== HELPER FUNCTIONS ======
+  const generateMediaIndices = useCallback((mediaList) => {
+    const newFiles = [];
+    const indices = [];
+    mediaList.forEach((media) => {
+      if (media.file instanceof File) {
+        newFiles.push(media.file);
+        indices.push(newFiles.length - 1);
+      } else if (media.id) {
+        indices.push(`existing_${media.id}`);
+      }
+    });
+    return { newFiles, indices };
+  }, []);
+
+  const generateSlug = (text) =>
+    slugify(text, { lower: true, strict: true, trim: true });
+
+  const validateImageDimensions = (file) =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () =>
+        resolve(img.naturalWidth >= 512 && img.naturalHeight >= 682);
+      img.src = URL.createObjectURL(file);
+    });
+
+  // ====== HANDLERS ======
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -477,44 +504,148 @@ const AddEditProduct = () => {
     }
   };
 
-  // Validate image dimensions before upload
-  const validateImageDimensions = (file) => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const width = img.naturalWidth;
-        const height = img.naturalHeight;
-        resolve(width >= 512 && height >= 682);
-      };
-      img.src = URL.createObjectURL(file);
+  const handleVariationChange = (idx, field, value) => {
+    setVariations((prev) => {
+      const updated = [...prev];
+      updated[idx][field] = value;
+      return updated;
     });
   };
 
-  const generateSlug = (text) => {
-    return slugify(text, {
-      lower: true, // Convert to lowercase
-      strict: true, // Strip special characters except replacement
-      trim: true, // Trim leading and trailing replacement chars
-      locale: "en", // Language code for correct transliteration
-      remove: /[*+~.()'"!:@]/g, // Remove special chars
+  const handleSizeChange = (varIdx, sizeIdx, field, value) => {
+    setVariations((prev) => {
+      const updated = [...prev];
+      updated[varIdx].sizes[sizeIdx][field] = value;
+
+      if (["original_price", "discounted_price"].includes(field)) {
+        const op =
+          parseFloat(updated[varIdx].sizes[sizeIdx].original_price) || 0;
+        const dp =
+          parseFloat(updated[varIdx].sizes[sizeIdx].discounted_price) || 0;
+        setPriceErrors((prev) => {
+          const newErrs = [...(prev.variations || [])];
+          newErrs[varIdx] = newErrs[varIdx] || { sizes: [] };
+          newErrs[varIdx].sizes[sizeIdx] =
+            dp >= op && op > 0 && dp > 0
+              ? "Selling price must be lower than original price"
+              : "";
+          return { ...prev, variations: newErrs };
+        });
+      }
+      return updated;
     });
   };
 
-  const validateSlug = (slug) => {
-    // Basic slug validation rules
-    const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-    return slugRegex.test(slug);
+  const addVariation = () => {
+    setVariations((prev) => [
+      ...prev,
+      {
+        color_id: variationMode === "color_size" ? "" : "",
+        attribute_id: variationMode === "custom" ? "" : "",
+        attribute_value: variationMode === "custom" ? "" : "",
+        media: [],
+        sizes: [
+          {
+            size_id: "",
+            stock: "",
+            original_price: "",
+            discounted_price: "",
+            sku: "",
+            barcode: "",
+          },
+        ],
+      },
+    ]);
   };
 
-  const handleSlugChange = (e) => {
-    const newSlug = e.target.value.toLowerCase();
+  const removeVariation = (idx) => {
+    setVariations((prev) => prev.filter((_, i) => i !== idx));
+  };
 
-    // Only update if the slug is valid or empty
-    if (validateSlug(newSlug) || newSlug === "") {
+  const addSizeToVariation = (varIdx) => {
+    setVariations((prev) => {
+      const updated = [...prev];
+      updated[varIdx].sizes.push({
+        size_id: "",
+        stock: "",
+        original_price: "",
+        discounted_price: "",
+        sku: "",
+        barcode: "",
+      });
+      return updated;
+    });
+  };
+
+  const removeSizeFromVariation = (varIdx, sizeIdx) => {
+    setVariations((prev) => {
+      const updated = [...prev];
+      updated[varIdx].sizes = updated[varIdx].sizes.filter(
+        (_, i) => i !== sizeIdx
+      );
+      return updated;
+    });
+  };
+
+  const handleFileChange = async (e, variationIndex) => {
+    const files = Array.from(e.target.files);
+    const validFiles = [];
+    for (const file of files) {
+      if (file.type.startsWith("image/")) {
+        const valid = await validateImageDimensions(file);
+        if (!valid) {
+          notifyOnFail(`Image ${file.name} must be at least 512x682px`);
+          continue;
+        }
+      }
+      validFiles.push({
+        file,
+        type: file.type.startsWith("image/") ? "image" : "video",
+        preview: URL.createObjectURL(file),
+      });
+    }
+    if (validFiles.length === 0) return;
+
+    if (formData.is_variation && variationIndex !== null) {
+      setVariations((prev) => {
+        const updated = [...prev];
+        const existingNames = new Set(
+          updated[variationIndex].media.map((m) => m.file?.name || m.url)
+        );
+        const unique = validFiles.filter(
+          (f) => !existingNames.has(f.file.name)
+        );
+        updated[variationIndex].media.push(...unique);
+        return updated;
+      });
+    } else {
       setFormData((prev) => ({
         ...prev,
-        slug: newSlug,
+        productFiles: [...prev.productFiles, ...validFiles],
       }));
+    }
+  };
+
+  const handleRemoveFile = (index, variationIndex = null) => {
+    if (formData.is_variation && variationIndex !== null) {
+      setVariations((prev) => {
+        const updated = [...prev];
+        const mediaItem = updated[variationIndex].media[index];
+        if (mediaItem.id) setDeletedMediaIds((d) => [...d, mediaItem.id]);
+        if (mediaItem.preview) URL.revokeObjectURL(mediaItem.preview);
+        updated[variationIndex].media.splice(index, 1);
+        return updated;
+      });
+    } else {
+      setFormData((prev) => {
+        const item = prev.productFiles[index];
+        if (item.id) setDeletedMediaIds((d) => [...d, item.id]);
+        if (item.preview) URL.revokeObjectURL(item.preview);
+        return {
+          ...prev,
+          productFiles: prev.productFiles.filter((_, i) => i !== index),
+        };
+      });
     }
   };
 
@@ -538,44 +669,6 @@ const AddEditProduct = () => {
       ...formData,
       specifications: specifications.filter((_, i) => i !== index),
     });
-  };
-
-  const handleVariationChange = (colorIndex, field, value) => {
-    const newVariations = [...variations];
-    newVariations[colorIndex][field] = value;
-    setVariations(newVariations);
-  };
-
-  const handleSizeChange = (colorIndex, sizeIndex, field, value) => {
-    const newVariations = [...variations];
-    newVariations[colorIndex].sizes[sizeIndex][field] = value;
-    setVariations(newVariations);
-
-    // Validate prices for variations
-    if (field === "original_price" || field === "discounted_price") {
-      const originalPrice =
-        parseFloat(newVariations[colorIndex].sizes[sizeIndex].original_price) ||
-        0;
-      const discountedPrice =
-        parseFloat(
-          newVariations[colorIndex].sizes[sizeIndex].discounted_price
-        ) || 0;
-
-      setPriceErrors((prev) => {
-        const newErrors = [...prev.variations];
-        newErrors[colorIndex] = {
-          ...newErrors[colorIndex],
-          sizes: [...(newErrors[colorIndex]?.sizes || [])],
-        };
-        newErrors[colorIndex].sizes[sizeIndex] =
-          discountedPrice >= originalPrice &&
-          originalPrice !== 0 &&
-          discountedPrice !== 0
-            ? "Selling price must be lower than original price"
-            : "";
-        return { ...prev, variations: newErrors };
-      });
-    }
   };
 
   const addColorVariation = () => {
@@ -623,90 +716,132 @@ const AddEditProduct = () => {
     setVariations(newVariations);
   };
 
-  const handleFileChange = async (e, variationIndex) => {
-    const files = Array.from(e.target.files);
-    const validFiles = [];
-
-    // Validate each file
-    for (const file of files) {
-      if (file.type.startsWith("image/")) {
-        const isValid = await validateImageDimensions(file);
-        if (!isValid) {
-          notifyOnFail(
-            `Image ${file.name} doesn't meet minimum resolution requirements (512x682px)`
-          );
-          continue;
-        }
-      }
-      validFiles.push(file);
+  const handleSubmit = async () => {
+    if (
+      priceErrors.main ||
+      priceErrors.variations?.some((v) => v?.sizes?.some((s) => s))
+    ) {
+      notifyOnFail("Fix price errors first");
+      return;
+    }
+    if (!formData.is_variation && !formData.sku.trim()) {
+      notifyOnFail("SKU is required");
+      return;
+    }
+    if (!formData.hsn_code.trim()) {
+      notifyOnFail("HSN is required");
+      return;
     }
 
-    if (validFiles.length === 0) return;
+    const formDataToSend = new FormData();
+    Object.entries(formData).forEach(([key, val]) => {
+      if (["productFiles", "variations", "specifications"].includes(key))
+        return;
+      if (key === "fabric_id" && !val) return;
+      if (key === "gst" && !val) {
+        formDataToSend.append(key, 0);
+        return;
+      }
+      formDataToSend.append(
+        key,
+        typeof val === "object" && key !== "specifications"
+          ? JSON.stringify(val)
+          : val
+      );
+    });
+    formDataToSend.append("specifications", JSON.stringify(specifications));
+    if (deletedMediaIds.length > 0) {
+      formDataToSend.append("delete_media", JSON.stringify(deletedMediaIds));
+    }
+
+    const allNewFiles = [];
+    const variationMediaMapping = [];
 
     if (formData.is_variation) {
-      setVariations((prev) => {
-        const newVariations = [...prev];
-        const processedFiles = validFiles.map((file) => ({
-          file,
-          type: file.type.startsWith("image/") ? "image" : "video",
-          preview: URL.createObjectURL(file),
-        }));
-        const existingMedia = new Set(
-          newVariations[variationIndex].media.map((media) => media.file.name)
+      const variationsForSubmit = [];
+      variations.forEach((variation, variationIndex) => {
+        const isColorMode = variationMode === "color_size";
+        let groupingKey;
+
+        if (isColorMode) {
+          groupingKey = parseInt(variation.color_id);
+          if (!groupingKey) return;
+        } else {
+          // Custom mode: group by attribute_id + attribute_value
+          if (!variation.attribute_id || !variation.attribute_value?.trim())
+            return;
+          groupingKey = `${
+            variation.attribute_id
+          }__${variation.attribute_value.trim()}`;
+        }
+
+        const { newFiles: variationNewFiles, indices } = generateMediaIndices(
+          variation.media || []
         );
-        const uniqueProcessedFiles = processedFiles.filter(
-          (file) => !existingMedia.has(file.file.name)
+
+        const fileStartIndex = allNewFiles.length;
+        allNewFiles.push(...variationNewFiles);
+
+        const globalIndices = indices.map((idx) =>
+          typeof idx === "number" ? fileStartIndex + idx : idx
         );
-        newVariations[variationIndex].media = [
-          ...newVariations[variationIndex].media,
-          ...uniqueProcessedFiles,
-        ];
-        return newVariations;
+
+        if (globalIndices.length > 0) {
+          variationMediaMapping.push({
+            grouping_key: groupingKey,
+            file_indices: globalIndices,
+          });
+        }
+
+        variation.sizes.forEach((size) => {
+          variationsForSubmit.push({
+            color_id: isColorMode ? groupingKey : null,
+            size_id: isColorMode ? parseInt(size.size_id) || null : null,
+            attribute_id: !isColorMode
+              ? parseInt(variation.attribute_id)
+              : null,
+            attribute_value: !isColorMode ? variation.attribute_value : null,
+            stock: size.stock,
+            original_price: size.original_price,
+            discounted_price: size.discounted_price,
+            sku: size.sku,
+            barcode: size.barcode || null,
+          });
+        });
       });
+
+      formDataToSend.append("variations", JSON.stringify(variationsForSubmit));
+      formDataToSend.append(
+        "variation_media",
+        JSON.stringify(variationMediaMapping)
+      );
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        productFiles: [
-          ...prev.productFiles,
-          ...validFiles.map((file) => ({
-            file,
-            type: file.type.startsWith("image/") ? "image" : "video",
-            preview: URL.createObjectURL(file),
-          })),
-        ],
-      }));
+      // Non-variation: main product files
+      const { newFiles, indices } = generateMediaIndices(formData.productFiles);
+      allNewFiles.push(...newFiles);
+      if (indices.length > 0) {
+        formDataToSend.append("media_indices", JSON.stringify(indices));
+      }
+    }
+
+    allNewFiles.forEach((file) => {
+      formDataToSend.append("files", file);
+    });
+
+    try {
+      const response = isEditMode
+        ? await updateProduct(id, formDataToSend)
+        : await addProduct(formDataToSend);
+      if (response.status === 1) {
+        navigate(`${config.VITE_BASE_VENDOR_URL}/product`);
+      }
+    } catch (error) {
+      console.error("Error submitting product:", error);
+      notifyOnFail("Error submitting product");
     }
   };
 
-  const handleRemoveFile = (index, variationIndex = null) => {
-    if (formData.is_variation && variationIndex !== null) {
-      setVariations((prev) => {
-        const newVariations = [...prev];
-        const media = newVariations[variationIndex].media;
-        const mediaItem = media[index];
-        if (mediaItem.id) {
-          setDeletedMediaIds((prev) => [...prev, mediaItem.id]);
-        }
-        URL.revokeObjectURL(mediaItem?.preview);
-        newVariations[variationIndex].media = media.filter(
-          (_, i) => i !== index
-        );
-        return newVariations;
-      });
-    } else {
-      setFormData((prev) => {
-        const files = [...prev.productFiles];
-        const mediaItem = files[index];
-        if (mediaItem.id) {
-          setDeletedMediaIds((prev) => [...prev, mediaItem.id]);
-        }
-        URL.revokeObjectURL(files[index].preview);
-        const updatedFiles = files.filter((_, i) => i !== index);
-        return { ...prev, productFiles: updatedFiles };
-      });
-    }
-  };
-
+  // ====== RENDER HELPERS ======
   const renderMediaPreview = (file, index, variationIndex = null) => {
     const handlePreview = () => {
       setPreviewModal({
@@ -748,155 +883,39 @@ const AddEditProduct = () => {
     );
   };
 
-  const handleSubmit = async () => {
-    try {
-      // Check for price errors
-      if (
-        priceErrors.main ||
-        priceErrors.variations.some((v) => v.sizes.some((s) => s))
-      ) {
-        notifyOnFail("Please fix price validation errors before submitting.");
-        return;
-      }
-
-      // Validate SKU for non-variation product
-      if (!formData.is_variation && !formData.sku.trim()) {
-        notifyOnFail("SKU is required for the product.");
-        return;
-      }
-
-      if (!formData.hsn_code.trim()) {
-        notifyOnFail("HSN is required for the product.");
-        return;
-      }
-
-      // Validate SKU for variations
-      if (formData.is_variation) {
-        for (const variation of variations) {
-          for (const size of variation.sizes) {
-            if (!size.sku.trim()) {
-              notifyOnFail("SKU is required for all variations.");
-              return;
-            }
-          }
-        }
-      }
-
-      const formDataToSend = new FormData();
-      Object.keys(formData).forEach((key) => {
-        if (
-          key !== "productFiles" &&
-          key !== "variations" &&
-          key !== "specifications"
-        ) {
-          if (key === "fabric_id" && !formData[key]) {
-            // Do not append fabric_id if it is empty
-          } else {
-            formDataToSend.append(
-              key,
-              typeof formData[key] === "object" && key !== "specifications"
-                ? JSON.stringify(formData[key])
-                : formData[key]
-            );
-          }
-        }
-      });
-
-      // Append specifications separately
-      formDataToSend.append("specifications", JSON.stringify(specifications));
-
-      // Append deleted media IDs
-      if (deletedMediaIds.length > 0) {
-        formDataToSend.append("delete_media", JSON.stringify(deletedMediaIds));
-      }
-
-      if (formData.is_variation) {
-        const variationsForSubmit = variations.flatMap((variation) =>
-          variation.sizes.map((size) => ({
-            color_id: variation.color_id,
-            size_id: size.size_id,
-            stock: size.stock,
-            original_price: size.original_price,
-            discounted_price: size.discounted_price,
-            sku: size.sku,
-            barcode: size.barcode,
-          }))
-        );
-        formDataToSend.append(
-          "variations",
-          JSON.stringify(variationsForSubmit)
-        );
-
-        // Track all media files and their indices
-        const allMediaFiles = [];
-        const variationMedia = variations
-          .filter((v) => v.media.length > 0)
-          .map((variation) => {
-            const fileIndices = [];
-            variation.media.forEach((media) => {
-              if (media.file instanceof File) {
-                // New file
-                const globalIndex = allMediaFiles.length;
-                allMediaFiles.push(media.file);
-                fileIndices.push(globalIndex);
-              } else if (media.id) {
-                // Existing media
-                fileIndices.push(media.id);
-              }
-            });
-            return {
-              color_id: variation.color_id,
-              file_indices: fileIndices,
-            };
-          });
-
-        formDataToSend.append(
-          "variation_media",
-          JSON.stringify(variationMedia)
-        );
-
-        // Append new files
-        allMediaFiles.forEach((file) => {
-          formDataToSend.append("files", file);
-        });
-      } else {
-        const allMediaFiles = formData.productFiles
-          .map((fileObj, index) => ({
-            file: fileObj.file instanceof File ? fileObj.file : null,
-            id: fileObj.id || null,
-            index,
-          }))
-          .filter((fileObj) => fileObj.file || fileObj.id);
-
-        const mediaIndices = allMediaFiles.map((fileObj, index) =>
-          fileObj.file ? index : fileObj.id
-        );
-
-        // Append new files
-        allMediaFiles
-          .filter((fileObj) => fileObj.file)
-          .forEach((fileObj) => {
-            formDataToSend.append("files", fileObj.file);
-          });
-
-        // For non-variation products, include media indices if needed
-        if (mediaIndices.length > 0) {
-          formDataToSend.append("media_indices", JSON.stringify(mediaIndices));
-        }
-      }
-
-      const response = isEditMode
-        ? await updateProduct(id, formDataToSend)
-        : await addProduct(formDataToSend);
-
-      if (response.status === 1) {
-        navigate(`${config.VITE_BASE_VENDOR_URL}/product`);
-      }
-    } catch (error) {
-      console.error("Error submitting product:", error);
-      notifyOnFail("Error submitting product");
-    }
-  };
+  const renderMediaSection = (varIdx = null) => (
+    <div className="space-y-4">
+      <div className="flex gap-4">
+        <label className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
+          <CiImageOn size={20} /> Add Images{" "}
+          <span className="text-red-500">*</span>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => handleFileChange(e, varIdx)}
+          />
+        </label>
+        <label className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
+          <CiVideoOn size={20} /> Add Videos
+          <input
+            type="file"
+            accept="video/*"
+            multiple
+            className="hidden"
+            onChange={(e) => handleFileChange(e, varIdx)}
+          />
+        </label>
+      </div>
+      <div className="flex flex-wrap gap-4">
+        {(varIdx !== null
+          ? variations[varIdx].media
+          : formData.productFiles
+        ).map((f, i) => renderMediaPreview(f, i, varIdx))}
+      </div>
+    </div>
+  );
 
   const renderMediaUploadSection = (variationIndex = null) => (
     <div className="space-y-4">
@@ -1437,28 +1456,45 @@ const AddEditProduct = () => {
         {/* Variations */}
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold flex items-center gap-1">
-              Variations
-              <TooltipHint
-                id="variations-tooltip"
-                content="Add variations to the product."
-              />
-            </h2>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="is_variation"
-                checked={formData.is_variation}
-                onChange={handleInputChange}
-                className="rounded border-gray-300"
-              />
-              <label className="text-sm text-gray-700">Enable Variations</label>
+            <h2 className="text-lg font-semibold">Variations</h2>
+            <div className="flex items-center gap-6">
+              {formData.is_variation && (
+                <div className="flex gap-4 items-center">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="mode"
+                      checked={variationMode === "color_size"}
+                      onChange={() => setVariationMode("color_size")}
+                    />
+                    <span>Color + Size</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="mode"
+                      checked={variationMode === "custom"}
+                      onChange={() => setVariationMode("custom")}
+                    />
+                    <span>Custom Attribute</span>
+                  </label>
+                </div>
+              )}
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="is_variation"
+                  checked={formData.is_variation}
+                  onChange={handleInputChange}
+                />
+                <span>Enable Variations</span>
+              </label>
             </div>
           </div>
 
-          {formData.is_variation && (
+          {formData.is_variation && variationMode === "color_size" && (
             <div className="space-y-6">
-              {variations.map((variation, colorIndex) => (
+              {variations?.map((variation, colorIndex) => (
                 <div key={colorIndex} className="border rounded-lg p-4">
                   <div className="flex gap-4 mb-4">
                     <div className="flex-1">
@@ -1476,9 +1512,7 @@ const AddEditProduct = () => {
                         }
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
                       >
-                        <option value="" disabled>
-                          Select Color
-                        </option>
+                        <option value="">Select Color</option>
                         {colors.map((color) => (
                           <option key={color.id} value={color.id}>
                             {color.name}
@@ -1514,51 +1548,49 @@ const AddEditProduct = () => {
                     {variation.sizes.map((size, sizeIndex) => (
                       <div
                         key={sizeIndex}
-                        className="grid grid-cols-5 gap-4 items-end"
+                        className="grid grid-cols-6 gap-2 items-end"
                       >
-                        <div className="flex gap-2">
-                          <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-700">
-                              Size
-                            </label>
-                            <select
-                              value={size.size_id}
-                              onChange={(e) =>
-                                handleSizeChange(
-                                  colorIndex,
-                                  sizeIndex,
-                                  "size_id",
-                                  e.target.value
-                                )
-                              }
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                            >
-                              <option value="">Select Size</option>
-                              {sizes.map((size) => (
-                                <option key={size.id} value={size.id}>
-                                  {size.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-700">
-                              Stock
-                            </label>
-                            <input
-                              type="number"
-                              value={size.stock}
-                              onChange={(e) =>
-                                handleSizeChange(
-                                  colorIndex,
-                                  sizeIndex,
-                                  "stock",
-                                  e.target.value
-                                )
-                              }
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                            />
-                          </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Size
+                          </label>
+                          <select
+                            value={size.size_id}
+                            onChange={(e) =>
+                              handleSizeChange(
+                                colorIndex,
+                                sizeIndex,
+                                "size_id",
+                                e.target.value
+                              )
+                            }
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                          >
+                            <option value="">Select Size</option>
+                            {sizes.map((size) => (
+                              <option key={size.id} value={size.id}>
+                                {size.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Stock
+                          </label>
+                          <input
+                            type="number"
+                            value={size.stock}
+                            onChange={(e) =>
+                              handleSizeChange(
+                                colorIndex,
+                                sizeIndex,
+                                "stock",
+                                e.target.value
+                              )
+                            }
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                          />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
@@ -1679,6 +1711,172 @@ const AddEditProduct = () => {
               </button>
             </div>
           )}
+
+          {formData.is_variation && variationMode === "custom" && (
+            <div className="space-y-6">
+              {variations.map((variation, index) => (
+                <div key={index} className="border rounded-lg p-6 bg-gray-50">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Attribute <span className="text-red-600">*</span>
+                      </label>
+                      <select
+                        value={variation.attribute_id || ""}
+                        onChange={(e) =>
+                          handleVariationChange(
+                            index,
+                            "attribute_id",
+                            e.target.value
+                          )
+                        }
+                        className="mt-1 block w-full rounded-md border-gray-300"
+                      >
+                        <option value="">Select Attribute</option>
+                        {attributes.map((attr) => (
+                          <option key={attr.id} value={attr.id}>
+                            {attr.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Attribute Value <span className="text-red-600">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Pure Leather, Matte Finish"
+                        value={variation.attribute_value || ""}
+                        onChange={(e) =>
+                          handleVariationChange(
+                            index,
+                            "attribute_value",
+                            e.target.value
+                          )
+                        }
+                        className="mt-1 block w-full rounded-md border-gray-300"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Media Upload for this variation group */}
+                  <div className="mb-6">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">
+                      Media for: {variation.attribute_value || "this variation"}
+                    </h4>
+                    {renderMediaUploadSection(index)}
+                  </div>
+
+                  {/* Options (Sizes) Table */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium">Options</h4>
+                    {variation.sizes.map((size, sIdx) => (
+                      <div
+                        key={sIdx}
+                        className="grid grid-cols-5 gap-3 items-end bg-white p-3 rounded border"
+                      >
+                        <input
+                          placeholder="Stock *"
+                          type="number"
+                          value={size.stock}
+                          onChange={(e) =>
+                            handleSizeChange(
+                              index,
+                              sIdx,
+                              "stock",
+                              e.target.value
+                            )
+                          }
+                          className="rounded-md border-gray-300"
+                        />
+                        <input
+                          placeholder="Original Price *"
+                          type="number"
+                          value={size.original_price}
+                          onChange={(e) =>
+                            handleSizeChange(
+                              index,
+                              sIdx,
+                              "original_price",
+                              e.target.value
+                            )
+                          }
+                          className="rounded-md border-gray-300"
+                        />
+                        <input
+                          placeholder="Selling Price *"
+                          type="number"
+                          value={size.discounted_price}
+                          onChange={(e) =>
+                            handleSizeChange(
+                              index,
+                              sIdx,
+                              "discounted_price",
+                              e.target.value
+                            )
+                          }
+                          className="rounded-md border-gray-300"
+                        />
+                        <input
+                          placeholder="SKU *"
+                          type="text"
+                          value={size.sku}
+                          onChange={(e) =>
+                            handleSizeChange(index, sIdx, "sku", e.target.value)
+                          }
+                          className="rounded-md border-gray-300"
+                        />
+                        <input
+                          placeholder="Barcode"
+                          type="text"
+                          value={size.barcode}
+                          onChange={(e) =>
+                            handleSizeChange(
+                              index,
+                              sIdx,
+                              "barcode",
+                              e.target.value
+                            )
+                          }
+                          className="rounded-md border-gray-300"
+                        />
+                        {/* <button
+                                    onClick={() => removeSizeFromColor(index, sIdx)}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    <X size={20} />
+                                  </button> */}
+                      </div>
+                    ))}
+                    {/* <button
+                                onClick={() => addSizeToColor(index)}
+                                className="text-sm text-blue-600 hover:text-blue-700"
+                              >
+                                + Add Option
+                              </button> */}
+                  </div>
+
+                  {variations.length > 1 && (
+                    <button
+                      onClick={() => removeColorVariation(index)}
+                      className="text-sm text-red-600 mt-4"
+                    >
+                      Remove This Variation Group
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              <button
+                onClick={addColorVariation}
+                className="flex items-center gap-2 text-blue-600 font-medium"
+              >
+                <Plus size={20} /> Add New Variation (e.g. Material, Finish,
+                etc.)
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
@@ -1773,120 +1971,6 @@ const AddEditProduct = () => {
             </div>
           </div>
         </div>
-
-        {/* SEO Settings */}
-        {/* <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">SEO Settings</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Meta Title
-                <span className="text-xs text-gray-500 ml-2">
-                  (Automatically generated, but can be customized)
-                </span>
-              </label>
-              <input
-                type="text"
-                name="meta_title"
-                value={formData.meta_title}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                placeholder="Product Name | IERADA"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                URL Slug
-                <span className="text-xs text-gray-500 ml-2">
-                  (Generated from product name, use only lowercase letters,
-                  numbers, and hyphens)
-                </span>
-              </label>
-              <input
-                type="text"
-                name="slug"
-                value={formData.slug}
-                onChange={handleSlugChange}
-                className={`mt-1 block w-full rounded-md shadow-sm focus:ring-black ${
-                  validateSlug(formData.slug)
-                    ? "border-gray-300 focus:border-black"
-                    : "border-red-300 focus:border-red-500"
-                }`}
-                placeholder="product-url-slug"
-              />
-              {!validateSlug(formData.slug) && formData.slug !== "" && (
-                <p className="mt-1 text-sm text-red-600">
-                  Slug can only contain lowercase letters, numbers, and hyphens
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Meta Description
-                <span className="text-xs text-gray-500 ml-2">
-                  (Recommended: 150-160 characters)
-                </span>
-              </label>
-              <textarea
-                name="meta_description"
-                value={formData.meta_description}
-                onChange={handleInputChange}
-                rows={3}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                placeholder="Enter a compelling description of your product for search engines..."
-              />
-              <p className="mt-1 text-sm text-gray-500">
-                Characters: {formData.meta_description.length}/160
-              </p>
-            </div>
-          </div>
-        </div> */}
-
-        {/* Additional Settings */}
-        {/* <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Additional Settings</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 flex items-center">
-                Visibility
-                <TooltipHint
-                  id="visibility"
-                  text="This controls whether or not your product will be visible to customers."
-                />
-              </label>
-              <select
-                name="visibility"
-                value={formData.visibility}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
-              >
-                <option value="Hidden">Hidden</option>
-                <option value="Published">Published</option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  name="is_featured"
-                  checked={formData.is_featured}
-                  onChange={handleInputChange}
-                  className="rounded border-gray-300"
-                />
-                <label className="text-sm text-gray-700 flex items-center gap-1">
-                  Featured Product
-                  <TooltipHint
-                    id="is_featured"
-                    text="This product will be highlighted on the homepage."
-                  />
-                </label>
-              </div>
-            </div>
-          </div>
-        </div> */}
 
         {/* Action Buttons */}
         <div className="flex justify-between py-4">

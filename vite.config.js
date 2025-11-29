@@ -12,5 +12,8 @@ export default defineConfig({
       include: [/node_modules/], // Ensure all CommonJS modules in node_modules are included
     },
   },
+  // server: {
+  //   port: 5190,
+  // },
   // base: '',
 });
