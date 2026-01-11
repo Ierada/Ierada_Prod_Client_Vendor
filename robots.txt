@@ -1,0 +1,38 @@
+User-agent: *
+Allow: /
+
+# Block internal & sensitive routes
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /seller/dashboard/
+Disallow: /user/dashboard/
+Disallow: /account/
+Disallow: /checkout/
+Disallow: /cart/
+Disallow: /login
+Disallow: /signup
+Disallow: /register
+Disallow: /reset-password
+Disallow: /verify
+Disallow: /payment/
+Disallow: /order/
+Disallow: /wishlist/
+
+# Block parameters & filters (if any)
+Disallow: /*?*
+Disallow: /*&*
+
+# Allow important public pages explicitly
+Allow: /blog/
+Allow: /blogs/
+Allow: /categories/
+Allow: /products/
+Allow: /sell-on-ierada
+Allow: /about
+Allow: /contact
+Allow: /privacy-policy
+Allow: /terms-and-conditions
+
+# Sitemap
+Sitemap: https://www.ierada.com/sitemap.xml
