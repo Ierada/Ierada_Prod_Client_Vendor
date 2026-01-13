@@ -1,46 +1,83 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Character encoding -->
     <meta charset="UTF-8" />
+
+    <!-- Website favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Preconnect to Google Fonts for performance optimization -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Italiana font -->
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Italiana&display=swap"
     />
+
+    <!-- Poppins & Saira font families -->
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Saira:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Poppins font (separate import if reused independently) -->
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Pacifico font -->
     <link
       href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
       rel="stylesheet"
     />
 
+    <!-- Responsive viewport settings -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Fast2SMS configuration meta -->
     <meta name="fast2sms" content="geUwcicH0pkbSxfS8RNp06rNenhwtRMD" />
 
-    <title>IERADA</title>
+    <!-- Website title -->
+    <title>IERADA SELLERS</title>
 
-    <!-- Google tag (gtag.js) -->
+    <!-- Google Analytics (gtag.js) for tracking website traffic -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-PT894KYPG2"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-PT894KYPG2');
     </script>
+
+    <!-- Ahrefs Analytics: Dynamic script injection for SEO & traffic insights -->
+    <script>
+      var ahrefs_analytics_script = document.createElement('script');
+      ahrefs_analytics_script.async = true;
+      ahrefs_analytics_script.src = 'https://analytics.ahrefs.com/analytics.js';
+      ahrefs_analytics_script.setAttribute('data-key', 'OPvB0e/7uH80dqpGTjVC8Q');
+      document.getElementsByTagName('head')[0].appendChild(ahrefs_analytics_script);
+    </script>
+
+    <!-- Ahrefs Analytics: Direct async script include (alternative loading method) -->
+    <script
+      src="https://analytics.ahrefs.com/analytics.js"
+      data-key="OPvB0e/7uH80dqpGTjVC8Q"
+      async
+    ></script>
   </head>
+
   <body>
+    <!-- React application root -->
     <div id="root"></div>
+
+    <!-- Main React entry file -->
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Razorpay checkout script for payment processing -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   </body>
 </html>
