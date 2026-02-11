@@ -29,6 +29,16 @@ import { getSettings } from "../../../services/api.settings";
 import { notifyOnFail } from "../../../utils/notification/toast";
 import { useAppContext } from "../../../context/AppContext";
 
+const SHIPPING_RATES = [
+  { maxWeight: 500, charge: 80 },
+  { maxWeight: 1000, charge: 160 },
+  { maxWeight: 1500, charge: 240 },
+  { maxWeight: 2000, charge: 320 },
+  { maxWeight: 2500, charge: 400 },
+  { maxWeight: 3000, charge: 480 },
+  { maxWeight: Infinity, charge: 560 },
+];
+
 const AddEditProduct = () => {
   const { id } = useParams();
   const { user } = useAppContext();
@@ -130,7 +140,11 @@ const AddEditProduct = () => {
     type: "",
     message: "",
   });
-  const [expandedVariations, setExpandedVariations] = useState([]); // New state for expanded variations
+  const [expandedVariations, setExpandedVariations] = useState([]);
+  const [calculatedShipping, setCalculatedShipping] = useState(0);
+  const [settingsShipping, setSettingsShipping] = useState(0);
+  const [productDetailsCharCount, setProductDetailsCharCount] = useState(0);
+  const MAX_PRODUCT_DETAILS_CHARS = 150;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -174,10 +188,12 @@ const AddEditProduct = () => {
       setColors(colorRes.status === 1 ? colorRes.data : []);
       setAttributes(attrRes.status === 1 ? attrRes.data : []);
       if (settingsRes.status === 1) {
+        const defaultShipping = settingsRes.data.shipping_charge || 0;
+        setSettingsShipping(defaultShipping);
+
         setFormData((prev) => ({
           ...prev,
           platform_fee: settingsRes.data.platform_fee,
-          shipping_charges: settingsRes.data.shipping_charge || 0,
         }));
       }
     };
@@ -323,6 +339,45 @@ const AddEditProduct = () => {
     }
   }, [formData.stock, formData.low_stock_threshold]);
 
+  useEffect(() => {
+    const l = parseFloat(formData.package_length) || 0;
+    const w = parseFloat(formData.package_width) || 0;
+    const h = parseFloat(formData.package_height) || 0;
+
+    // Standard volumetric weight formula: (L × W × H) / 5000 → grams
+    const volWeight = Math.round((l * w * h) / 5000);
+
+    setFormData((prev) => ({
+      ...prev,
+      volumetric_weight: volWeight,
+    }));
+  }, [
+    formData.package_length,
+    formData.package_width,
+    formData.package_height,
+  ]);
+
+  useEffect(() => {
+    const deadWeight = Number(formData.package_weight) || 0;
+    const volWeight = Number(formData.volumetric_weight) || 0;
+
+    const chargeableWeight = Math.max(deadWeight, volWeight);
+    const dynamicCharge = getDynamicShippingCharge(chargeableWeight);
+
+    setCalculatedShipping(dynamicCharge);
+
+    // Store ONLY calculated value in formData
+    setFormData((prev) => ({
+      ...prev,
+      shipping_charges: dynamicCharge,
+    }));
+  }, [
+    formData.package_weight,
+    formData.package_length,
+    formData.package_width,
+    formData.package_height,
+  ]);
+
   const fetchProductData = async () => {
     try {
       const res = await getProductById(id);
@@ -405,6 +460,18 @@ const AddEditProduct = () => {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // Helper to get dynamic shipping
+  const getDynamicShippingCharge = (weightInGrams) => {
+    if (!weightInGrams || weightInGrams <= 0) return 0;
+
+    for (const rate of SHIPPING_RATES) {
+      if (weightInGrams <= rate.maxWeight) {
+        return rate.charge;
+      }
+    }
+    return SHIPPING_RATES[SHIPPING_RATES.length - 1].charge;
   };
 
   // ====== HELPER FUNCTIONS ======
@@ -546,57 +613,6 @@ const AddEditProduct = () => {
     });
   };
 
-  const addVariation = () => {
-    setVariations((prev) => [
-      ...prev,
-      {
-        color_id: variationMode === "color_size" ? "" : "",
-        attribute_id: variationMode === "custom" ? "" : "",
-        attribute_value: variationMode === "custom" ? "" : "",
-        media: [],
-        sizes: [
-          {
-            size_id: "",
-            stock: "",
-            original_price: "",
-            discounted_price: "",
-            sku: "",
-            barcode: "",
-          },
-        ],
-      },
-    ]);
-  };
-
-  const removeVariation = (idx) => {
-    setVariations((prev) => prev.filter((_, i) => i !== idx));
-  };
-
-  const addSizeToVariation = (varIdx) => {
-    setVariations((prev) => {
-      const updated = [...prev];
-      updated[varIdx].sizes.push({
-        size_id: "",
-        stock: "",
-        original_price: "",
-        discounted_price: "",
-        sku: "",
-        barcode: "",
-      });
-      return updated;
-    });
-  };
-
-  const removeSizeFromVariation = (varIdx, sizeIdx) => {
-    setVariations((prev) => {
-      const updated = [...prev];
-      updated[varIdx].sizes = updated[varIdx].sizes.filter(
-        (_, i) => i !== sizeIdx,
-      );
-      return updated;
-    });
-  };
-
   const handleFileChange = async (e, variationIndex) => {
     const files = Array.from(e.target.files);
     const validFiles = [];
@@ -660,12 +676,14 @@ const AddEditProduct = () => {
   };
 
   const handleSpecificationChange = (index, field, value) => {
+    if (specifications.length >= 7 && field === "feature") return;
     const newSpecifications = [...specifications];
     newSpecifications[index][field] = value;
     setSpecifications(newSpecifications);
   };
 
   const addSpecification = () => {
+    if (specifications.length >= 7) return;
     setSpecifications([...specifications, { feature: "", specification: "" }]);
     setFormData({
       ...formData,
@@ -751,6 +769,19 @@ const AddEditProduct = () => {
         isOpen: true,
         type: "error",
         message: "HSN is required",
+      });
+      return;
+    }
+
+    if (
+      !formData.length.trim() ||
+      !formData.width.trim() ||
+      !formData.height.trim()
+    ) {
+      setNotification({
+        isOpen: true,
+        type: "error",
+        message: "Length, Width and Height are required",
       });
       return;
     }
@@ -955,40 +986,6 @@ const AddEditProduct = () => {
     );
   };
 
-  const renderMediaSection = (varIdx = null) => (
-    <div className="space-y-4">
-      <div className="flex gap-4">
-        <label className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-2xl cursor-pointer hover:bg-gray-200">
-          <CiImageOn size={20} /> Add Images{" "}
-          <span className="text-red-500">*</span>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={(e) => handleFileChange(e, varIdx)}
-          />
-        </label>
-        <label className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-2xl cursor-pointer hover:bg-gray-200">
-          <CiVideoOn size={20} /> Add Videos
-          <input
-            type="file"
-            accept="video/*"
-            multiple
-            className="hidden"
-            onChange={(e) => handleFileChange(e, varIdx)}
-          />
-        </label>
-      </div>
-      <div className="flex flex-wrap gap-4">
-        {(varIdx !== null
-          ? variations[varIdx].media
-          : formData.productFiles
-        ).map((f, i) => renderMediaPreview(f, i, varIdx))}
-      </div>
-    </div>
-  );
-
   const renderMediaUploadSection = (variationIndex = null) => (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
@@ -1076,11 +1073,6 @@ const AddEditProduct = () => {
       />
     </>
   );
-
-  const create_add = [
-    { id: 1, title: "Create Add", subtitle: "Advertisement Banner of vendors" },
-    { id: 2, title: "Create Add", subtitle: "Advertisement Banner of vendors" },
-  ];
 
   return (
     <div className="flex gap-6 p-6 min-h-screen">
@@ -1260,6 +1252,7 @@ const AddEditProduct = () => {
                   <input
                     type="number"
                     name="gst"
+                    min={0}
                     value={formData.gst}
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
@@ -1286,19 +1279,70 @@ const AddEditProduct = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Product Details
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  Product Details
+                </label>
+                <span
+                  className={`text-sm ${
+                    productDetailsCharCount > MAX_PRODUCT_DETAILS_CHARS
+                      ? "text-red-600"
+                      : "text-gray-500"
+                  }`}
+                >
+                  {productDetailsCharCount} / {MAX_PRODUCT_DETAILS_CHARS}
+                </span>
+              </div>
               <CKEditor
                 editor={ClassicEditor}
                 data={formData.product_details}
+                config={{
+                  toolbar: [
+                    "bold",
+                    "italic",
+                    "bulletedList",
+                    "numberedList",
+                    "|",
+                    "undo",
+                    "redo",
+                  ],
+                  placeholder: "Enter product details (max 150 characters)",
+                }}
                 onChange={(event, editor) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    product_details: editor.getData(),
-                  }));
+                  const data = editor.getData();
+                  // Get plain text (strip HTML tags)
+                  const plainText = data.replace(/<[^>]+>/g, "").trim();
+                  const charCount = plainText.length;
+
+                  setProductDetailsCharCount(charCount);
+
+                  // Only update formData if under limit
+                  if (charCount <= MAX_PRODUCT_DETAILS_CHARS) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      product_details: data,
+                    }));
+                  } else {
+                    // Revert to previous valid content if exceeded
+                    editor.setData(formData.product_details);
+                  }
+                }}
+                onReady={(editor) => {
+                  // Optional: initial count on load
+                  const initialPlain = editor
+                    .getData()
+                    .replace(/<[^>]+>/g, "")
+                    .trim();
+                  setProductDetailsCharCount(initialPlain.length);
                 }}
               />
+
+              {productDetailsCharCount > MAX_PRODUCT_DETAILS_CHARS && (
+                <p className="mt-1 text-sm text-red-600">
+                  Product Details cannot exceed {MAX_PRODUCT_DETAILS_CHARS}{" "}
+                  characters
+                </p>
+              )}
             </div>
 
             <div>
@@ -1455,6 +1499,7 @@ const AddEditProduct = () => {
                                 e.target.value,
                               )
                             }
+                            min={0}
                             className="mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
                           />
                         </div>
@@ -1473,6 +1518,7 @@ const AddEditProduct = () => {
                                 e.target.value,
                               )
                             }
+                            min={0}
                             className="mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
                           />
                         </div>
@@ -1491,6 +1537,7 @@ const AddEditProduct = () => {
                                 e.target.value,
                               )
                             }
+                            min={0}
                             className={`mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black ${
                               priceErrors.variations[colorIndex]?.sizes[
                                 sizeIndex
@@ -1654,6 +1701,7 @@ const AddEditProduct = () => {
                               e.target.value,
                             )
                           }
+                          min={0}
                           className="rounded-2xl border-gray-300"
                         />
                         <input
@@ -1668,6 +1716,7 @@ const AddEditProduct = () => {
                               e.target.value,
                             )
                           }
+                          min={0}
                           className="rounded-2xl border-gray-300"
                         />
                         <input
@@ -1682,6 +1731,7 @@ const AddEditProduct = () => {
                               e.target.value,
                             )
                           }
+                          min={0}
                           className="rounded-2xl border-gray-300"
                         />
                         <input
@@ -1797,7 +1847,12 @@ const AddEditProduct = () => {
             ))}
             <button
               onClick={addSpecification}
-              className="flex items-center gap-2 text-primary-100 hover:text-blue-700"
+              className={`flex items-center gap-2 text-primary-100 hover:text-blue-700 ${
+                specifications.length >= 7
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
+              disabled={specifications.length >= 7}
             >
               <Plus size={20} /> Add Specification
             </button>
@@ -1818,6 +1873,7 @@ const AddEditProduct = () => {
                 name="base_price"
                 value={formData.base_price}
                 onChange={handleInputChange}
+                min={0}
                 className="mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
               />
             </div> */}
@@ -1836,6 +1892,7 @@ const AddEditProduct = () => {
                 name="original_price"
                 value={formData.original_price}
                 onChange={handleInputChange}
+                min={0}
                 className="mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
               />
             </div>
@@ -1855,6 +1912,7 @@ const AddEditProduct = () => {
                 name="discounted_price"
                 value={formData.discounted_price}
                 onChange={handleInputChange}
+                min={0}
                 className={`mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black ${
                   priceErrors.main ? "border-red-500" : ""
                 }`}
@@ -1884,6 +1942,7 @@ const AddEditProduct = () => {
                 name="stock"
                 value={formData.stock}
                 onChange={handleInputChange}
+                min={0}
                 className="mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
               />
             </div>
@@ -1902,6 +1961,7 @@ const AddEditProduct = () => {
                 value={formData.low_stock_threshold}
                 onChange={handleInputChange}
                 max={formData.stock}
+                min={0}
                 className="mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
               />
             </div>
@@ -1947,24 +2007,28 @@ const AddEditProduct = () => {
                   type="number"
                   name="platform_fee"
                   value={formData.platform_fee}
+                  min={0}
                   onChange={handleInputChange}
                   disabled
                   className="mt-1 block w-full bg-gray-200 rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Shipping Charges (Default)
+                <label className="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                  Shipping Charge
+                  <TooltipHint
+                    id="calc-shipping-tooltip"
+                    content="Based on the higher of Dead Weight or Volumetric Weight"
+                  />
                 </label>
-                <input
-                  type="number"
-                  name="shipping_charges"
-                  value={formData.shipping_charges}
-                  onChange={handleInputChange}
-                  disabled
-                  className="mt-1 block w-full bg-gray-200 rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                />
+                <div className="mt-1 flex items-center gap-4">
+                  <div className="flex-1 bg-gray-50 border border-gray-300 rounded-2xl px-4 py-2 text-gray-800 font-medium">
+                    ₹{calculatedShipping + settingsShipping}
+                  </div>
+                </div>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Dead Weight (g)
@@ -1973,6 +2037,7 @@ const AddEditProduct = () => {
                   type="number"
                   name="package_weight"
                   value={formData.package_weight}
+                  min={0}
                   onChange={handleInputChange}
                   className="mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
                 />
@@ -1981,46 +2046,45 @@ const AddEditProduct = () => {
                 <label className="block text-sm font-medium text-gray-700">
                   Volumetric Weight (g)
                 </label>
-                <input
-                  type="number"
-                  name="volumetric_weight"
-                  value={formData.volumetric_weight}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                />
+                <div className="mt-1 block w-full rounded-2xl border border-gray-300 bg-gray-50 px-3 py-2 text-gray-700 shadow-sm">
+                  {formData.volumetric_weight || 0} g
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Length (cm)
+                  Length (cm) <span className="text-red-600">*</span>
                 </label>
                 <input
                   type="number"
                   name="package_length"
                   value={formData.package_length}
+                  min={0}
                   onChange={handleInputChange}
                   className="mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Width (cm)
+                  Width (cm) <span className="text-red-600">*</span>
                 </label>
                 <input
                   type="number"
                   name="package_width"
                   value={formData.package_width}
+                  min={0}
                   onChange={handleInputChange}
                   className="mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Height (cm)
+                  Height (cm) <span className="text-red-600">*</span>
                 </label>
                 <input
                   type="number"
                   name="package_height"
                   value={formData.package_height}
+                  min={0}
                   onChange={handleInputChange}
                   className="mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
                 />
@@ -2033,6 +2097,7 @@ const AddEditProduct = () => {
                   type="number"
                   name="package_depth"
                   value={formData.package_depth}
+                  min={0}
                   onChange={handleInputChange}
                   className="mt-1 block w-full rounded-2xl border-gray-300 shadow-sm focus:border-black focus:ring-black"
                 />
@@ -2227,7 +2292,11 @@ const AddEditProduct = () => {
                   Shipping Fee (Chargable from Customer)
                 </span>
                 <span className="font-medium">
-                  ₹{parseFloat(formData.shipping_charges || 0).toFixed(2)}
+                  ₹
+                  {(
+                    parseFloat(formData.shipping_charges || 0) +
+                    settingsShipping
+                  ).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -2250,7 +2319,6 @@ const AddEditProduct = () => {
             </div>
           </div>
 
-          {/* New Variations Breakdown Section */}
           {formData.is_variation && (
             <div className="bg-white rounded-2xl shadow mt-8 border-t p-6">
               <h2 className="text-lg font-semibold mb-4">

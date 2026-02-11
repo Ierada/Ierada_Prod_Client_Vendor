@@ -18,6 +18,7 @@ import {
   MessageSquare,
   Save,
   X,
+  Pencil,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ProductModal from "../../../components/Vendor/Models/ProductModal";
@@ -78,7 +79,7 @@ const StatCard = ({ title, value }) => (
     animate={{ opacity: 1, y: 0 }}
     className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 relative overflow-hidden"
   >
-    <h3 className="text-sm font-medium text-gray-600 mb-3">{title}</h3>
+    <h3 className="text-sm font-semibold text-gray-600 mb-3">{title}</h3>
     <p className="text-2xl font-bold text-gray-900">{value}</p>
   </motion.div>
 );
@@ -148,7 +149,9 @@ const Product = () => {
   const editingCellRef = useRef(null);
   const editValueRef = useRef("");
   const errorRef = useRef(null);
+
   const forceRender = useCallback(() => setForceUpdate((prev) => prev + 1), []);
+
   const fetchProducts = async (params = {}) => {
     setIsLoading(true);
     try {
@@ -165,6 +168,7 @@ const Product = () => {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     const params = {
       page: currentPage,
@@ -182,6 +186,7 @@ const Product = () => {
     }
     fetchProducts(params);
   }, [currentPage, visibilityFilter, searchQuery, sortConfig, user.id]);
+
   const getTotalStock = (product) => {
     return product.is_variation
       ? product.variations?.variation_combinations?.reduce(
@@ -190,17 +195,20 @@ const Product = () => {
         ) || 0
       : product.stock || 0;
   };
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
     }).format(price);
   };
+
   const getMainImage = (media) => {
     return (
       media?.find((m) => m.type === "image")?.url || "/placeholder-image.jpg"
     );
   };
+
   const startEditing = useCallback(
     (rowId, column, initialValue) => {
       editingCellRef.current = { rowId, column };
@@ -210,12 +218,14 @@ const Product = () => {
     },
     [forceRender],
   );
+
   const cancelEditing = useCallback(() => {
     editingCellRef.current = null;
     editValueRef.current = "";
     errorRef.current = null;
     forceRender();
   }, [forceRender]);
+
   const validateEdit = (column, currentProduct) => {
     let value;
     if (column === "stock") {
@@ -256,11 +266,13 @@ const Product = () => {
     forceRender();
     return true;
   };
+
   const saveEdit = (productId, column, currentProduct) => {
     if (!validateEdit(column, currentProduct)) return;
     setPendingUpdate({ productId, field: column, value: editValueRef.current });
     setIsUpdateModalOpen(true);
   };
+
   const confirmUpdate = async () => {
     setIsUpdating(true);
     try {
@@ -283,12 +295,27 @@ const Product = () => {
       cancelEditing();
     }
   };
+
   // Focus the input when editing starts
   useEffect(() => {
     if (editingCellRef.current && editRef.current) {
       editRef.current.focus();
     }
   }, [forceUpdate]);
+
+  const handleKeyDown = useCallback(
+    (e, productId, column, currentProduct) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        saveEdit(productId, column, currentProduct);
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        cancelEditing();
+      }
+    },
+    [saveEdit, cancelEditing],
+  );
+
   const columnVisibility = {
     index: "hidden sm:table-cell",
     name: "",
@@ -300,20 +327,27 @@ const Product = () => {
     bank_settlement_amount: "hidden lg:table-cell",
     actions: "",
   };
+
   const getColumnClass = (columnId) => columnVisibility[columnId] || "";
+
   const columns = useMemo(
     () => [
+      // {
+      //   accessorKey: "index",
+      //   header: "No.",
+      //   cell: ({ row }) => (currentPage - 1) * itemsPerPage + row.index + 1,
+      //   enableSorting: false,
+      // },
       {
-        accessorKey: "index",
-        header: "No.",
-        cell: ({ row }) => (currentPage - 1) * itemsPerPage + row.index + 1,
-        enableSorting: false,
+        accessorKey: "custom_id",
+        header: "ID",
+        cell: ({ row }) => row.original.custom_id,
       },
       {
         accessorKey: "name",
         header: () => <div className="flex items-center gap-2">Product</div>,
         cell: ({ row }) => (
-          <div className="flex items-center gap-3">
+          <div className="max-w-80 flex items-center gap-3">
             <img
               src={getMainImage(row.original.media)}
               alt={row.original.name}
@@ -351,6 +385,9 @@ const Product = () => {
                     editValueRef.current = e.target.value;
                     forceRender();
                   }}
+                  onKeyDown={(e) =>
+                    handleKeyDown(e, product.id, "original_price", product)
+                  }
                   className="w-24 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
                 <button
@@ -383,7 +420,7 @@ const Product = () => {
           }
           return (
             <div
-              className="cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
+              className="flex items-center gap-1 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 startEditing(
@@ -397,6 +434,7 @@ const Product = () => {
               <span className="text-sm font-medium text-gray-900">
                 {displayValue}
               </span>
+              <Pencil className="w-3 h-3 text-gray-500 ml-1" />
             </div>
           );
         },
@@ -422,6 +460,9 @@ const Product = () => {
                     editValueRef.current = e.target.value;
                     forceRender();
                   }}
+                  onKeyDown={(e) =>
+                    handleKeyDown(e, product.id, "discounted_price", product)
+                  }
                   className="w-24 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
                 <button
@@ -454,7 +495,7 @@ const Product = () => {
           }
           return (
             <div
-              className="cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
+              className="flex items-center gap-1 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 startEditing(
@@ -468,6 +509,7 @@ const Product = () => {
               <span className="text-sm font-medium text-gray-900">
                 {displayValue}
               </span>
+              <Pencil className="w-3 h-3 text-gray-500 ml-1" />
             </div>
           );
         },
@@ -503,6 +545,9 @@ const Product = () => {
                     editValueRef.current = e.target.value;
                     forceRender();
                   }}
+                  onKeyDown={(e) =>
+                    handleKeyDown(e, product.id, "stock", product)
+                  }
                   className="w-24 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
                 <button
@@ -535,7 +580,7 @@ const Product = () => {
           }
           return (
             <div
-              className="cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
+              className="flex items-center gap-1 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 startEditing(product.id, "stock", value);
@@ -543,6 +588,7 @@ const Product = () => {
               title="Click to edit Stock"
             >
               <span className="text-sm font-medium text-gray-900">{value}</span>
+              <Pencil className="w-3 h-3 text-gray-500 ml-1" />
             </div>
           );
         },
@@ -565,6 +611,9 @@ const Product = () => {
                     editValueRef.current = e.target.value;
                     forceRender();
                   }}
+                  onKeyDown={(e) =>
+                    handleKeyDown(e, product.id, "visibility", product)
+                  }
                   className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                   <option value="Hidden">Hidden</option>
@@ -604,7 +653,7 @@ const Product = () => {
               : "bg-gray-100 text-gray-700";
           return (
             <div
-              className={`cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors ${badgeClass}`}
+              className={`flex items-center gap-1 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors ${badgeClass}`}
               onClick={(e) => {
                 e.stopPropagation();
                 startEditing(product.id, "visibility", product.visibility);
@@ -614,6 +663,7 @@ const Product = () => {
               <span className="px-2 py-1 rounded-full text-sm font-medium">
                 {product.visibility}
               </span>
+              <Pencil className="w-3 h-3 text-gray-500" />
             </div>
           );
         },
@@ -667,6 +717,7 @@ const Product = () => {
     ],
     [currentPage, itemsPerPage], // Stable dependencies only
   );
+
   const table = useReactTable({
     data: products,
     columns,
@@ -736,7 +787,7 @@ const Product = () => {
   };
   return (
     <div className="min-h-screen p-2 sm:p-4 lg:p-6">
-      <div className="max-w-7xl mx-auto">
+      <div className="container mx-auto">
         <div className="flex flex-col lg:flex-row gap-2 sm:gap-4">
           {/* Stats Cards - Responsive grid */}
           <div className="w-full lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 sm:mb-6">
@@ -745,7 +796,7 @@ const Product = () => {
               title="Published Products"
               value={stats.publishedProducts}
             />
-            <StatCard title="Total Stock" value={stats.totalStock} />
+            <StatCard title="Total Stocks" value={stats.totalStock} />
             <StatCard title="Low Stock Items" value={stats.lowStockProducts} />
           </div>
           {/* Promotional Banner - Responsive */}
@@ -783,50 +834,49 @@ const Product = () => {
           animate={{ opacity: 1 }}
           className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6"
         >
-          {/* Tabs - Stack on mobile */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1 p-1 border-b border-gray-100">
-            <button
-              onClick={() => {
-                setVisibilityFilter("all");
-                setCurrentPage(1);
-              }}
-              className={`px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors w-full sm:w-auto ${
-                visibilityFilter === "all"
-                  ? "bg-orange-50 text-orange-600"
-                  : "text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              All Products ({stats.totalProducts})
-            </button>
-            <button
-              onClick={() => {
-                setVisibilityFilter("published");
-                setCurrentPage(1);
-              }}
-              className={`px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors w-full sm:w-auto ${
-                visibilityFilter === "published"
-                  ? "bg-orange-50 text-orange-600"
-                  : "text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              Published ({stats.publishedProducts})
-            </button>
-            <button
-              onClick={() => {
-                setVisibilityFilter("draft");
-                setCurrentPage(1);
-              }}
-              className={`px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors w-full sm:w-auto ${
-                visibilityFilter === "draft"
-                  ? "bg-orange-50 text-orange-600"
-                  : "text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              Draft ({stats.draftProducts})
-            </button>
-          </div>
-          {/* Search and Actions - Responsive flex */}
+          {/* Search and Actions*/}
           <div className="p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1">
+              <button
+                onClick={() => {
+                  setVisibilityFilter("all");
+                  setCurrentPage(1);
+                }}
+                className={`px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors w-full sm:w-auto ${
+                  visibilityFilter === "all"
+                    ? "bg-orange-50 text-orange-600"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                All Products ({stats.totalProducts})
+              </button>
+              <button
+                onClick={() => {
+                  setVisibilityFilter("published");
+                  setCurrentPage(1);
+                }}
+                className={`px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors w-full sm:w-auto ${
+                  visibilityFilter === "published"
+                    ? "bg-orange-50 text-orange-600"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                Published ({stats.publishedProducts})
+              </button>
+              <button
+                onClick={() => {
+                  setVisibilityFilter("draft");
+                  setCurrentPage(1);
+                }}
+                className={`px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors w-full sm:w-auto ${
+                  visibilityFilter === "draft"
+                    ? "bg-orange-50 text-orange-600"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                Draft ({stats.draftProducts})
+              </button>
+            </div>
             <div className="flex-1 relative w-full sm:w-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -847,7 +897,7 @@ const Product = () => {
               onClick={() =>
                 navigate(`${config.VITE_BASE_VENDOR_URL}/product/add`)
               }
-              className="px-6 py-2.5 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors w-full sm:w-auto self-start sm:self-center"
+              className="px-6 py-2.5 bg-button-gradient text-white rounded-lg font-medium hover:bg-orange-600 transition-colors w-full sm:w-auto self-start sm:self-center"
             >
               Add Product
             </button>
